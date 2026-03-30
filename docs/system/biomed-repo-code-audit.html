@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bio-Agent / ClawBio / LabClaw / OpenBioMed 代码真实性审计</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f8f4ee;
+        --surface: #fffdfa;
+        --surface-alt: #f3ece3;
+        --surface-strong: #ede2d4;
+        --line: #d9ccbd;
+        --text: #33261b;
+        --muted: #705847;
+        --primary: #9a3412;
+        --accent: #0f766e;
+        --success: #166534;
+        --warning: #b45309;
+        --danger: #991b1b;
+        --radius: 10px;
+        --shadow: 0 2px 8px rgba(51, 38, 27, 0.08);
+        --content-width: 1380px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "IBM Plex Sans", sans-serif;
+        line-height: 1.58;
+      }
+
+      a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      code,
+      pre,
+      .mono {
+        font-family: "IBM Plex Mono", monospace;
+      }
+
+      .shell {
+        max-width: var(--content-width);
+        margin: 0 auto;
+        padding: 24px;
+        display: grid;
+        grid-template-columns: 252px minmax(0, 1fr);
+        gap: 24px;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 16px;
+        align-self: start;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+
+      .sidebar h2 {
+        margin: 0 0 14px;
+        font-size: 1rem;
+      }
+
+      .nav {
+        display: grid;
+        gap: 8px;
+      }
+
+      .nav a {
+        display: block;
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--text);
+      }
+
+      .nav a:hover {
+        background: var(--surface-alt);
+        text-decoration: none;
+      }
+
+      .sidebar .meta {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .content {
+        display: grid;
+        gap: 20px;
+      }
+
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 24px 26px;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0 0 12px;
+        line-height: 1.2;
+      }
+
+      h1 {
+        font-size: 2.05rem;
+      }
+
+      h2 {
+        font-size: 1.34rem;
+      }
+
+      h3 {
+        font-size: 1.02rem;
+      }
+
+      p {
+        margin: 0 0 12px;
+      }
+
+      .lede {
+        max-width: 70rem;
+        color: var(--muted);
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 16px;
+      }
+
+      .tile {
+        background: var(--surface-alt);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px;
+      }
+
+      .tile strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff8f1;
+        font-size: 0.9rem;
+      }
+
+      .chip.success {
+        color: var(--success);
+        border-color: rgba(22, 101, 52, 0.2);
+        background: rgba(22, 101, 52, 0.08);
+      }
+
+      .chip.warning {
+        color: var(--warning);
+        border-color: rgba(180, 83, 9, 0.2);
+        background: rgba(180, 83, 9, 0.08);
+      }
+
+      .chip.danger {
+        color: var(--danger);
+        border-color: rgba(153, 27, 27, 0.2);
+        background: rgba(153, 27, 27, 0.08);
+      }
+
+      .section-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+      }
+
+      th,
+      td {
+        padding: 11px 12px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        font-weight: 600;
+      }
+
+      ul.flat {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      ul.flat li {
+        margin-bottom: 8px;
+      }
+
+      .callout {
+        border-left: 4px solid var(--primary);
+        padding: 12px 14px;
+        background: #fff8f1;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .callout strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .metric {
+        background: var(--surface-alt);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+      }
+
+      .metric .value {
+        font-size: 1.65rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      .metric .label {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .flow {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .node {
+        min-width: 146px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fffdfa;
+        padding: 10px 12px;
+      }
+
+      .node strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .arrow {
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .stack {
+        display: grid;
+        gap: 10px;
+      }
+
+      .band {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fffdfa;
+        padding: 14px;
+      }
+
+      .band header {
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+
+      .evidence-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .evidence-item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface-alt);
+        padding: 12px 14px;
+      }
+
+      .evidence-item code {
+        font-size: 0.9rem;
+      }
+
+      details {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface-alt);
+        padding: 12px 14px;
+      }
+
+      details + details {
+        margin-top: 10px;
+      }
+
+      summary {
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .footnote {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 1120px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+        }
+
+        .summary-grid,
+        .metric-grid,
+        .section-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 720px) {
+        .shell {
+          padding: 16px;
+        }
+
+        .panel {
+          padding: 18px;
+        }
+
+        .summary-grid,
+        .metric-grid,
+        .section-grid {
+          grid-template-columns: 1fr;
+        }
+
+        h1 {
+          font-size: 1.72rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <h2>目录</h2>
+        <nav class="nav">
+          <a href="#overview">总览结论</a>
+          <a href="#method">审计方法</a>
+          <a href="#truth-audit">现有报告真实性审计</a>
+          <a href="#repo-bio-agent">bio-agent</a>
+          <a href="#repo-clawbio">ClawBio</a>
+          <a href="#repo-labclaw">LabClaw</a>
+          <a href="#repo-openbiomed">OpenBioMed</a>
+          <a href="#comparison">横向对比</a>
+          <a href="#architecture">推荐融合架构</a>
+          <a href="#workflow">用户到执行主流程</a>
+          <a href="#next-steps">下一步建议</a>
+          <a href="#evidence">证据附录</a>
+        </nav>
+        <div class="meta">
+          <div>生成日期：2026-03-30</div>
+          <div>目标：为 agent 用的生物信息 skill 系统选底座、分层和边界。</div>
+          <div>方法：代码优先，文档降级，导入/测试/计数交叉验证。</div>
+        </div>
+      </aside>
+
+      <main class="content">
+        <section class="panel" id="overview">
+          <h1>Bio-Agent / ClawBio / LabClaw / OpenBioMed 代码真实性审计</h1>
+          <p class="lede">
+            这页不是对 README 的复述，而是对四个本地仓库做“真代码优先”的审计稿。
+            结论只分三类：代码直接支持、代码部分支持、文档声称但本地状态未证实。
+            你要做的是一个“用户自然语言提出需求，AI 先产出 plan，用户选择或修改后再执行”的通用调度框架；
+            因此本页重点判断每个仓库更适合落在 control plane、skill layer、execution backend 还是 knowledge layer。
+          </p>
+
+          <div class="summary-grid">
+            <div class="tile">
+              <strong>bio-agent</strong>
+              真实强项是 <span class="mono">plan / propose / approve / run</span> 这条控制面骨架。
+              真正像“总调度器”，但桥接脚本和外围工程还没完全收口。
+            </div>
+            <div class="tile">
+              <strong>ClawBio</strong>
+              真实强项是可执行 skill 产品化、CI、通用报告/校验件和本地数据处理。
+              更像可落地的 skill 产品库，而不是总调度框架。
+            </div>
+            <div class="tile">
+              <strong>LabClaw</strong>
+              真实强项是 breadth，不是 execution。
+              它本地几乎就是一个大型 <span class="mono">SKILL.md</span> 知识层。
+            </div>
+            <div class="tile">
+              <strong>OpenBioMed</strong>
+              真实强项是 biomedical toolkit + model/tool pipeline。
+              更适合做执行后端，不适合直接当你的通用主控框架。
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="method">
+          <h2>审计方法</h2>
+          <div class="chip-row" style="margin-bottom: 14px">
+            <span class="chip success">先看本地代码和目录</span>
+            <span class="chip success">再做数量统计</span>
+            <span class="chip warning">README 只做辅助，不直接采信</span>
+            <span class="chip danger">导入失败 / 缺文件 / 测试失败直接记为工程风险</span>
+          </div>
+
+          <div class="flow">
+            <div class="node">
+              <strong>步骤 1</strong>
+              仓库结构与文件存在性
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>步骤 2</strong>
+              核心入口、registry、workflow、tool
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>步骤 3</strong>
+              计数：skills / tools / tests / workflows
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>步骤 4</strong>
+              导入、pytest、依赖与可运行性
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>输出</strong>
+              代码支持 / 部分支持 / 文档自述
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="truth-audit">
+          <h2>现有报告真实性审计</h2>
+          <p class="lede">
+            下面这部分专门审计本地已有的
+            <a
+              data-local-path="/home/vimalinx/Projects/bio-agent/reference/COMPARATIVE_ANALYSIS_REPORT.md"
+              data-repo-path="reference/COMPARATIVE_ANALYSIS_REPORT.md"
+            ><code>reference/COMPARATIVE_ANALYSIS_REPORT.md</code></a>。
+            结论是：它能作为素材，但不能直接作为事实源。
+          </p>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>原报告说法</th>
+                  <th>审计结论</th>
+                  <th>原因</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="mono">bio-agent = 4 层技能架构，含 policy 层</span></td>
+                  <td>部分成立，但被夸大</td>
+                  <td>
+                    <span class="mono">scripts/skills/export_skill_registry.py</span> 实际导出
+                    415 个 skill，分类结果只有
+                    <span class="mono">{atomic: 398, workflow: 9, orchestrator: 8}</span>，
+                    当前没有真实落地的 <span class="mono">policy</span> 层计数。
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="mono">bio-agent 已有完整项目管理与 LiteFold 桥接</span></td>
+                  <td>不成立</td>
+                  <td>
+                    <span class="mono">scripts/project.py</span> 依赖缺失的
+                    <span class="mono">lib.create_project</span> 和
+                    <span class="mono">lib.workspace_env</span>；
+                    <span class="mono">scripts/litefold.py</span> 依赖缺失的
+                    <span class="mono">lib.litefold_bridge</span>。
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="mono">ClawBio = 39 个完整 Python 实现技能</span></td>
+                  <td>不准确</td>
+                  <td>
+                    本地克隆里实际有 41 个 skill 目录；其中 11 个没有
+                    <span class="mono">tests/</span>，7 个目录里没有
+                    <span class="mono">.py</span> 实现。
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="mono">LabClaw = MIT，240+ 技能，Markdown + Python</span></td>
+                  <td>部分成立，但许可证与 Python 说法要降级</td>
+                  <td>
+                    240 个 <span class="mono">SKILL.md</span> 属实，但本地仓库没有
+                    <span class="mono">LICENSE</span> 文件；
+                    本地 <span class="mono">.py</span> 数量为 0，更准确的说法是“技能文档库”。
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="mono">报告未覆盖 OpenBioMed</span></td>
+                  <td>需要补审</td>
+                  <td>
+                    OpenBioMed 是这组对比里执行后端价值最高的一个，但不是最稳的调度框架；
+                    原报告缺这一块，会直接误导分层判断。
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" id="repo-bio-agent">
+          <h2>bio-agent：真实定位与边界</h2>
+          <div class="metric-grid">
+            <div class="metric">
+              <div class="value">415</div>
+              <div class="label">递归扫描到的 SKILL.md 数</div>
+            </div>
+            <div class="metric">
+              <div class="value">398</div>
+              <div class="label">动态归类 atomic</div>
+            </div>
+            <div class="metric">
+              <div class="value">9</div>
+              <div class="label">动态归类 workflow</div>
+            </div>
+            <div class="metric">
+              <div class="value">8</div>
+              <div class="label">动态归类 orchestrator</div>
+            </div>
+            <div class="metric">
+              <div class="value">0</div>
+              <div class="label">动态归类 policy</div>
+            </div>
+          </div>
+
+          <div class="section-grid" style="margin-top: 16px">
+            <div>
+              <h3>代码直接支持的判断</h3>
+              <ul class="flat">
+                <li>
+                  控制面骨架是真实存在的。
+                  <span class="mono">lib/bio_skill_system.py</span> 里有 request 构建、tag 推断、
+                  workflow 匹配、候选 plan 生成、plan 审批等核心流程。
+                </li>
+                <li>
+                  “让用户先看 plan，再选 conservative / efficient” 这件事是真实现，不是口号。
+                </li>
+                <li>
+                  技能总量 415 成立，但这 415 主要是 skill 文档入口，不等于 415 个 Python 执行模块。
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3>工程缺口</h3>
+              <ul class="flat">
+                <li>
+                  <span class="mono">scripts/project.py</span> 当前直接导入缺失模块，属于坏入口。
+                </li>
+                <li>
+                  <span class="mono">scripts/litefold.py</span> 当前也直接导入缺失模块，桥接层未闭合。
+                </li>
+                <li>
+                  “4 层架构”更多是目标设计，不是已经完全落地的本地 runtime reality。
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top: 16px">
+            <strong>一句话定位</strong>
+            它最适合做你的 <span class="mono">control plane</span>：负责接自然语言需求、生成候选 plan、等待用户选择与修改、再推进执行。
+            但它不应该独自承担所有生物信息执行能力。
+          </div>
+        </section>
+
+        <section class="panel" id="repo-clawbio">
+          <h2>ClawBio：真实定位与边界</h2>
+          <div class="metric-grid">
+            <div class="metric">
+              <div class="value">41</div>
+              <div class="label">本地 skill 目录数</div>
+            </div>
+            <div class="metric">
+              <div class="value">11</div>
+              <div class="label">无 tests/ 的 skill 目录</div>
+            </div>
+            <div class="metric">
+              <div class="value">7</div>
+              <div class="label">无 .py 实现的 skill 目录</div>
+            </div>
+            <div class="metric">
+              <div class="value">3</div>
+              <div class="label">CI Python 版本矩阵</div>
+            </div>
+            <div class="metric">
+              <div class="value">MIT</div>
+              <div class="label">本地 LICENSE 可见</div>
+            </div>
+          </div>
+
+          <div class="section-grid" style="margin-top: 16px">
+            <div>
+              <h3>代码直接支持的判断</h3>
+              <ul class="flat">
+                <li>
+                  工程纪律明显强于另外三个。仓库有
+                  <span class="mono">.github/workflows/ci.yml</span>，会跑 CLI、多个技能测试和 benchmark。
+                </li>
+                <li>
+                  可复现性不是空喊。公共报告工具会计算输入文件 SHA-256，
+                  写统一的 <span class="mono">result.json</span> 包络，并且有对应测试。
+                </li>
+                <li>
+                  23andMe / AncestryDNA 解析器和 bot 接入是真代码，不是只在 README 里写。
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3>需要降级的说法</h3>
+              <ul class="flat">
+                <li>
+                  README 写 39 skills，但本地克隆是 41 个目录，说明对外数字已过时。
+                </li>
+                <li>
+                  不能说“每个 skill 都是完整 Python 实现并有测试”。
+                  更准确的说法是：大多数核心 skill 已工程化，但不是全覆盖。
+                </li>
+                <li>
+                  它不是总调度框架，更像产品化较好的 skill 库 + 通用公共组件。
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top: 16px">
+            <strong>一句话定位</strong>
+            它最适合做你的 <span class="mono">production-grade skill layer</span> 参考样板，尤其是可复现性包、报告结构、CI 和本地数据处理这几块。
+          </div>
+        </section>
+
+        <section class="panel" id="repo-labclaw">
+          <h2>LabClaw：真实定位与边界</h2>
+          <div class="metric-grid">
+            <div class="metric">
+              <div class="value">240</div>
+              <div class="label">SKILL.md 数量</div>
+            </div>
+            <div class="metric">
+              <div class="value">0</div>
+              <div class="label">本地 .py 数量</div>
+            </div>
+            <div class="metric">
+              <div class="value">0</div>
+              <div class="label">本地执行引擎文件</div>
+            </div>
+            <div class="metric">
+              <div class="value">7</div>
+              <div class="label">README 展示的技能大类</div>
+            </div>
+            <div class="metric">
+              <div class="value">?</div>
+              <div class="label">许可证在本地仓库未落地</div>
+            </div>
+          </div>
+
+          <div class="section-grid" style="margin-top: 16px">
+            <div>
+              <h3>代码直接支持的判断</h3>
+              <ul class="flat">
+                <li>
+                  它作为大型技能知识库是成立的，README 的 240 skills 量级与本地目录一致。
+                </li>
+                <li>
+                  它的价值主要在覆盖面、术语路由、领域提示和工具使用说明。
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3>需要降级的说法</h3>
+              <ul class="flat">
+                <li>
+                  不能把它评价成“执行系统”或“实验自动化平台本体”。
+                  本地仓库里看不到对应 Python 执行层。
+                </li>
+                <li>
+                  README 有 MIT badge，但本地克隆没有 <span class="mono">LICENSE</span> 文件，许可证结论不能直接采信。
+                </li>
+                <li>
+                  更准确的说法是：它是知识层，不是运行时层。
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top: 16px">
+            <strong>一句话定位</strong>
+            它适合做你的 <span class="mono">knowledge / prompt layer</span>，不适合直接承担 execution backend 或 control plane。
+          </div>
+        </section>
+
+        <section class="panel" id="repo-openbiomed">
+          <h2>OpenBioMed：真实定位与边界</h2>
+          <div class="metric-grid">
+            <div class="metric">
+              <div class="value">45</div>
+              <div class="label">skills/ 下 SKILL.md 数量</div>
+            </div>
+            <div class="metric">
+              <div class="value">36</div>
+              <div class="label">tool_registry 暴露的 tool key 数</div>
+            </div>
+            <div class="metric">
+              <div class="value">118</div>
+              <div class="label">open_biomed/ 下 .py 数量</div>
+            </div>
+            <div class="metric">
+              <div class="value">2</div>
+              <div class="label">tests/test_*.py 数量</div>
+            </div>
+            <div class="metric">
+              <div class="value">1</div>
+              <div class="label">memory/workflows 本地工作流数</div>
+            </div>
+          </div>
+
+          <div class="section-grid" style="margin-top: 16px">
+            <div>
+              <h3>代码直接支持的判断</h3>
+              <ul class="flat">
+                <li>
+                  它不是纯技能库。仓库里有真实 Python 包、tool registry、inference pipeline、FastAPI 服务和 workflow/agent 抽象。
+                </li>
+                <li>
+                  README 里的 “45 skills / 20+ tools” 基本属实，而且 tools 实际暴露数达到 36。
+                </li>
+                <li>
+                  技能层和本地 toolkit 是耦合的，不是完全分离的 prompt 仓。
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3>高风险问题</h3>
+              <ul class="flat">
+                <li>
+                  <span class="mono">run_server_workflow.py</span> 当前直接导入不存在的
+                  <span class="mono">ReportGeneratorSBDD</span> /
+                  <span class="mono">ReportGeneratorGeneral</span>，工作流服务本地不可导入。
+                </li>
+                <li>
+                  <span class="mono">agent.py</span> 有
+                  <span class="mono">create_subprocess_shell</span>、
+                  可变默认参数和未完成的 docker 执行 stub。
+                </li>
+                <li>
+                  <span class="mono">pipeline.py</span> 和可视化代码里有直接
+                  <span class="mono">os.system("rm ...")</span> 这类粗放调用。
+                </li>
+                <li>
+                  测试和打包链不稳：<span class="mono">setup.py</span> 的
+                  <span class="mono">install_requires</span> 为空，而运行测试又依赖
+                  <span class="mono">rdkit</span> 等重依赖。
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top: 16px">
+            <strong>一句话定位</strong>
+            它最适合做你的 <span class="mono">biomedical execution backend</span>：
+            模型、工具、分子/蛋白/单细胞执行能力都更厚，但它不是最稳的通用审批式调度器。
+          </div>
+
+          <div class="table-wrap" style="margin-top: 16px">
+            <table>
+              <thead>
+                <tr>
+                  <th>README claim</th>
+                  <th>代码审计结论</th>
+                  <th>备注</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>45 skills</td>
+                  <td>成立</td>
+                  <td>本地计数与 <span class="mono">skills_overview.md</span> 一致。</td>
+                </tr>
+                <tr>
+                  <td>20+ tools</td>
+                  <td>成立，且偏保守</td>
+                  <td>本地 registry 暴露 36 个 tool key。</td>
+                </tr>
+                <tr>
+                  <td>Agent platform</td>
+                  <td>部分成立</td>
+                  <td>有 agent/workflow 抽象，但 workflow server 自身存在导入断裂。</td>
+                </tr>
+                <tr>
+                  <td>可作为通用调度框架</td>
+                  <td>不宜直接这么说</td>
+                  <td>真实更像 biomedical toolkit + skills layer + 研究型执行器。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" id="comparison">
+          <h2>横向对比：如果目标是“有机的高效生物信息 skill 系统”</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>维度</th>
+                  <th>bio-agent</th>
+                  <th>ClawBio</th>
+                  <th>LabClaw</th>
+                  <th>OpenBioMed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>通用控制面</td>
+                  <td>强</td>
+                  <td>中</td>
+                  <td>弱</td>
+                  <td>中</td>
+                </tr>
+                <tr>
+                  <td>用户选 plan 后再执行</td>
+                  <td>最贴近目标</td>
+                  <td>不是主卖点</td>
+                  <td>不具备</td>
+                  <td>有雏形但不够稳</td>
+                </tr>
+                <tr>
+                  <td>生物医药执行后端厚度</td>
+                  <td>中</td>
+                  <td>中高</td>
+                  <td>低</td>
+                  <td>最高</td>
+                </tr>
+                <tr>
+                  <td>skill 文档覆盖</td>
+                  <td>高</td>
+                  <td>中</td>
+                  <td>最高</td>
+                  <td>高</td>
+                </tr>
+                <tr>
+                  <td>工程纪律 / CI / 测试</td>
+                  <td>中低</td>
+                  <td>最高</td>
+                  <td>低</td>
+                  <td>中低</td>
+                </tr>
+                <tr>
+                  <td>本地可复现性设计</td>
+                  <td>中</td>
+                  <td>强</td>
+                  <td>弱</td>
+                  <td>中</td>
+                </tr>
+                <tr>
+                  <td>最适合承担的层</td>
+                  <td>Control Plane</td>
+                  <td>Executable Skill Layer</td>
+                  <td>Knowledge Layer</td>
+                  <td>Execution Backend</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" id="architecture">
+          <h2>推荐融合架构：四仓不该互相替代，而该分层组合</h2>
+
+          <div class="stack">
+            <div class="band">
+              <header>Layer 1: 用户交互与计划确认</header>
+              Web UI / Chat UI。展示候选 plan、允许用户选择、编辑、批准、暂停、恢复。
+            </div>
+            <div class="band">
+              <header>Layer 2: Control Plane</header>
+              用 <span class="mono">bio-agent</span> 的 request normalization、workflow matching、
+              candidate plan generation、approval state 作为主控制面。
+            </div>
+            <div class="band">
+              <header>Layer 3: Skill Routing + Knowledge</header>
+              让 <span class="mono">ClawBio</span> 和 <span class="mono">OpenBioMed</span> 的真实可执行能力进入统一 skill registry；
+              让 <span class="mono">LabClaw</span> 主要提供领域提示、术语路由、工具说明和长尾任务模板。
+            </div>
+            <div class="band">
+              <header>Layer 4: Execution Backend</header>
+              以 <span class="mono">OpenBioMed</span> 承担模型/分子/蛋白/单细胞执行，
+              以 <span class="mono">ClawBio</span> 承担面向具体技能的产品化执行和报告输出，
+              必要时再桥接系统工具、Galaxy 或外部科学软件。
+            </div>
+            <div class="band">
+              <header>Layer 5: Provenance / Report / Replay</header>
+              借鉴 <span class="mono">ClawBio</span> 的 checksum + result.json + report.md 思路，
+              给每次 agent 执行保留输入摘要、命令、环境、关键中间件和可复跑证据。
+            </div>
+          </div>
+
+          <div class="flow" style="margin-top: 18px">
+            <div class="node">
+              <strong>Web UI</strong>
+              自然语言需求
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>bio-agent</strong>
+              plan 生成 / 选择 / 审批
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>Skill Router</strong>
+              选 ClawBio / OpenBioMed / 系统工具
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>Execution</strong>
+              tool / model / workflow
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>Evidence Bundle</strong>
+              report / checksum / trace
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top: 16px">
+            <strong>关键原则</strong>
+            不要让一个仓库同时承担“计划审批 + 知识层 + 执行后端 + 报告可复现”全部职责。
+            这四块在当前现实代码里分散在不同仓库上，强行一把梭会把系统做成又重又不稳。
+          </div>
+        </section>
+
+        <section class="panel" id="workflow">
+          <h2>你要的主流程，应该长这样</h2>
+          <p class="lede">
+            下面这个流程是基于四仓真实长板拼出来的，不是抄任何一个仓库现状。
+          </p>
+
+          <div class="flow">
+            <div class="node">
+              <strong>1. 用户需求</strong>
+              自然语言输入
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>2. 请求规范化</strong>
+              tags / constraints / inputs
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>3. 产出候选 plans</strong>
+              conservative / efficient / domain-specific
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>4. 用户选择或编辑</strong>
+              审批、删改、补充约束
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>5. 编译成执行图</strong>
+              stage → skill → backend
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>6. 执行与检查点</strong>
+              中间结果、失败重试、人工插入
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <strong>7. 产出报告</strong>
+              结果、证据、复跑包
+            </div>
+          </div>
+
+          <div class="section-grid" style="margin-top: 18px">
+            <div class="tile">
+              <strong>应该来自 bio-agent 的部分</strong>
+              request schema、routing rules、candidate plans、approval state、run state。
+            </div>
+            <div class="tile">
+              <strong>应该来自 ClawBio 的部分</strong>
+              统一报告结构、checksum、result envelope、测试习惯、面向具体技能的可执行模板。
+            </div>
+            <div class="tile">
+              <strong>应该来自 LabClaw 的部分</strong>
+              长尾技能知识、术语表、研究任务提示模板，不直接负责执行。
+            </div>
+            <div class="tile">
+              <strong>应该来自 OpenBioMed 的部分</strong>
+              分子/蛋白/单细胞/数据库工具与模型执行后端。
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="next-steps">
+          <h2>下一步建议</h2>
+          <ol class="flat">
+            <li>
+              先把 <span class="mono">bio-agent</span> 固化成统一控制面协议：
+              <span class="mono">Request → CandidatePlans → ApprovedPlan → ExecutionGraph → RunTrace → EvidenceBundle</span>。
+            </li>
+            <li>
+              给 <span class="mono">ClawBio</span> 和 <span class="mono">OpenBioMed</span> 各写一层 adapter，
+              统一输入输出，而不是让上层 UI 直接调用它们内部对象。
+            </li>
+            <li>
+              把 <span class="mono">LabClaw</span> 转成可检索知识库或 routing hints，不要把它误当执行引擎。
+            </li>
+            <li>
+              引入统一 provenance 规范：至少要有 <span class="mono">report.md</span>、
+              <span class="mono">result.json</span>、输入摘要、校验和、关键命令或 workflow dump。
+            </li>
+            <li>
+              在真正做大规模集成前，先挑两个高价值路径打样：
+              <span class="mono">RNA-seq</span> 和 <span class="mono">target-based lead design</span>。
+              这两条一条偏传统生信，一条偏药物发现，足够把控制面与执行层打通。
+            </li>
+          </ol>
+        </section>
+
+        <section class="panel" id="evidence">
+          <h2>证据附录</h2>
+          <p class="footnote">
+            这里只列这次判断最关键的文件。
+            本地直接打开时会跳到绝对路径；部署到 GitHub Pages 后会自动跳到对应源码页。
+          </p>
+
+          <details open>
+            <summary>bio-agent 关键证据</summary>
+            <div class="evidence-list" style="margin-top: 12px">
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Projects/bio-agent/lib/bio_skill_system.py"
+                  data-repo-path="lib/bio_skill_system.py"
+                ><code>/home/vimalinx/Projects/bio-agent/lib/bio_skill_system.py</code></a><br />
+                request 构建、workflow 匹配、候选 plan 生成、审批状态变更。
+              </div>
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Projects/bio-agent/scripts/skills/export_skill_registry.py"
+                  data-repo-path="scripts/skills/export_skill_registry.py"
+                ><code>/home/vimalinx/Projects/bio-agent/scripts/skills/export_skill_registry.py</code></a><br />
+                动态 skill 递归扫描与 layer 推断逻辑；实测导出 415，layer_counts 无 policy。
+              </div>
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Projects/bio-agent/scripts/project.py"
+                  data-repo-path="scripts/project.py"
+                ><code>/home/vimalinx/Projects/bio-agent/scripts/project.py</code></a><br />
+                直接导入缺失的 <span class="mono">lib.create_project</span> 和 <span class="mono">lib.workspace_env</span>。
+              </div>
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Projects/bio-agent/scripts/litefold.py"
+                  data-repo-path="scripts/litefold.py"
+                ><code>/home/vimalinx/Projects/bio-agent/scripts/litefold.py</code></a><br />
+                直接导入缺失的 <span class="mono">lib.litefold_bridge</span>。
+              </div>
+            </div>
+          </details>
+
+          <details>
+            <summary>ClawBio 关键证据</summary>
+            <div class="evidence-list" style="margin-top: 12px">
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Projects/bio-agent/reference/ClawBio/.github/workflows/ci.yml"
+                  data-repo-path="reference/ClawBio/.github/workflows/ci.yml"
+                ><code>/home/vimalinx/Projects/bio-agent/reference/ClawBio/.github/workflows/ci.yml</code></a><br />
+                多 Python 版本 CI、CLI smoke test、多个 skill 测试与 benchmark。
+              </div>
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Projects/bio-agent/reference/ClawBio/clawbio/common/report.py"
+                  data-repo-path="reference/ClawBio/clawbio/common/report.py"
+                ><code>/home/vimalinx/Projects/bio-agent/reference/ClawBio/clawbio/common/report.py</code></a><br />
+                统一报告头、checksum 写入、result.json 包络。
+              </div>
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Projects/bio-agent/reference/ClawBio/clawbio/tests/test_report.py"
+                  data-repo-path="reference/ClawBio/clawbio/tests/test_report.py"
+                ><code>/home/vimalinx/Projects/bio-agent/reference/ClawBio/clawbio/tests/test_report.py</code></a><br />
+                对 checksum 与 result envelope 的测试。
+              </div>
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Projects/bio-agent/reference/ClawBio/clawbio/common/parsers.py"
+                  data-repo-path="reference/ClawBio/clawbio/common/parsers.py"
+                ><code>/home/vimalinx/Projects/bio-agent/reference/ClawBio/clawbio/common/parsers.py</code></a><br />
+                23andMe / AncestryDNA / MyHeritage / VCF 真实解析器。
+              </div>
+            </div>
+          </details>
+
+          <details>
+            <summary>LabClaw 关键证据</summary>
+            <div class="evidence-list" style="margin-top: 12px">
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Projects/bio-agent/reference/LabClaw/README.md"
+                  data-repo-path="reference/LabClaw/README.md"
+                ><code>/home/vimalinx/Projects/bio-agent/reference/LabClaw/README.md</code></a><br />
+                自述为 skill library；README badge 标 MIT，但本地无 LICENSE 文件。
+              </div>
+              <div class="evidence-item">
+                <code>/home/vimalinx/Projects/bio-agent/reference/LabClaw/skills/**/SKILL.md</code><br />
+                本地统计 240 个 <span class="mono">SKILL.md</span>，0 个 <span class="mono">.py</span>。
+              </div>
+            </div>
+          </details>
+
+          <details>
+            <summary>OpenBioMed 关键证据</summary>
+            <div class="evidence-list" style="margin-top: 12px">
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Programs/OpenBioMed/open_biomed/tools/tool_registry.py"
+                  data-repo-path=""
+                ><code>/home/vimalinx/Programs/OpenBioMed/open_biomed/tools/tool_registry.py</code></a><br />
+                本地 tool registry 暴露 36 个 tool key，且与 inference pipeline 绑定。
+              </div>
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Programs/OpenBioMed/open_biomed/core/agent.py"
+                  data-repo-path=""
+                ><code>/home/vimalinx/Programs/OpenBioMed/open_biomed/core/agent.py</code></a><br />
+                PlannerExecutor、subprocess shell、mutable default、未完成 docker exec stub。
+              </div>
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Programs/OpenBioMed/open_biomed/core/workflow.py"
+                  data-repo-path=""
+                ><code>/home/vimalinx/Programs/OpenBioMed/open_biomed/core/workflow.py</code></a><br />
+                有 DAG workflow runtime，但本地 <span class="mono">memory/workflows</span> 仅 1 个文件。
+              </div>
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Programs/OpenBioMed/open_biomed/scripts/run_server_workflow.py"
+                  data-repo-path=""
+                ><code>/home/vimalinx/Programs/OpenBioMed/open_biomed/scripts/run_server_workflow.py</code></a><br />
+                直接导入不存在的 <span class="mono">ReportGeneratorSBDD</span> /
+                <span class="mono">ReportGeneratorGeneral</span>。
+              </div>
+              <div class="evidence-item">
+                <a
+                  data-local-path="/home/vimalinx/Programs/OpenBioMed/setup.py"
+                  data-repo-path=""
+                ><code>/home/vimalinx/Programs/OpenBioMed/setup.py</code></a>
+                与
+                <a
+                  data-local-path="/home/vimalinx/Programs/OpenBioMed/requirements.txt"
+                  data-repo-path=""
+                ><code>/home/vimalinx/Programs/OpenBioMed/requirements.txt</code></a><br />
+                打包依赖声明为空，但运行测试依赖重型科学栈。
+              </div>
+            </div>
+          </details>
+        </section>
+      </main>
+    </div>
+    <script>
+      (function () {
+        var isLocal = window.location.protocol === "file:";
+        var host = window.location.hostname || "";
+        var owner = host.endsWith(".github.io") ? host.replace(".github.io", "") : "";
+        var pathParts = window.location.pathname.split("/").filter(Boolean);
+        var repo = owner && pathParts.length > 0 ? pathParts[0] : "";
+        var repoBase = owner && repo ? "https://github.com/" + owner + "/" + repo + "/blob/main/" : "";
+
+        document.querySelectorAll("a[data-local-path]").forEach(function (link) {
+          var localPath = link.getAttribute("data-local-path");
+          var repoPath = link.getAttribute("data-repo-path");
+          if (isLocal || !repoBase || !repoPath) {
+            link.href = "file://" + localPath;
+          } else {
+            link.href = repoBase + repoPath;
+            link.target = "_blank";
+            link.rel = "noreferrer";
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

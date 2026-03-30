@@ -1,0 +1,105 @@
+# multi-bam-cov Help Reference
+
+- Command: `multiBamCov`
+- Sources: conda_bioconda
+- Local executable: `/home/vimalinx/miniforge3/envs/bio/bin/multiBamCov`
+- Summary: CLI installed by bioconda package bedtools.
+- Package names: bedtools
+
+## Captured Version
+
+```text
+$ multiBamCov --version
+*****ERROR: Unrecognized parameter: --version *****
+
+
+Tool:    bedtools multicov (aka multiBamCov)
+Version: v2.31.1
+Summary: Counts sequence coverage for multiple bams at specific loci.
+
+Usage:   bedtools multicov [OPTIONS] -bams aln.1.bam aln.2.bam ... aln.n.bam -bed <bed/gff/vcf>
+
+Options: 
+	-bams	The bam files.
+
+	-bed	The bed file.
+
+	-split	Treat "split" BAM or BED12 entries as distinct BED intervals.
+
+	-s	Require same strandedness.  That is, only report hits in B
+		that overlap A on the _same_ strand.
+		- By default, overlaps are reported without respect to strand.
+
+	-S	Require different strandedness.  That is, only report hits in B
+		that overlap A on the _opposite_ strand.
+		- By default, overlaps are reported without respect to strand.
+
+	-f	Minimum overlap required as a fraction of each -bed record.
+		- Default is 1E-9 (i.e., 1bp).
+		- FLOAT (e.g. 0.50)
+
+	-r	Require that the fraction overlap be reciprocal for each -bed and B.
+		- In other words, if -f is 0.90 and -r is used, this requires
+		  that B overlap 90% of each -bed and the -bed record _also_ overlaps 90% of B.
+
+	-q	Minimum mapping quality allowed. Default is 0.
+
+	-D	Include duplicate reads.  Default counts non-duplicates only
+
+	-F	Include failed-QC reads.  Default counts pass-QC reads only
+
+	-p	Only count proper pairs.  Default counts all alignments with
+		MAPQ > -q argument, regardless of the BAM FLAG field.
+```
+
+## Captured Help
+
+```text
+$ multiBamCov --help
+*****ERROR: Unrecognized parameter: --help *****
+
+
+Tool:    bedtools multicov (aka multiBamCov)
+Version: v2.31.1
+Summary: Counts sequence coverage for multiple bams at specific loci.
+
+Usage:   bedtools multicov [OPTIONS] -bams aln.1.bam aln.2.bam ... aln.n.bam -bed <bed/gff/vcf>
+
+Options: 
+	-bams	The bam files.
+
+	-bed	The bed file.
+
+	-split	Treat "split" BAM or BED12 entries as distinct BED intervals.
+
+	-s	Require same strandedness.  That is, only report hits in B
+		that overlap A on the _same_ strand.
+		- By default, overlaps are reported without respect to strand.
+
+	-S	Require different strandedness.  That is, only report hits in B
+		that overlap A on the _opposite_ strand.
+		- By default, overlaps are reported without respect to strand.
+
+	-f	Minimum overlap required as a fraction of each -bed record.
+		- Default is 1E-9 (i.e., 1bp).
+		- FLOAT (e.g. 0.50)
+
+	-r	Require that the fraction overlap be reciprocal for each -bed and B.
+		- In other words, if -f is 0.90 and -r is used, this requires
+		  that B overlap 90% of each -bed and the -bed record _also_ overlaps 90% of B.
+
+	-q	Minimum mapping quality allowed. Default is 0.
+
+	-D	Include duplicate reads.  Default counts non-duplicates only
+
+	-F	Include failed-QC reads.  Default counts pass-QC reads only
+
+	-p	Only count proper pairs.  Default counts all alignments with
+		MAPQ > -q argument, regardless of the BAM FLAG field.
+```
+
+## Captured Man Page
+
+```text
+No man page captured.
+```

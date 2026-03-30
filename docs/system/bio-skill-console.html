@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bio Skill System Control Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #fcfaf7;
+        --surface: #ffffff;
+        --surface-alt: #f4eee8;
+        --surface-strong: #efe4d6;
+        --line: #dfd4c8;
+        --text: #451a03;
+        --muted: #7c5a46;
+        --primary: #b45309;
+        --accent: #0f766e;
+        --warning: #9a3412;
+        --success: #166534;
+        --radius: 12px;
+        --shadow: 0 3px 12px rgba(69, 26, 3, 0.08);
+        --content-width: 1380px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at top right, rgba(217, 119, 6, 0.12), transparent 28%),
+          linear-gradient(180deg, #faf6f0 0%, #fcfaf7 100%);
+        color: var(--text);
+        font-family: "IBM Plex Sans", sans-serif;
+        line-height: 1.55;
+      }
+
+      a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      code,
+      pre {
+        font-family: "IBM Plex Mono", monospace;
+      }
+
+      .shell {
+        max-width: var(--content-width);
+        margin: 0 auto;
+        padding: 28px 24px 56px;
+        display: grid;
+        gap: 22px;
+      }
+
+      .hero,
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
+
+      .hero {
+        padding: 28px;
+        display: grid;
+        gap: 18px;
+      }
+
+      .eyebrow {
+        color: var(--primary);
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      h1 {
+        font-size: 2.2rem;
+      }
+
+      h2 {
+        font-size: 1.35rem;
+        margin-bottom: 14px;
+      }
+
+      h3 {
+        font-size: 1rem;
+        margin-bottom: 8px;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .hero-grid,
+      .summary-grid,
+      .split-grid,
+      .metric-grid,
+      .plan-grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .hero-grid {
+        grid-template-columns: 1.4fr 1fr;
+      }
+
+      .summary-grid,
+      .metric-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .split-grid {
+        grid-template-columns: 1.1fr 0.9fr;
+      }
+
+      .plan-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .tile,
+      .metric,
+      .plan-card,
+      .json-card,
+      .command-card {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface-alt);
+      }
+
+      .tile,
+      .metric,
+      .plan-card,
+      .json-card {
+        padding: 16px;
+      }
+
+      .tile strong,
+      .metric strong,
+      .plan-card strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .hero-note {
+        color: var(--muted);
+        max-width: 62rem;
+      }
+
+      .hero-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .button-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--surface-alt);
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .button-link.primary {
+        background: var(--text);
+        color: #fff9f3;
+        border-color: var(--text);
+      }
+
+      .panel {
+        padding: 22px 24px;
+      }
+
+      .metric .value {
+        font-size: 1.7rem;
+        font-weight: 700;
+      }
+
+      .metric .label,
+      .muted {
+        color: var(--muted);
+      }
+
+      .command-lane {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .command-card {
+        padding: 16px;
+        background: linear-gradient(180deg, #fffdf9 0%, #f7f1ea 100%);
+      }
+
+      .command-card code {
+        display: block;
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #fff9f0;
+        border: 1px solid var(--line);
+        white-space: pre-wrap;
+      }
+
+      .badge-row,
+      .chip-row,
+      .tab-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .badge,
+      .chip,
+      .json-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: #fffdf9;
+        font-size: 0.9rem;
+      }
+
+      .badge.status-paused {
+        color: var(--warning);
+        border-color: rgba(154, 52, 18, 0.22);
+        background: rgba(154, 52, 18, 0.08);
+      }
+
+      .badge.status-completed {
+        color: var(--success);
+        border-color: rgba(22, 101, 52, 0.22);
+        background: rgba(22, 101, 52, 0.08);
+      }
+
+      .badge.status-pending {
+        color: var(--primary);
+        border-color: rgba(180, 83, 9, 0.18);
+        background: rgba(180, 83, 9, 0.08);
+      }
+
+      .badge.resolution-open {
+        color: var(--warning);
+      }
+
+      .badge.resolution-resolved {
+        color: var(--success);
+      }
+
+      .plan-card.recommended {
+        border-color: rgba(15, 118, 110, 0.3);
+        box-shadow: inset 0 0 0 1px rgba(15, 118, 110, 0.12);
+      }
+
+      .plan-card header,
+      .tile header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .stage-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .stage-table th,
+      .stage-table td {
+        padding: 12px 10px;
+        text-align: left;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+
+      .stage-table th {
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .issue-box,
+      .next-action,
+      .warning-box {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 14px 16px;
+      }
+
+      .issue-box,
+      .warning-box {
+        background: rgba(154, 52, 18, 0.06);
+        border-color: rgba(154, 52, 18, 0.18);
+      }
+
+      .next-action {
+        background: rgba(15, 118, 110, 0.06);
+        border-color: rgba(15, 118, 110, 0.18);
+      }
+
+      .json-tab {
+        cursor: pointer;
+      }
+
+      .json-tab.active {
+        background: var(--text);
+        color: #fff9f3;
+        border-color: var(--text);
+      }
+
+      .json-viewer {
+        min-height: 340px;
+        margin-top: 14px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fffdf9;
+        overflow: auto;
+      }
+
+      .json-viewer pre {
+        margin: 0;
+        font-size: 0.9rem;
+      }
+
+      .footer-note {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .loading,
+      .error {
+        padding: 18px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+      }
+
+      .loading {
+        background: var(--surface-alt);
+      }
+
+      .error {
+        background: rgba(154, 52, 18, 0.08);
+        border-color: rgba(154, 52, 18, 0.18);
+      }
+
+      @media (max-width: 1080px) {
+        .hero-grid,
+        .split-grid,
+        .summary-grid,
+        .metric-grid,
+        .plan-grid,
+        .command-lane {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <section class="hero">
+        <div class="eyebrow">Bio Agent / Runtime Console</div>
+        <div class="hero-grid">
+          <div>
+            <h1>Bio Skill System Control Console</h1>
+            <p class="hero-note">
+              这是一个静态但可读的控制台原型，用真实 CLI 输出把
+              <code>request -&gt; plans -&gt; approved plan -&gt; draft -&gt; run-status -&gt; run-review</code>
+              这条主链直接摊开。它的目标不是替代真正的前端，而是把当前控制平面讲清楚。
+            </p>
+          </div>
+          <div class="tile">
+            <strong>这一页适合看什么</strong>
+            <div class="badge-row">
+              <span class="badge">计划对比怎么给用户看</span>
+              <span class="badge">阶段状态如何落到 run</span>
+              <span class="badge">暂停点怎么解释</span>
+              <span class="badge">下一动作怎么给 agent</span>
+              <span class="badge">什么时候应该继续或先卡住</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-links">
+          <a class="button-link primary" href="bio-skill-system.html">查看总架构页</a>
+          <a class="button-link" href="#json-inspector">查看结构化数据</a>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>运行摘要</h2>
+        <div id="summary-root" class="summary-grid">
+          <div class="loading">Loading demo bundle...</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>命令链路</h2>
+        <div class="command-lane">
+          <div class="command-card">
+            <strong>1. 计划阶段</strong>
+            用户需求先归一化，再给两个方案做 trade-off。
+            <code>propose
+review
+approve
+edit</code>
+          </div>
+          <div class="command-card">
+            <strong>2. 执行准备</strong>
+            已批准 plan 冻结下来，再展开成候选 skill 草稿。
+            <code>draft
+run-init</code>
+          </div>
+          <div class="command-card">
+            <strong>3. 运行阶段</strong>
+            单 stage 推进，必要时暂停，再给人或 agent 一个可读摘要。
+            <code>run-next-stage
+run-pause
+run-resume
+run-status
+run-review</code>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>候选 Plan 对比</h2>
+        <div id="plan-root" class="plan-grid"></div>
+      </section>
+
+      <section class="panel">
+        <h2>批准 Plan 与当前执行位点</h2>
+        <div class="split-grid">
+          <div>
+            <table class="stage-table">
+              <thead>
+                <tr>
+                  <th>Stage</th>
+                  <th>Goal</th>
+                  <th>Status</th>
+                  <th>Confirm</th>
+                  <th>Skills</th>
+                </tr>
+              </thead>
+              <tbody id="stage-table-body"></tbody>
+            </table>
+          </div>
+          <div class="stack">
+            <div class="warning-box" id="draft-warning"></div>
+            <div class="issue-box" id="latest-issue"></div>
+            <div class="next-action" id="next-action"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Run Status 读法</h2>
+        <div id="metric-root" class="metric-grid"></div>
+        <div style="margin-top: 16px" class="split-grid">
+          <div class="tile">
+            <strong>为什么现在会停在这里</strong>
+            <p id="pause-explanation" class="muted"></p>
+          </div>
+          <div class="tile">
+            <strong>这一步应该怎么继续</strong>
+            <p id="resume-explanation" class="muted"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Run Review 审查面</h2>
+        <div class="split-grid">
+          <div class="tile">
+            <strong>Verdict</strong>
+            <div id="review-verdict" style="margin-bottom: 10px"></div>
+            <p id="review-summary" class="muted"></p>
+          </div>
+          <div class="tile">
+            <strong>Current Stage Review</strong>
+            <div id="review-current-stage" class="muted"></div>
+          </div>
+        </div>
+        <div style="margin-top: 16px" class="split-grid">
+          <div class="issue-box" id="review-blockers"></div>
+          <div class="warning-box" id="review-future"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="json-inspector">
+        <h2>结构化数据检查器</h2>
+        <div class="tab-row" id="json-tabs"></div>
+        <div class="json-viewer">
+          <pre id="json-output"></pre>
+        </div>
+      </section>
+
+      <p class="footer-note">
+        数据源: <code>docs/system/data/bio-skill-console-demo.json</code>。这个样本使用当前控制平面的真实命令流生成，不是手写的 UI 假数据。
+      </p>
+    </div>
+
+    <script>
+      const badgeClass = (status) => {
+        const value = String(status || "").toLowerCase();
+        if (value === "completed") return "badge status-completed";
+        if (value === "paused") return "badge status-paused";
+        return "badge status-pending";
+      };
+
+      const jsonTabs = [
+        ["request", "Request"],
+        ["review", "Review"],
+        ["approved_plan", "Approved Plan"],
+        ["execution_draft", "Execution Draft"],
+        ["run_state", "Run State"],
+        ["run_status", "Run Status"],
+        ["run_review", "Run Review"]
+      ];
+
+      function renderSummary(data) {
+        const root = document.getElementById("summary-root");
+        const summaryItems = [
+          {
+            title: "Request Goal",
+            value: data.request.user_goal,
+            detail: data.request.request_tags.join(" / ")
+          },
+          {
+            title: "Recommended Plan",
+            value: data.review.recommended_plan_id,
+            detail: data.review.rationale
+          },
+          {
+            title: "Run Status",
+            value: data.run_status.status,
+            detail: `current_stage=${data.run_status.current_stage}`
+          },
+          {
+            title: "Next Action",
+            value: data.run_status.next_action,
+            detail: `resume_from=${data.run_status.resume_from}`
+          }
+        ];
+
+        root.innerHTML = summaryItems
+          .map(
+            (item) => `
+              <div class="tile">
+                <strong>${item.title}</strong>
+                <div>${item.value}</div>
+                <div class="muted" style="margin-top:8px">${item.detail}</div>
+              </div>
+            `
+          )
+          .join("");
+      }
+
+      function renderPlans(data) {
+        const root = document.getElementById("plan-root");
+        root.innerHTML = data.candidate_plans
+          .map(
+            (plan) => `
+              <article class="plan-card ${plan.recommended ? "recommended" : ""}">
+                <header>
+                  <div>
+                    <strong>${plan.strategy_type}</strong>
+                    <div class="muted">${plan.plan_id}</div>
+                  </div>
+                  <span class="badge ${plan.recommended ? "status-completed" : "status-pending"}">
+                    ${plan.recommended ? "recommended" : "alternative"}
+                  </span>
+                </header>
+                <p>${plan.summary}</p>
+                <div class="badge-row" style="margin-top:12px">
+                  <span class="badge">stages ${plan.stage_count}</span>
+                  <span class="badge">risks ${plan.risk_count}</span>
+                  <span class="badge">manual confirmations ${plan.manual_confirmations}</span>
+                  <span class="badge">time ${plan.estimated_cost.time}</span>
+                  <span class="badge">compute ${plan.estimated_cost.compute}</span>
+                </div>
+              </article>
+            `
+          )
+          .join("");
+      }
+
+      function renderStages(data) {
+        const body = document.getElementById("stage-table-body");
+        const draftMap = new Map(
+          data.execution_draft.stages.map((stage) => [stage.stage_id, stage.candidate_skill_refs])
+        );
+
+        body.innerHTML = data.approved_plan.stages
+          .map((stage) => {
+            const stageStatus = data.run_state.stage_status[stage.stage_id] || "pending";
+            const skillRefs = draftMap.get(stage.stage_id) || [];
+            const unresolvedCount = skillRefs.filter((item) => !item.resolved).length;
+            return `
+              <tr>
+                <td>
+                  <strong>${stage.stage_id}</strong>
+                  <div class="muted">${stage.name}</div>
+                </td>
+                <td>${stage.goal}</td>
+                <td><span class="${badgeClass(stageStatus)}">${stageStatus}</span></td>
+                <td>${stage.requires_user_confirmation ? "yes" : "no"}</td>
+                <td>
+                  <div class="chip-row">
+                    ${skillRefs
+                      .map(
+                        (item) => `
+                          <span class="chip">
+                            ${item.id}
+                            <span class="${item.resolved ? "badge resolution-resolved" : "badge resolution-open"}">
+                              ${item.resolved ? item.layer : "unresolved"}
+                            </span>
+                          </span>
+                        `
+                      )
+                      .join("")}
+                  </div>
+                  ${
+                    unresolvedCount
+                      ? `<div class="muted" style="margin-top:8px">unresolved ${unresolvedCount}</div>`
+                      : ""
+                  }
+                </td>
+              </tr>
+            `;
+          })
+          .join("");
+
+        const unresolved = data.execution_draft.unresolved_skill_ids;
+        document.getElementById("draft-warning").innerHTML = `
+          <strong>Draft Resolution Check</strong>
+          ${
+            unresolved.length
+              ? `<p>当前 draft 还有未解析 skill: <code>${unresolved.join(", ")}</code>。这正好说明控制台为什么需要把草稿质量暴露出来。</p>`
+              : "<p>当前 draft 的 skill refs 都已解析。</p>"
+          }
+        `;
+
+        const latestIssue = data.run_status.latest_issue;
+        document.getElementById("latest-issue").innerHTML = `
+          <strong>Latest Issue</strong>
+          <p>${latestIssue.message}</p>
+          <div class="muted" style="margin-top:8px">stage=${latestIssue.stage} / severity=${latestIssue.severity}</div>
+        `;
+
+        document.getElementById("next-action").innerHTML = `
+          <strong>Next Action</strong>
+          <p>${data.run_status.next_action}</p>
+          <div class="muted" style="margin-top:8px">resume_from=${data.run_status.resume_from}</div>
+        `;
+      }
+
+      function renderMetrics(data) {
+        const metrics = [
+          ["Total Stages", data.run_status.progress.total],
+          ["Completed", data.run_status.progress.completed],
+          ["Pending", data.run_status.progress.pending],
+          ["Current Stage", data.run_status.current_stage]
+        ];
+        document.getElementById("metric-root").innerHTML = metrics
+          .map(
+            ([label, value]) => `
+              <div class="metric">
+                <strong>${label}</strong>
+                <div class="value">${value}</div>
+              </div>
+            `
+          )
+          .join("");
+
+        document.getElementById("pause-explanation").textContent =
+          "现在停在 s2，不是因为系统坏了，而是 conservative plan 明确要求在高计算量的 alignment 阶段前停一下，等待确认。";
+        document.getElementById("resume-explanation").textContent =
+          "控制台不需要重新推理整份 plan，只要读取 run-status 给出的 next_action，就知道应该确认并恢复 s2。";
+      }
+
+      function renderRunReview(data) {
+        const review = data.run_review;
+        document.getElementById("review-verdict").innerHTML = `
+          <span class="${badgeClass(review.status)}">${review.status}</span>
+          <span class="badge">${review.verdict}</span>
+        `;
+        document.getElementById("review-summary").textContent = review.summary;
+        document.getElementById("review-current-stage").innerHTML = `
+          <div><strong>${review.current_stage_review.stage_id}</strong> / ${review.current_stage_review.name}</div>
+          <div style="margin-top:8px">confirmation_required=${review.current_stage_review.confirmation_required}</div>
+          <div style="margin-top:8px">candidate_skills=${review.current_stage_review.candidate_skills.join(", ")}</div>
+          <div style="margin-top:8px">recorded_validations=${Object.keys(review.current_stage_review.recorded_validations).length}</div>
+        `;
+
+        document.getElementById("review-blockers").innerHTML = `
+          <strong>Blocking Issues</strong>
+          ${
+            review.blocking_issues.length
+              ? `<ul>${review.blocking_issues
+                  .map((item) => `<li>${item.type}: ${item.message}</li>`)
+                  .join("")}</ul>`
+              : "<p>No blocking issues.</p>"
+          }
+        `;
+
+        document.getElementById("review-future").innerHTML = `
+          <strong>Future Issues</strong>
+          ${
+            review.future_issues.length
+              ? `<ul>${review.future_issues
+                  .map((item) => `<li>${item.type}: ${item.message}</li>`)
+                  .join("")}</ul>`
+              : "<p>No future issues.</p>"
+          }
+        `;
+      }
+
+      function renderJsonInspector(data) {
+        const tabRoot = document.getElementById("json-tabs");
+        const output = document.getElementById("json-output");
+        const state = { currentKey: "run_status" };
+
+        function refresh() {
+          output.textContent = JSON.stringify(data[state.currentKey], null, 2);
+          [...tabRoot.querySelectorAll(".json-tab")].forEach((button) => {
+            button.classList.toggle("active", button.dataset.key === state.currentKey);
+          });
+        }
+
+        tabRoot.innerHTML = jsonTabs
+          .map(
+            ([key, label]) => `
+              <button class="json-tab" type="button" data-key="${key}">
+                ${label}
+              </button>
+            `
+          )
+          .join("");
+
+        tabRoot.addEventListener("click", (event) => {
+          const button = event.target.closest(".json-tab");
+          if (!button) return;
+          state.currentKey = button.dataset.key;
+          refresh();
+        });
+
+        refresh();
+      }
+
+      async function main() {
+        try {
+          const response = await fetch("data/bio-skill-console-demo.json");
+          if (!response.ok) {
+            throw new Error(`Failed to load demo bundle: ${response.status}`);
+          }
+          const data = await response.json();
+          renderSummary(data);
+          renderPlans(data);
+          renderStages(data);
+          renderMetrics(data);
+          renderRunReview(data);
+          renderJsonInspector(data);
+        } catch (error) {
+          document.getElementById("summary-root").innerHTML = `
+            <div class="error">
+              <strong>Failed to load demo bundle.</strong>
+              <div style="margin-top:8px">${String(error.message || error)}</div>
+            </div>
+          `;
+        }
+      }
+
+      main();
+    </script>
+  </body>
+</html>

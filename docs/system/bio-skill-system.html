@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bio Skill System V1 Architecture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #faf8f5;
+        --surface: #ffffff;
+        --surface-alt: #f4eee8;
+        --line: #dfd4c8;
+        --text: #451a03;
+        --muted: #7c5a46;
+        --primary: #b45309;
+        --secondary: #d97706;
+        --accent: #0f766e;
+        --warning: #9a3412;
+        --radius: 10px;
+        --shadow: 0 2px 8px rgba(69, 26, 3, 0.08);
+        --content-width: 1320px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "IBM Plex Sans", sans-serif;
+        line-height: 1.55;
+      }
+
+      a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .shell {
+        max-width: var(--content-width);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 252px minmax(0, 1fr);
+        gap: 24px;
+        padding: 24px;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 16px;
+        align-self: start;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 20px 18px;
+      }
+
+      .sidebar h2 {
+        margin: 0 0 14px;
+        font-size: 1rem;
+      }
+
+      .nav {
+        display: grid;
+        gap: 8px;
+      }
+
+      .nav a {
+        display: block;
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--text);
+      }
+
+      .nav a:hover {
+        background: var(--surface-alt);
+        text-decoration: none;
+      }
+
+      .meta {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
+      .content {
+        display: grid;
+        gap: 20px;
+      }
+
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 24px 26px;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0 0 12px;
+        line-height: 1.2;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      h2 {
+        font-size: 1.32rem;
+      }
+
+      h3 {
+        font-size: 1.02rem;
+      }
+
+      p {
+        margin: 0 0 12px;
+      }
+
+      .intro-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .tile {
+        border: 1px solid var(--line);
+        background: var(--surface-alt);
+        border-radius: 8px;
+        padding: 16px;
+      }
+
+      .tile strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .section-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .list {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.96rem;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+        padding: 10px 12px;
+      }
+
+      th {
+        font-weight: 600;
+      }
+
+      .code {
+        margin: 0;
+        white-space: pre;
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        background: #fffdf9;
+        border-radius: 8px;
+        padding: 14px 16px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .diagram {
+        display: grid;
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 10px;
+      }
+
+      .band {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+        background: #fffdfa;
+      }
+
+      .band header {
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chip {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 7px 10px;
+        background: var(--surface-alt);
+      }
+
+      .flow-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .node {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fffdf9;
+        padding: 10px 12px;
+        min-width: 140px;
+      }
+
+      .node strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .arrow {
+        color: var(--muted);
+        font-family: "IBM Plex Mono", monospace;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .tree {
+        display: grid;
+        gap: 12px;
+      }
+
+      .tree-root {
+        border: 1px solid var(--primary);
+        background: #fff4ea;
+        color: var(--text);
+        border-radius: 8px;
+        padding: 12px;
+        font-weight: 600;
+      }
+
+      .tree-children {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .tree-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+        background: #fffdf9;
+      }
+
+      .tree-card ul {
+        margin: 10px 0 0;
+        padding-left: 18px;
+      }
+
+      .contrast {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .contrast-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px;
+        background: #fffdf9;
+      }
+
+      .contrast-card header {
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .status-loop {
+        display: grid;
+        gap: 10px;
+      }
+
+      .stage-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
+
+      .accent {
+        border-left: 4px solid var(--accent);
+        padding-left: 12px;
+      }
+
+      .warning {
+        border-left: 4px solid var(--warning);
+        padding-left: 12px;
+      }
+
+      @media (max-width: 1040px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+        }
+
+        .intro-grid,
+        .section-grid,
+        .split,
+        .tree-children,
+        .contrast {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <h2>Bio Skill System V1</h2>
+        <nav class="nav">
+          <a href="#summary">概览</a>
+          <a href="bio-skill-console.html">运行控制台</a>
+          <a href="#objects">核心对象</a>
+          <a href="#layers">分层架构</a>
+          <a href="#lifecycle">请求到执行流程</a>
+          <a href="#taxonomy">Skill 分类</a>
+          <a href="#contract">Plan 与 Run</a>
+          <a href="#orchestrator">Orchestrator Skills</a>
+          <a href="#loop">半自动执行循环</a>
+          <a href="#runtime">运行链路</a>
+          <a href="#structure">目录结构</a>
+          <a href="#deliverables">V1 交付物</a>
+        </nav>
+        <div class="meta">
+          <div>适用范围: v1 通用调度骨架</div>
+          <div>执行模式: 半自动</div>
+          <div>运行载体: 本地 skill 仓 + agent 提示编排</div>
+        </div>
+      </aside>
+
+      <main class="content">
+        <section class="panel" id="summary">
+          <h1>Bio Skill System V1 Architecture</h1>
+          <p>
+            这一页把 v1 生物信息 skill 系统的控制层讲清楚。目标不是先把所有生信
+            workflow 做完，而是先把自然语言需求、候选 plan、用户确认、skill
+            路由、阶段执行、暂停恢复这条主链跑通。
+          </p>
+          <p class="accent">
+            核心原则是 <strong>plan-first orchestration</strong>。用户先确认 plan，
+            agent 再执行 plan 的展开版，而不是拿到需求后临场 improvisation。
+          </p>
+          <div class="intro-grid">
+            <div class="tile">
+              <strong>系统中心</strong>
+              自然语言需求先进入调度层，变成多个可比对的 plan，之后才进入实际 skill
+              执行。
+            </div>
+            <div class="tile">
+              <strong>v1 边界</strong>
+              先打透通用调度框架，不先绑定 RNA-seq、结构预测或数据库检索中的某一个。
+            </div>
+            <div class="tile">
+              <strong>运行方式</strong>
+              本地 skill 仓为能力底座，agent 提示编排负责控制流，后续再决定是否抽象成
+              MCP 层。
+            </div>
+            <div class="tile">
+              <strong>默认执行策略</strong>
+              半自动。每个阶段结束都可汇报，遇到高风险、外部依赖、大计算或覆盖写入时停下确认。
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="objects">
+          <h2>核心对象</h2>
+          <div class="section-grid">
+            <div class="tile">
+              <strong>Request</strong>
+              用户的自然语言需求和上下文。它是归一化前的意图入口，也是整个系统的输入合同。
+            </div>
+            <div class="tile">
+              <strong>Plan</strong>
+              由系统生成的候选方案。用户比较、修改、选择、确认的对象。确认后，它变成执行合同。
+            </div>
+            <div class="tile">
+              <strong>Skill</strong>
+              最小能力单元。它可以是单工具、工作流模板、控制器行为或审查逻辑，但边界必须清晰。
+            </div>
+            <div class="tile">
+              <strong>Workflow</strong>
+              由多个 skill 组成的可复用组合。它承接常见分析路径，但不代替 orchestrator。
+            </div>
+            <div class="tile">
+              <strong>Run</strong>
+              一次被批准 plan 的具体执行实例。它记录阶段状态、人工决策、产物、问题和恢复点。
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="layers">
+          <h2>分层架构</h2>
+          <p>
+            当前仓库最强的是 skill 存量，不是 orchestration。v1 要加上的，是一层明确的控制平面。
+          </p>
+          <div class="diagram stack">
+            <div class="band">
+              <header>Layer 1: User Intent</header>
+              <div class="chip-row">
+                <div class="chip">自然语言需求</div>
+                <div class="chip">输入文件路径</div>
+                <div class="chip">物种与参考信息</div>
+                <div class="chip">输出目标与约束</div>
+              </div>
+            </div>
+            <div class="band">
+              <header>Layer 2: Orchestrator Control Plane</header>
+              <div class="chip-row">
+                <div class="chip">Request Normalizer</div>
+                <div class="chip">Candidate Plan Generator</div>
+                <div class="chip">Plan Comparator</div>
+                <div class="chip">Skill Router</div>
+                <div class="chip">Execution Guard</div>
+                <div class="chip">Run Reviewer</div>
+              </div>
+            </div>
+            <div class="band">
+              <header>Layer 3: Workflow Skills</header>
+              <div class="chip-row">
+                <div class="chip">RNA-seq Pipeline</div>
+                <div class="chip">Protein Structure</div>
+                <div class="chip">Sequence Analysis</div>
+                <div class="chip">Literature Review</div>
+              </div>
+            </div>
+            <div class="band">
+              <header>Layer 4: Atomic and Policy Skills</header>
+              <div class="chip-row">
+                <div class="chip">blastn</div>
+                <div class="chip">samtools</div>
+                <div class="chip">bedtools</div>
+                <div class="chip">RNAfold</div>
+                <div class="chip">input-audit</div>
+                <div class="chip">env-check</div>
+                <div class="chip">artifact-validator</div>
+              </div>
+            </div>
+            <div class="band">
+              <header>Layer 5: Registry and Schemas</header>
+              <div class="chip-row">
+                <div class="chip">skills.yaml</div>
+                <div class="chip">workflows.yaml</div>
+                <div class="chip">routing_rules.yaml</div>
+                <div class="chip">request.schema.json</div>
+                <div class="chip">plan.schema.json</div>
+                <div class="chip">run.schema.json</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="lifecycle">
+          <h2>请求到执行流程</h2>
+          <p>
+            用户真正控制的是 plan，不是命令。系统真正执行的是已批准 plan 的阶段展开版。
+          </p>
+          <div class="diagram">
+            <div class="flow-line">
+              <div class="node">
+                <strong>1. Request</strong>
+                用户提交自然语言需求
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>2. Normalize</strong>
+                提取输入、目标、约束、缺口
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>3. Generate Plans</strong>
+                生成至少两个候选方案
+              </div>
+            </div>
+            <div class="flow-line">
+              <div class="node">
+                <strong>4. User Review</strong>
+                选择、删减、重排或改写 plan
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>5. Approve</strong>
+                plan 进入 approved 状态
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>6. Expand Draft</strong>
+                生成分阶段执行清单
+              </div>
+            </div>
+            <div class="flow-line">
+              <div class="node">
+                <strong>7. Route Skills</strong>
+                每阶段映射候选 skill 集
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>8. Execute Stage</strong>
+                半自动执行并产出 artifact
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>9. Validate + Save Run</strong>
+                校验产物并记录恢复点
+              </div>
+            </div>
+            <div class="flow-line">
+              <div class="node">
+                <strong>10. Resume or Deliver</strong>
+                继续下一阶段，或中断后恢复
+              </div>
+            </div>
+          </div>
+          <div class="legend">
+            <div>至少两个候选 plan: conservative, efficient</div>
+            <div>可选第三个: exploratory</div>
+            <div>默认每阶段结束就可汇报</div>
+          </div>
+        </section>
+
+        <section class="panel" id="taxonomy">
+          <h2>Skill 分类</h2>
+          <p>
+            这一步是把“很多 skill”变成“可调度系统”。v1 不先修全量，而是先形成可用核心集。
+          </p>
+          <div class="tree">
+            <div class="tree-root">bio-skill-system</div>
+            <div class="tree-children">
+              <div class="tree-card">
+                <strong>orchestrator</strong>
+                <ul>
+                  <li>负责 plan、路由、执行控制和恢复</li>
+                  <li>面向系统行为，不面向单一工具</li>
+                </ul>
+              </div>
+              <div class="tree-card">
+                <strong>workflow</strong>
+                <ul>
+                  <li>封装多步组合任务</li>
+                  <li>复用高频分析骨架</li>
+                </ul>
+              </div>
+              <div class="tree-card">
+                <strong>atomic</strong>
+                <ul>
+                  <li>单工具、单动作、单边界</li>
+                  <li>输入输出和副作用必须明确</li>
+                </ul>
+              </div>
+              <div class="tree-card">
+                <strong>policy</strong>
+                <ul>
+                  <li>环境检查、输入审计、产物验证</li>
+                  <li>给执行加安全和质量约束</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="warning" style="margin-top: 16px">
+            当前仓库中的大量 CLI help 型 skill 应优先归为 atomic，不应该继续平铺在系统最外层。
+          </div>
+        </section>
+
+        <section class="panel" id="contract">
+          <h2>Plan 与 Run 的关系</h2>
+          <p>
+            `Plan` 是用户确认的执行合同，`Run` 是执行后的轨迹。它们不能混在一起。
+          </p>
+          <div class="contrast">
+            <div class="contrast-card">
+              <header>Plan</header>
+              <ul class="list">
+                <li>plan_id, request_id, title, summary</li>
+                <li>strategy_type, assumptions, prerequisites</li>
+                <li>expected_outputs, risks, estimated_cost</li>
+                <li>stages: goal, candidate_skills, validation</li>
+                <li>approval_state: draft / selected / approved</li>
+              </ul>
+            </div>
+            <div class="contrast-card">
+              <header>Run</header>
+              <ul class="list">
+                <li>run_id, plan_id, request_id, status</li>
+                <li>current_stage, stage_status</li>
+                <li>stage_order, stage_context</li>
+                <li>validation_results by stage</li>
+                <li>artifacts and artifact paths</li>
+                <li>decisions and issues</li>
+                <li>resume_from, last_update</li>
+              </ul>
+            </div>
+          </div>
+          <div class="flow-line" style="margin-top: 16px">
+            <div class="node">
+              <strong>Plan Approved</strong>
+              执行合同被冻结
+            </div>
+            <div class="arrow">-&gt;</div>
+            <div class="node">
+              <strong>Run Created</strong>
+              产生具体执行实例
+            </div>
+            <div class="arrow">-&gt;</div>
+            <div class="node">
+              <strong>Pause / Resume</strong>
+              通过 run state 恢复，而不是重想 plan
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="orchestrator">
+          <h2>Orchestrator Skills</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Skill</th>
+                  <th>责任</th>
+                  <th>输入</th>
+                  <th>输出</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>request-normalizer</td>
+                  <td>把自然语言请求整理成结构化 request</td>
+                  <td>用户需求、上下文</td>
+                  <td>request object</td>
+                </tr>
+                <tr>
+                  <td>candidate-plan-generator</td>
+                  <td>生成至少两个候选方案</td>
+                  <td>request object</td>
+                  <td>candidate plans</td>
+                </tr>
+                <tr>
+                  <td>plan-comparator</td>
+                  <td>解释方案差异与 trade-off</td>
+                  <td>candidate plans</td>
+                  <td>review view</td>
+                </tr>
+                <tr>
+                  <td>plan-editor</td>
+                  <td>把用户修改并入 plan</td>
+                  <td>selected plan, user edits</td>
+                  <td>updated plan</td>
+                </tr>
+                <tr>
+                  <td>skill-router</td>
+                  <td>按阶段映射候选 workflow 与 atomic skills</td>
+                  <td>approved plan</td>
+                  <td>execution draft</td>
+                </tr>
+                <tr>
+                  <td>execution-guard</td>
+                  <td>决定哪些动作必须停下来确认</td>
+                  <td>stage, risk metadata</td>
+                  <td>go / pause / escalate</td>
+                </tr>
+                <tr>
+                  <td>stage-reviewer</td>
+                  <td>检查阶段输出是否满足验证条件</td>
+                  <td>artifacts, validation rules</td>
+                  <td>stage verdict</td>
+                </tr>
+                <tr>
+                  <td>run-resumer</td>
+                  <td>从已有 run state 恢复执行</td>
+                  <td>run object</td>
+                  <td>resume context</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" id="loop">
+          <h2>半自动执行循环</h2>
+          <p>
+            半自动不是“总要人工点下一步”，而是“默认继续，但在关键节点停下”。执行控制应该是状态机，不是聊天里的临时判断。
+          </p>
+          <div class="status-loop">
+            <div class="stage-row">
+              <div class="node">
+                <strong>Stage Ready</strong>
+                prerequisites 满足
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>Risk Check</strong>
+                下载 / 覆盖 / 大计算 / 外部依赖
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>Execute</strong>
+                调 workflow 或 atomic skills
+              </div>
+            </div>
+            <div class="stage-row">
+              <div class="node">
+                <strong>Validate</strong>
+                检查 artifact 与 stage validation
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>Save Run</strong>
+                写入状态、产物、决策、问题
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>Report</strong>
+                汇报本阶段结果与下一步
+              </div>
+            </div>
+            <div class="stage-row">
+              <div class="node">
+                <strong>Continue</strong>
+                进入下一阶段
+              </div>
+              <div class="arrow">or</div>
+              <div class="node">
+                <strong>Pause</strong>
+                等用户确认
+              </div>
+              <div class="arrow">or</div>
+              <div class="node">
+                <strong>Resume Later</strong>
+                从 run state 恢复
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="runtime">
+          <h2>当前可运行链路</h2>
+          <p>
+            v1 现在已经有一条能实际跑通的 CLI 主链，不只是概念图。当前重点不是把所有生信 workflow
+            做满，而是先把 plan 审批后如何进入 run state、如何按阶段推进、如何暂停恢复这条骨架稳定下来。
+          </p>
+          <div class="diagram">
+            <div class="flow-line">
+              <div class="node">
+                <strong>Planning</strong>
+                <code>propose -&gt; review -&gt; approve</code>
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>Adjust</strong>
+                <code>edit</code> 可选，用于改风险与确认点
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>Expand</strong>
+                <code>draft</code> 生成阶段执行草稿
+              </div>
+            </div>
+            <div class="flow-line">
+              <div class="node">
+                <strong>Run Init</strong>
+                <code>run-init</code> 冻结第一份 run state
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>Advance</strong>
+                <code>run-next-stage</code> 推进一个 stage
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>Hold / Resume</strong>
+                <code>run-pause</code> 或 <code>run-resume</code>
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>Inspect</strong>
+                <code>run-status</code> 看当前暂停点和下一动作
+              </div>
+              <div class="arrow">-&gt;</div>
+              <div class="node">
+                <strong>Review</strong>
+                <code>run-review</code> 看阻塞点、未来风险和是否可继续
+              </div>
+            </div>
+          </div>
+          <div class="legend">
+            <div>confirmation 阶段默认先进入 paused，显式 <code>--confirm</code> 后再执行。</div>
+            <div>每次 stage 推进会写入 <code>validation_results</code>、<code>artifacts</code> 和 <code>resume_from</code>。</div>
+            <div><code>run-status</code> 输出当前 stage、进度分组、最近问题和建议下一动作。</div>
+            <div><code>run-review</code> 输出当前 run 的 verdict、blocking issues 和 future issues。</div>
+            <div>当前本地验证已覆盖 `pytest` 回归与 RNA-seq smoke run。</div>
+          </div>
+        </section>
+
+        <section class="panel" id="structure">
+          <h2>目标目录结构</h2>
+          <pre class="code">bio-agent/
+├── .claude/
+│   ├── agents/
+│   └── skills/
+│       ├── atomic/
+│       ├── workflow/
+│       ├── orchestrator/
+│       └── policy/
+├── registry/
+│   ├── skills.yaml
+│   ├── workflows.yaml
+│   └── routing_rules.yaml
+├── schemas/
+│   ├── request.schema.json
+│   ├── plan.schema.json
+│   └── run.schema.json
+├── examples/
+│   ├── requests/
+│   ├── plans/
+│   └── runs/
+└── docs/
+    ├── plans/
+    └── system/</pre>
+        </section>
+
+        <section class="panel" id="deliverables">
+          <h2>V1 交付物</h2>
+          <div class="split">
+            <div class="tile">
+              <strong>必须先有</strong>
+              request / plan / run schema，skill registry，workflow registry，routing rules。
+            </div>
+            <div class="tile">
+              <strong>必须先能解释</strong>
+              为什么选这个 plan、为什么走这组 skill、为什么在这里暂停。
+            </div>
+            <div class="tile">
+              <strong>必须先能恢复</strong>
+              任意阶段中断后，系统都能从 run state 恢复，而不是重新生成一遍。
+            </div>
+          </div>
+          <p style="margin-top: 16px">
+            这个页面对应的设计文档位于
+            <code>docs/plans/2026-03-29-bio-skill-system-design.md</code>，
+            实施计划位于
+            <code>docs/plans/2026-03-29-bio-skill-system-implementation.md</code>。
+            如果你想直接在浏览器里看 request、plan、run-status、run-review 的控制台原型，可以打开
+            <a href="bio-skill-console.html"><code>docs/system/bio-skill-console.html</code></a>。
+          </p>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

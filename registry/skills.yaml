@@ -1,0 +1,77 @@
+version: 1
+description: Seed registry for the Bio Skill System local project.
+
+layers:
+  - id: atomic
+    purpose: Single tool or single action skill with explicit input and output boundaries.
+  - id: workflow
+    purpose: Reusable multi-step analysis or task template composed from atomic skills.
+  - id: orchestrator
+    purpose: Control-plane skills that normalize requests, generate plans, route execution, and resume runs.
+  - id: policy
+    purpose: Guardrails, validation, and review checkpoints applied around execution.
+
+skills:
+  - id: request-normalizer
+    layer: orchestrator
+    path: .claude/skills/orchestrator/request-normalizer/SKILL.md
+    inputs: [natural_language_request, optional_context]
+    outputs: [request_object]
+    risk_level: low
+    confirm_required: false
+
+  - id: candidate-plan-generator
+    layer: orchestrator
+    path: .claude/skills/orchestrator/candidate-plan-generator/SKILL.md
+    inputs: [request_object]
+    outputs: [candidate_plans]
+    risk_level: low
+    confirm_required: false
+
+  - id: plan-comparator
+    layer: orchestrator
+    path: .claude/skills/orchestrator/plan-comparator/SKILL.md
+    inputs: [candidate_plans]
+    outputs: [comparison_view]
+    risk_level: low
+    confirm_required: false
+
+  - id: plan-editor
+    layer: orchestrator
+    path: .claude/skills/orchestrator/plan-editor/SKILL.md
+    inputs: [selected_plan, user_edits]
+    outputs: [updated_plan]
+    risk_level: low
+    confirm_required: true
+
+  - id: skill-router
+    layer: orchestrator
+    path: .claude/skills/orchestrator/skill-router/SKILL.md
+    inputs: [approved_plan, registry_metadata]
+    outputs: [execution_draft]
+    risk_level: medium
+    confirm_required: false
+
+  - id: execution-guard
+    layer: orchestrator
+    path: .claude/skills/orchestrator/execution-guard/SKILL.md
+    inputs: [stage_definition, risk_metadata]
+    outputs: [go_pause_or_escalate]
+    risk_level: medium
+    confirm_required: false
+
+  - id: stage-reviewer
+    layer: orchestrator
+    path: .claude/skills/orchestrator/stage-reviewer/SKILL.md
+    inputs: [artifacts, validation_rules]
+    outputs: [stage_verdict]
+    risk_level: low
+    confirm_required: false
+
+  - id: run-resumer
+    layer: orchestrator
+    path: .claude/skills/orchestrator/run-resumer/SKILL.md
+    inputs: [run_state]
+    outputs: [resume_context]
+    risk_level: low
+    confirm_required: false

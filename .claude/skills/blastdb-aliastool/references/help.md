@@ -1,0 +1,105 @@
+# blastdb-aliastool Help Reference
+
+- Command: `blastdb_aliastool`
+- Sources: conda_bioconda
+- Local executable: `/home/vimalinx/miniforge3/envs/bio/bin/blastdb_aliastool`
+- Summary: CLI installed by bioconda package blast.
+- Package names: blast
+
+## Captured Version
+
+```text
+$ blastdb_aliastool --version
+USAGE
+  blastdb_aliastool [-h] [-help] [-gi_file_in input_file]
+    [-gi_file_out output_file] [-db dbname] [-dbtype molecule_type]
+    [-title database_title] [-gilist input_file] [-seqidlist input_file]
+    [-taxidlist input_file] [-oid_masks oid_masks] [-out database_name]
+    [-dblist database_names] [-dblist_file file_name] [-vdblist vdb_names]
+    [-vdblist_file file_name] [-num_volumes positive_integer]
+    [-seqid_file_in input_file] [-seqid_title seqid_title]
+    [-seqid_file_out output_file] [-seqid_db dbname]
+    [-seqid_dbtype molecule_type] [-seqid_file_info seqid_file_info]
+    [-logfile File_Name] [-version]
+
+DESCRIPTION
+   Application to create BLAST database aliases, version 2.17.0+
+   
+   This application has three modes of operation:
+   
+   1) GI file conversion:
+      Converts a text file containing GIs (one per line) to a more efficient
+      binary format. This can be provided as an argument to the -gilist option
+      of the BLAST search command line binaries or to the -gilist option of
+      this program to create an alias file for a BLAST database (see below).
+   
+   2) Alias file creation (restricting with GI List or Sequence ID List):
+      Creates an alias for a BLAST database and a GI or ID list which
+      restricts this database. This is useful if one often searches a subset
+      of a database (e.g., based on organism or a curated list). The alias
+      file makes the search appear as if one were searching a regular BLAST
+      database rather than the subset of one.
+   
+   3) Alias file creation (aggregating BLAST databases):
+      Creates an alias for multiple BLAST databases. All databases must be of
+      the same molecule type (no validation is done). The relevant options are
+      -dblist and -num_volumes.
+
+Use '-help' to print detailed descriptions of command line arguments
+========================================================================
+
+Error: Unknown argument: "-version"
+Error:  (CArgException::eInvalidArg) Unknown argument: "-version"
+```
+
+## Captured Help
+
+```text
+$ blastdb_aliastool --help
+USAGE
+  blastdb_aliastool [-h] [-help] [-gi_file_in input_file]
+    [-gi_file_out output_file] [-db dbname] [-dbtype molecule_type]
+    [-title database_title] [-gilist input_file] [-seqidlist input_file]
+    [-taxidlist input_file] [-oid_masks oid_masks] [-out database_name]
+    [-dblist database_names] [-dblist_file file_name] [-vdblist vdb_names]
+    [-vdblist_file file_name] [-num_volumes positive_integer]
+    [-seqid_file_in input_file] [-seqid_title seqid_title]
+    [-seqid_file_out output_file] [-seqid_db dbname]
+    [-seqid_dbtype molecule_type] [-seqid_file_info seqid_file_info]
+    [-logfile File_Name] [-version]
+
+DESCRIPTION
+   Application to create BLAST database aliases, version 2.17.0+
+   
+   This application has three modes of operation:
+   
+   1) GI file conversion:
+      Converts a text file containing GIs (one per line) to a more efficient
+      binary format. This can be provided as an argument to the -gilist option
+      of the BLAST search command line binaries or to the -gilist option of
+      this program to create an alias file for a BLAST database (see below).
+   
+   2) Alias file creation (restricting with GI List or Sequence ID List):
+      Creates an alias for a BLAST database and a GI or ID list which
+      restricts this database. This is useful if one often searches a subset
+      of a database (e.g., based on organism or a curated list). The alias
+      file makes the search appear as if one were searching a regular BLAST
+      database rather than the subset of one.
+   
+   3) Alias file creation (aggregating BLAST databases):
+      Creates an alias for multiple BLAST databases. All databases must be of
+      the same molecule type (no validation is done). The relevant options are
+      -dblist and -num_volumes.
+
+Use '-help' to print detailed descriptions of command line arguments
+========================================================================
+
+Error: Unknown argument: "-help"
+Error:  (CArgException::eInvalidArg) Unknown argument: "-help"
+```
+
+## Captured Man Page
+
+```text
+No man page captured.
+```

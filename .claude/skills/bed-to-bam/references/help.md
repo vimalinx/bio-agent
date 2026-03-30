@@ -1,0 +1,73 @@
+# bed-to-bam Help Reference
+
+- Command: `bedToBam`
+- Sources: conda_bioconda
+- Local executable: `/home/vimalinx/miniforge3/envs/bio/bin/bedToBam`
+- Summary: CLI installed by bioconda package bedtools.
+- Package names: bedtools
+
+## Captured Version
+
+```text
+$ bedToBam --version
+*****ERROR: Unrecognized parameter: --version *****
+
+
+*****
+*****ERROR: Need -g (genome) file. 
+*****
+
+Tool:    bedtools bedtobam (aka bedToBam)
+Version: v2.31.1
+Summary: Converts feature records to BAM format.
+
+Usage:   bedtools bedtobam [OPTIONS] -i <bed/gff/vcf> -g <genome>
+
+Options: 
+	-mapq	Set the mappinq quality for the BAM records.
+		(INT) Default: 255
+
+	-bed12	The BED file is in BED12 format.  The BAM CIGAR
+		string will reflect BED "blocks".
+
+	-ubam	Write uncompressed BAM output. Default writes compressed BAM.
+
+Notes: 
+	(1)  BED files must be at least BED4 to create BAM (needs name field).
+```
+
+## Captured Help
+
+```text
+$ bedToBam --help
+*****ERROR: Unrecognized parameter: --help *****
+
+
+*****
+*****ERROR: Need -g (genome) file. 
+*****
+
+Tool:    bedtools bedtobam (aka bedToBam)
+Version: v2.31.1
+Summary: Converts feature records to BAM format.
+
+Usage:   bedtools bedtobam [OPTIONS] -i <bed/gff/vcf> -g <genome>
+
+Options: 
+	-mapq	Set the mappinq quality for the BAM records.
+		(INT) Default: 255
+
+	-bed12	The BED file is in BED12 format.  The BAM CIGAR
+		string will reflect BED "blocks".
+
+	-ubam	Write uncompressed BAM output. Default writes compressed BAM.
+
+Notes: 
+	(1)  BED files must be at least BED4 to create BAM (needs name field).
+```
+
+## Captured Man Page
+
+```text
+No man page captured.
+```

@@ -1,0 +1,367 @@
+# subjunc Help Reference
+
+- Command: `subjunc`
+- Sources: conda_bioconda
+- Local executable: `/home/vimalinx/miniforge3/envs/bio/bin/subjunc`
+- Summary: CLI installed by bioconda package subread.
+- Package names: subread
+
+## Captured Version
+
+```text
+$ subjunc --version
+subjunc: unrecognized option '--version'
+
+Version 2.1.1
+
+Usage:
+
+ ./subjunc [options] -i <index_name> -r <input> -o <output>
+
+## Mandatory arguments:
+
+  -i <index>        Base name of the index.
+
+  -r <string>       Name of an input read file. If paired-end, this should be
+                    the first read file (typically containing "R1"in the file
+                    name) and the second should be provided via "-R".
+                    Acceptable formats include gzipped FASTQ, FASTQ, gzipped
+                    FASTA and FASTA.
+                    These formats are identified automatically.
+
+## Optional arguments:
+# input reads and output
+    
+  -o <string>       Name of an output file. By default, the output is in BAM
+                    format. Omitting this option makes the output be written to
+                    STDOUT.
+
+  -R <string>       Name of the second read file in paired-end data (typically
+                    containing "R2" the file name).
+
+  --SAMinput        Input reads are in SAM format.
+
+  --BAMinput        Input reads are in BAM format.
+
+  --SAMoutput       Save mapping results in SAM format.
+
+# Phred offset
+
+  -P <3:6>          Offset value added to the Phred quality score of each read
+                    base. '3' for phred+33 and '6' for phred+64. '3' by default.
+
+# thresholds for mapping
+
+  -n <int>          Number of selected subreads, 14 by default.
+
+  -m <int>          Consensus threshold for reporting a hit (minimal number of
+                    subreads that map in consensus) . If paired-end, this gives
+                    the consensus threshold for the anchor read (anchor read
+                    receives more votes than the other read in the same pair).
+                    1 by default.
+
+  -p <int>          Consensus threshold for the non- anchor read in a pair. 1 by
+                    default.
+
+  -M <int>          Maximum number of mis-matched bases allowed in each reported
+                    alignment. 3 by default. Mis-matched bases found in soft-
+                    clipped bases are not counted.
+
+# unique mapping and multi-mapping
+
+  --multiMapping    Report multi-mapping reads in addition to uniquely mapped
+                    reads. Use "-B" to set the maximum number of equally-best
+                    alignments to be reported.
+
+  -B <int>          Maximum number of equally-best alignments to be reported for
+                    a multi-mapping read. Equally-best alignments have the same
+                    number of mis-matched bases. 1 by default.
+
+# indel detection
+
+  -I <int>          Maximum length (in bp) of indels that can be detected. 5 by
+                    default. Indels of up to 200bp long can be detected.
+
+  --complexIndels   Detect multiple short indels that are in close proximity
+                    (they can be as close as 1bp apart from each other).
+
+# read trimming
+
+  --trim5 <int>     Trim off <int> number of bases from 5' end of each read. 0
+                    by default.
+
+  --trim3 <int>     Trim off <int> number of bases from 3' end of each read. 0
+                    by default.
+
+# distance and orientation of paired end reads
+
+  -d <int>          Minimum fragment/insert length, 50bp by default.
+
+  -D <int>          Maximum fragment/insert length, 600bp by default.
+
+  -S <ff:fr:rf>     Orientation of first and second reads, 'fr' by default (
+                    forward/reverse).
+
+# number of CPU threads
+
+  -T <int>          Number of CPU threads used, 1 by default.
+
+# read group
+
+  --rg-id <string>  Add read group ID to the output.
+
+  --rg <string>     Add <tag:value> to the read group (RG) header in the output.
+
+# read order
+
+  --keepReadOrder   Keep order of reads in BAM output the same as that in the
+                    input file. Reads from the same pair are always placed next
+                    to each other no matter this option is specified or not.
+
+  --sortReadsByCoordinates Output location-sorted reads. This option is
+                    applicable for BAM output only. A BAI index file is also
+                    generated for each BAM file so the BAM files can be directly
+                    loaded into a genome browser.
+
+# color space reads
+
+  -b                Convert color-space read bases to base-space read bases in
+                    the mapping output. Note that read mapping is performed at
+                    color-space.
+
+# dynamic programming
+
+  --DPGapOpen <int> Penalty for gap opening in short indel detection. -1 by
+                    default.
+
+  --DPGapExt <int>  Penalty for gap extension in short indel detection. 0 by
+                    default.
+
+  --DPMismatch <int> Penalty for mismatches in short indel detection. 0 by
+                    default.
+
+  --DPMatch <int>   Score for matched bases in short indel detection. 2 by
+                    default.
+
+# detect all junctions including gene fusions
+
+  --allJunctions    Detect exon-exon junctions (both canonical and non-canonical
+                    junctions) and structural variants in RNA-seq data. Refer to
+                    Users Guide for reporting of junctions and fusions.
+
+# gene annotation
+
+  -a                Name of an annotation file (gzipped file is accepted).
+                    GTF/GFF format by default. See -F option for more format
+                    information.
+
+  -F                Specify format of the provided annotation file. Acceptable
+                    formats include 'GTF' (or compatible GFF format) and
+                    'SAF'. 'GTF' by default. For SAF format, please refer to
+                    Users Guide.
+
+  -A                Provide a chromosome name alias file to match chr names in
+                    annotation with those in the reads. This should be a two-
+                    column comma-delimited text file. Its first column should
+                    include chr names in the annotation and its second column
+                    should include chr names in the index. Chr names are case
+                    sensitive. No column header should be included in the
+                    file.
+
+  --gtfFeature <string>  Specify feature type in GTF annotation. 'exon'
+                    by default. Features used for read counting will be 
+                    extracted from annotation using the provided value.
+
+  --gtfAttr <string>     Specify attribute type in GTF annotation. 'gene_id'
+                    by default. Meta-features used for read counting will be 
+                    extracted from annotation using the provided value.
+
+# others
+
+  -v                Output version of the program.
+
+Refer to Users Manual for detailed description to the arguments.
+```
+
+## Captured Help
+
+```text
+$ subjunc --help
+subjunc: unrecognized option '--help'
+
+Version 2.1.1
+
+Usage:
+
+ ./subjunc [options] -i <index_name> -r <input> -o <output>
+
+## Mandatory arguments:
+
+  -i <index>        Base name of the index.
+
+  -r <string>       Name of an input read file. If paired-end, this should be
+                    the first read file (typically containing "R1"in the file
+                    name) and the second should be provided via "-R".
+                    Acceptable formats include gzipped FASTQ, FASTQ, gzipped
+                    FASTA and FASTA.
+                    These formats are identified automatically.
+
+## Optional arguments:
+# input reads and output
+    
+  -o <string>       Name of an output file. By default, the output is in BAM
+                    format. Omitting this option makes the output be written to
+                    STDOUT.
+
+  -R <string>       Name of the second read file in paired-end data (typically
+                    containing "R2" the file name).
+
+  --SAMinput        Input reads are in SAM format.
+
+  --BAMinput        Input reads are in BAM format.
+
+  --SAMoutput       Save mapping results in SAM format.
+
+# Phred offset
+
+  -P <3:6>          Offset value added to the Phred quality score of each read
+                    base. '3' for phred+33 and '6' for phred+64. '3' by default.
+
+# thresholds for mapping
+
+  -n <int>          Number of selected subreads, 14 by default.
+
+  -m <int>          Consensus threshold for reporting a hit (minimal number of
+                    subreads that map in consensus) . If paired-end, this gives
+                    the consensus threshold for the anchor read (anchor read
+                    receives more votes than the other read in the same pair).
+                    1 by default.
+
+  -p <int>          Consensus threshold for the non- anchor read in a pair. 1 by
+                    default.
+
+  -M <int>          Maximum number of mis-matched bases allowed in each reported
+                    alignment. 3 by default. Mis-matched bases found in soft-
+                    clipped bases are not counted.
+
+# unique mapping and multi-mapping
+
+  --multiMapping    Report multi-mapping reads in addition to uniquely mapped
+                    reads. Use "-B" to set the maximum number of equally-best
+                    alignments to be reported.
+
+  -B <int>          Maximum number of equally-best alignments to be reported for
+                    a multi-mapping read. Equally-best alignments have the same
+                    number of mis-matched bases. 1 by default.
+
+# indel detection
+
+  -I <int>          Maximum length (in bp) of indels that can be detected. 5 by
+                    default. Indels of up to 200bp long can be detected.
+
+  --complexIndels   Detect multiple short indels that are in close proximity
+                    (they can be as close as 1bp apart from each other).
+
+# read trimming
+
+  --trim5 <int>     Trim off <int> number of bases from 5' end of each read. 0
+                    by default.
+
+  --trim3 <int>     Trim off <int> number of bases from 3' end of each read. 0
+                    by default.
+
+# distance and orientation of paired end reads
+
+  -d <int>          Minimum fragment/insert length, 50bp by default.
+
+  -D <int>          Maximum fragment/insert length, 600bp by default.
+
+  -S <ff:fr:rf>     Orientation of first and second reads, 'fr' by default (
+                    forward/reverse).
+
+# number of CPU threads
+
+  -T <int>          Number of CPU threads used, 1 by default.
+
+# read group
+
+  --rg-id <string>  Add read group ID to the output.
+
+  --rg <string>     Add <tag:value> to the read group (RG) header in the output.
+
+# read order
+
+  --keepReadOrder   Keep order of reads in BAM output the same as that in the
+                    input file. Reads from the same pair are always placed next
+                    to each other no matter this option is specified or not.
+
+  --sortReadsByCoordinates Output location-sorted reads. This option is
+                    applicable for BAM output only. A BAI index file is also
+                    generated for each BAM file so the BAM files can be directly
+                    loaded into a genome browser.
+
+# color space reads
+
+  -b                Convert color-space read bases to base-space read bases in
+                    the mapping output. Note that read mapping is performed at
+                    color-space.
+
+# dynamic programming
+
+  --DPGapOpen <int> Penalty for gap opening in short indel detection. -1 by
+                    default.
+
+  --DPGapExt <int>  Penalty for gap extension in short indel detection. 0 by
+                    default.
+
+  --DPMismatch <int> Penalty for mismatches in short indel detection. 0 by
+                    default.
+
+  --DPMatch <int>   Score for matched bases in short indel detection. 2 by
+                    default.
+
+# detect all junctions including gene fusions
+
+  --allJunctions    Detect exon-exon junctions (both canonical and non-canonical
+                    junctions) and structural variants in RNA-seq data. Refer to
+                    Users Guide for reporting of junctions and fusions.
+
+# gene annotation
+
+  -a                Name of an annotation file (gzipped file is accepted).
+                    GTF/GFF format by default. See -F option for more format
+                    information.
+
+  -F                Specify format of the provided annotation file. Acceptable
+                    formats include 'GTF' (or compatible GFF format) and
+                    'SAF'. 'GTF' by default. For SAF format, please refer to
+                    Users Guide.
+
+  -A                Provide a chromosome name alias file to match chr names in
+                    annotation with those in the reads. This should be a two-
+                    column comma-delimited text file. Its first column should
+                    include chr names in the annotation and its second column
+                    should include chr names in the index. Chr names are case
+                    sensitive. No column header should be included in the
+                    file.
+
+  --gtfFeature <string>  Specify feature type in GTF annotation. 'exon'
+                    by default. Features used for read counting will be 
+                    extracted from annotation using the provided value.
+
+  --gtfAttr <string>     Specify attribute type in GTF annotation. 'gene_id'
+                    by default. Meta-features used for read counting will be 
+                    extracted from annotation using the provided value.
+
+# others
+
+  -v                Output version of the program.
+
+Refer to Users Manual for detailed description to the arguments.
+```
+
+## Captured Man Page
+
+```text
+No man page captured.
+```

@@ -1,0 +1,50 @@
+{
+  "request_id": "req_rnaseq_de_001",
+  "user_goal": "Compare treated and control bulk RNA-seq samples and generate a differential expression result bundle.",
+  "request_text": "我有 treatment 和 control 的 bulk RNA-seq FASTQ，想做差异表达分析，最后给我一个可复查的结果包。",
+  "request_tags": [
+    "rnaseq",
+    "differential-expression",
+    "bulk-transcriptomics",
+    "fastq"
+  ],
+  "inputs": [
+    {
+      "name": "treated_fastq_dir",
+      "kind": "directory",
+      "path": "data/treated_fastq",
+      "description": "Treatment FASTQ inputs"
+    },
+    {
+      "name": "control_fastq_dir",
+      "kind": "directory",
+      "path": "data/control_fastq",
+      "description": "Control FASTQ inputs"
+    },
+    {
+      "name": "reference_genome",
+      "kind": "fasta",
+      "path": "refs/GRCh38.fa",
+      "description": "Genome reference"
+    },
+    {
+      "name": "reference_gtf",
+      "kind": "gtf",
+      "path": "refs/GRCh38.gtf",
+      "description": "Gene annotation"
+    }
+  ],
+  "constraints": [
+    "Prefer a reproducible, stage-by-stage workflow",
+    "Pause before any heavy alignment run"
+  ],
+  "preferred_outputs": [
+    "qc_report",
+    "counts_matrix",
+    "de_results",
+    "analysis_summary"
+  ],
+  "context_notes": [
+    "User wants a result bundle that can be reviewed later"
+  ]
+}

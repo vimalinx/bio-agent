@@ -1,0 +1,49 @@
+version: 1
+description: Seed workflow registry for the Bio Skill System local project.
+
+workflows:
+  - id: rnaseq-differential-expression
+    layer: workflow
+    summary: Differential expression workflow from FASTQ or counts input to validated result bundle.
+    request_tags: [rnaseq, differential-expression, bulk-transcriptomics]
+    stages:
+      - input-and-environment-check
+      - qc-and-alignment
+      - quantification
+      - statistical-analysis
+      - report-review
+    candidate_atomic_skills:
+      - fastqc
+      - multiqc
+      - star
+      - feature-counts
+      - pydeseq2
+
+  - id: sequence-search-and-annotation
+    layer: workflow
+    summary: Sequence-centric workflow for search, annotation, and evidence collection.
+    request_tags: [sequence-analysis, search, annotation]
+    stages:
+      - input-check
+      - search
+      - annotation
+      - review
+    candidate_atomic_skills:
+      - blastn
+      - blastp
+      - hmmscan
+      - hmmsearch
+
+  - id: protein-structure-analysis
+    layer: workflow
+    summary: Protein structure workflow for prediction, comparison, and report generation.
+    request_tags: [protein, structure, folding, design]
+    stages:
+      - input-check
+      - model-selection
+      - structure-run
+      - artifact-review
+    candidate_atomic_skills:
+      - esm
+      - alphafold-database
+      - rfdiffusion

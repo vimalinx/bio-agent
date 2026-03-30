@@ -1,0 +1,323 @@
+{
+  "scenario": {
+    "name": "RNA-seq differential expression console demo",
+    "workflow_id": "rnaseq-differential-expression",
+    "note": "This bundle is generated from the current CLI planning and run-state flow and represents a paused conservative run at the alignment checkpoint."
+  },
+  "request": {
+    "request_id": "req_generate-candidate-plans-for-rna-seq-dif",
+    "user_goal": "Generate candidate plans for RNA-seq differential expression analysis.",
+    "request_text": "I have bulk RNA-seq FASTQ files for treated and control samples and want a differential expression result bundle.",
+    "request_tags": [
+      "bulk-transcriptomics",
+      "differential-expression",
+      "fastq",
+      "rnaseq"
+    ]
+  },
+  "candidate_plans": [
+    {
+      "plan_id": "plan_rnaseq-differential-expression_conservative",
+      "strategy_type": "conservative",
+      "summary": "Conservative plan for `rnaseq-differential-expression` with explicit stage validation and manual checkpoints.",
+      "stage_count": 4,
+      "risk_count": 2,
+      "manual_confirmations": 1,
+      "estimated_cost": {
+        "time": "medium",
+        "compute": "medium"
+      },
+      "recommended": true
+    },
+    {
+      "plan_id": "plan_rnaseq-differential-expression_efficient",
+      "strategy_type": "efficient",
+      "summary": "Efficient plan for `rnaseq-differential-expression` that reduces manual pauses while keeping the same stage skeleton.",
+      "stage_count": 4,
+      "risk_count": 2,
+      "manual_confirmations": 0,
+      "estimated_cost": {
+        "time": "low",
+        "compute": "medium"
+      },
+      "recommended": false
+    }
+  ],
+  "review": {
+    "recommended_plan_id": "plan_rnaseq-differential-expression_conservative",
+    "rationale": "Recommended conservative plan because it preserves explicit checkpoints and clearer validation boundaries."
+  },
+  "approved_plan": {
+    "plan_id": "plan_rnaseq-differential-expression_conservative",
+    "summary": "Conservative plan for `rnaseq-differential-expression` with explicit stage validation and manual checkpoints.",
+    "strategy_type": "conservative",
+    "expected_outputs": [
+      "qc_report",
+      "aligned_bams",
+      "counts_matrix",
+      "de_results",
+      "analysis_summary"
+    ],
+    "risks": [
+      "Reference mismatch can invalidate downstream counts.",
+      "Large alignment stages may consume significant compute time."
+    ],
+    "stages": [
+      {
+        "stage_id": "s1",
+        "name": "input-and-environment-check",
+        "goal": "Validate data presence, sample grouping, and required tools.",
+        "requires_user_confirmation": false,
+        "outputs": [
+          "validated_inputs",
+          "env_status"
+        ],
+        "validation": [
+          "input_paths_exist",
+          "required_tools_available"
+        ]
+      },
+      {
+        "stage_id": "s2",
+        "name": "qc-and-alignment",
+        "goal": "Run QC and align reads against the reference.",
+        "requires_user_confirmation": true,
+        "outputs": [
+          "qc_report",
+          "aligned_bams"
+        ],
+        "validation": [
+          "multiqc_report_exists",
+          "bam_files_exist"
+        ]
+      },
+      {
+        "stage_id": "s3",
+        "name": "quantification",
+        "goal": "Convert aligned reads into a counts matrix.",
+        "requires_user_confirmation": false,
+        "outputs": [
+          "counts_matrix"
+        ],
+        "validation": [
+          "counts_matrix_exists"
+        ]
+      },
+      {
+        "stage_id": "s4",
+        "name": "differential-expression",
+        "goal": "Compute differential expression statistics and summarize results.",
+        "requires_user_confirmation": false,
+        "outputs": [
+          "de_results",
+          "analysis_summary"
+        ],
+        "validation": [
+          "de_results_exist",
+          "summary_exists"
+        ]
+      }
+    ]
+  },
+  "execution_draft": {
+    "status": "draft",
+    "unresolved_skill_ids": [
+      "pydeseq2"
+    ],
+    "stages": [
+      {
+        "stage_id": "s1",
+        "candidate_skill_refs": [
+          {
+            "id": "request-normalizer",
+            "layer": "orchestrator",
+            "resolved": true
+          },
+          {
+            "id": "execution-guard",
+            "layer": "orchestrator",
+            "resolved": true
+          }
+        ]
+      },
+      {
+        "stage_id": "s2",
+        "candidate_skill_refs": [
+          {
+            "id": "skill-router",
+            "layer": "orchestrator",
+            "resolved": true
+          },
+          {
+            "id": "execution-guard",
+            "layer": "orchestrator",
+            "resolved": true
+          },
+          {
+            "id": "star",
+            "layer": "atomic",
+            "resolved": true
+          },
+          {
+            "id": "fastqc",
+            "layer": "atomic",
+            "resolved": true
+          },
+          {
+            "id": "multiqc",
+            "layer": "atomic",
+            "resolved": true
+          }
+        ]
+      },
+      {
+        "stage_id": "s3",
+        "candidate_skill_refs": [
+          {
+            "id": "feature-counts",
+            "layer": "atomic",
+            "resolved": true
+          },
+          {
+            "id": "stage-reviewer",
+            "layer": "orchestrator",
+            "resolved": true
+          }
+        ]
+      },
+      {
+        "stage_id": "s4",
+        "candidate_skill_refs": [
+          {
+            "id": "pydeseq2",
+            "layer": "unknown",
+            "resolved": false
+          },
+          {
+            "id": "stage-reviewer",
+            "layer": "orchestrator",
+            "resolved": true
+          }
+        ]
+      }
+    ]
+  },
+  "run_state": {
+    "status": "paused",
+    "current_stage": "s2",
+    "stage_status": {
+      "s1": "completed",
+      "s2": "pending",
+      "s3": "pending",
+      "s4": "pending"
+    },
+    "validation_results": {
+      "s1": {
+        "input_paths_exist": "passed",
+        "required_tools_available": "passed"
+      }
+    },
+    "issues": [
+      {
+        "stage": "s2",
+        "severity": "warning",
+        "message": "Stage s2 requires confirmation before execution."
+      }
+    ],
+    "resume_from": "s2",
+    "last_update": "2026-03-30T19:23:46+08:00"
+  },
+  "run_status": {
+    "status": "paused",
+    "current_stage": "s2",
+    "resume_from": "s2",
+    "progress": {
+      "total": 4,
+      "completed": 1,
+      "pending": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "stage_groups": {
+      "completed": [
+        "s1"
+      ],
+      "pending": [
+        "s2",
+        "s3",
+        "s4"
+      ],
+      "running": [],
+      "failed": [],
+      "skipped": []
+    },
+    "latest_issue": {
+      "stage": "s2",
+      "severity": "warning",
+      "message": "Stage s2 requires confirmation before execution."
+    },
+    "next_action": "Confirm and resume stage s2.",
+    "last_update": "2026-03-30T19:23:46+08:00"
+  },
+  "run_review": {
+    "status": "paused",
+    "current_stage": "s2",
+    "resume_from": "s2",
+    "verdict": "awaiting_confirmation",
+    "summary": "Run is paused at s2 and needs explicit confirmation.",
+    "blocking_issues": [
+      {
+        "type": "confirmation_required",
+        "stage": "s2",
+        "message": "Stage s2 requires confirmation before execution."
+      }
+    ],
+    "future_issues": [
+      {
+        "type": "future_unresolved_skills",
+        "message": "Later stages still contain unresolved candidate skills.",
+        "skills": [
+          "pydeseq2"
+        ]
+      }
+    ],
+    "artifact_count": 0,
+    "current_stage_review": {
+      "stage_id": "s2",
+      "name": "qc-and-alignment",
+      "status": "pending",
+      "confirmation_required": true,
+      "candidate_skills": [
+        "skill-router",
+        "execution-guard",
+        "star",
+        "fastqc",
+        "multiqc"
+      ],
+      "unresolved_skills": [],
+      "validation_rules": [
+        "multiqc_report_exists",
+        "bam_files_exist"
+      ],
+      "recorded_validations": {}
+    },
+    "completed_stage_reviews": [
+      {
+        "stage_id": "s1",
+        "status": "completed",
+        "validation_rules": [
+          "input_paths_exist",
+          "required_tools_available"
+        ],
+        "recorded_validations": {
+          "input_paths_exist": "passed",
+          "required_tools_available": "passed"
+        },
+        "missing_validations": [],
+        "validation_complete": true
+      }
+    ],
+    "next_action": "Confirm and resume stage s2.",
+    "last_update": "2026-03-30T19:23:46+08:00"
+  }
+}

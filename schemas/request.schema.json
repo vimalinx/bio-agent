@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bio-agent.local/schemas/request.schema.json",
+  "title": "Bio Skill System Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_id", "user_goal", "request_text"],
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "user_goal": {
+      "type": "string",
+      "minLength": 1
+    },
+    "request_text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "request_tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "kind"],
+        "properties": {
+          "name": { "type": "string" },
+          "kind": { "type": "string" },
+          "path": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      },
+      "default": []
+    },
+    "constraints": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "preferred_outputs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "context_notes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    }
+  }
+}

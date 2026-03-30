@@ -1,0 +1,89 @@
+{
+  "timestamp": "2026-03-25T18:40:44.761977",
+  "os": {
+    "system": "Linux",
+    "release": "6.19.9-arch1-1",
+    "version": "#1 SMP PREEMPT_DYNAMIC Thu, 19 Mar 2026 16:33:17 +0000",
+    "machine": "x86_64",
+    "python_version": "3.14.3"
+  },
+  "cpu": {
+    "physical_cores": 16,
+    "logical_cores": 16,
+    "max_frequency_mhz": 4587.5,
+    "architecture": "x86_64",
+    "processor": "",
+    "current_frequency_mhz": 2575.4796875
+  },
+  "memory": {
+    "total_gb": 30.77,
+    "available_gb": 13.98,
+    "used_gb": 16.79,
+    "percent_used": 54.6,
+    "swap_total_gb": 15.39,
+    "swap_available_gb": 11.79
+  },
+  "disk": {
+    "path": "/home/vimalinx/Projects/bio_studio",
+    "total_gb": 1862.01,
+    "available_gb": 521.32,
+    "used_gb": 1340.5,
+    "percent_used": 72.0
+  },
+  "gpu": {
+    "nvidia_gpus": [
+      {
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+        "memory_total_mb": 12227.0,
+        "memory_free_mb": 11760.0,
+        "driver_version": "590.48.01",
+        "compute_capability": "12.0",
+        "type": "NVIDIA",
+        "backend": "CUDA"
+      }
+    ],
+    "amd_gpus": [],
+    "apple_silicon": null,
+    "total_gpus": 1,
+    "available_backends": [
+      "CUDA"
+    ]
+  },
+  "recommendations": {
+    "parallel_processing": {
+      "strategy": "high_parallelism",
+      "suggested_workers": 14,
+      "libraries": [
+        "joblib",
+        "multiprocessing",
+        "dask"
+      ]
+    },
+    "memory_strategy": {
+      "strategy": "moderate_memory",
+      "libraries": [
+        "dask",
+        "zarr"
+      ],
+      "note": "Consider chunking for datasets > 2GB"
+    },
+    "gpu_acceleration": {
+      "available": true,
+      "backends": [
+        "CUDA"
+      ],
+      "suggested_libraries": [
+        "pytorch",
+        "tensorflow",
+        "jax",
+        "cupy",
+        "rapids"
+      ]
+    },
+    "large_data_handling": {
+      "strategy": "disk_abundant",
+      "note": "Sufficient space for large intermediate files"
+    }
+  }
+}

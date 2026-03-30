@@ -1,0 +1,27 @@
+# filter-record Help Reference
+
+- Command: `filter-record`
+- Sources: conda_bioconda
+- Local executable: `/home/vimalinx/miniforge3/envs/bio/bin/filter-record`
+- Summary: CLI installed by bioconda package entrez-direct.
+- Package names: entrez-direct
+
+## Captured Version
+
+```text
+$ filter-record --version
+[0m[31m[1m[7m ERROR: [0m[31m[1m Unrecognized argument '--version'[0m
+```
+
+## Captured Help
+
+```text
+$ filter-record --help
+[0m[31m[1m[7m ERROR: [0m[31m[1m Unrecognized argument '--help'[0m
+```
+
+## Captured Man Page
+
+```text
+No man page captured.
+```

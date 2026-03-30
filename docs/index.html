@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>bio-agent Docs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f8f4ee;
+        --surface: #fffdfa;
+        --line: #d9ccbd;
+        --text: #33261b;
+        --muted: #705847;
+        --primary: #9a3412;
+        --radius: 10px;
+        --shadow: 0 2px 8px rgba(51, 38, 27, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "IBM Plex Sans", sans-serif;
+      }
+
+      .shell {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 32px 20px 48px;
+      }
+
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 24px;
+      }
+
+      h1,
+      h2 {
+        margin: 0 0 12px;
+      }
+
+      p {
+        margin: 0 0 12px;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+
+      .list {
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px;
+        background: #fff8f1;
+      }
+
+      .item a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .item a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="panel">
+        <h1>bio-agent Docs</h1>
+        <p>这是 `bio-agent` 的静态文档入口页。</p>
+        <p>当前最重要的内容是系统架构稿、控制台展示页，以及四仓代码真实性审计页。</p>
+
+        <div class="list">
+          <div class="item">
+            <a href="./system/bio-skill-system.html">系统架构页</a>
+          </div>
+          <div class="item">
+            <a href="./system/bio-skill-console.html">控制台展示页</a>
+          </div>
+          <div class="item">
+            <a href="./system/biomed-repo-code-audit.html">四仓代码真实性审计页</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

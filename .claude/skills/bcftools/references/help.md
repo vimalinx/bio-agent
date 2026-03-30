@@ -1,0 +1,75 @@
+# bcftools Help Reference
+
+- Command: `bcftools`
+- Sources: conda_bioconda
+- Local executable: `/home/vimalinx/miniforge3/envs/bio/bin/bcftools`
+- Summary: CLI installed by bioconda package bcftools.
+- Package names: bcftools
+
+## Captured Version
+
+```text
+$ bcftools --version
+bcftools 1.22
+Using htslib 1.22.1
+Copyright (C) 2025 Genome Research Ltd.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+```
+
+## Captured Help
+
+```text
+$ bcftools --help
+Program: bcftools (Tools for variant calling and manipulating VCFs and BCFs)
+License: GNU GPLv3+, due to use of the GNU Scientific Library
+Version: 1.22 (using htslib 1.22.1)
+
+Usage:   bcftools [--version|--version-only] [--help] <command> <argument>
+
+Commands:
+
+ -- Indexing
+    index        index VCF/BCF files
+
+ -- VCF/BCF manipulation
+    annotate     annotate and edit VCF/BCF files
+    concat       concatenate VCF/BCF files from the same set of samples
+    convert      convert VCF/BCF files to different formats and back
+    head         view VCF/BCF file headers
+    isec         intersections of VCF/BCF files
+    merge        merge VCF/BCF files files from non-overlapping sample sets
+    norm         left-align and normalize indels
+    plugin       user-defined plugins
+    query        transform VCF/BCF into user-defined formats
+    reheader     modify VCF/BCF header, change sample names
+    sort         sort VCF/BCF file
+    view         VCF/BCF conversion, view, subset and filter VCF/BCF files
+
+ -- VCF/BCF analysis
+    call         SNP/indel calling
+    consensus    create consensus sequence by applying VCF variants
+    cnv          HMM CNV calling
+    csq          call variation consequences
+    filter       filter VCF/BCF files using fixed thresholds
+    gtcheck      check sample concordance, detect sample swaps and contamination
+    mpileup      multi-way pileup producing genotype likelihoods
+    polysomy     detect number of chromosomal copies
+    roh          identify runs of autozygosity (HMM)
+    stats        produce VCF/BCF stats
+
+ -- Plugins (collection of programs for calling, file manipulation & analysis)
+    41 plugins available, run "bcftools plugin -lv" to see a complete list
+
+ Most commands accept VCF, bgzipped VCF, and BCF with the file type detected
+ automatically even when streaming from a pipe. Indexed VCF and BCF will work
+ in all situations. Un-indexed VCF and BCF and streams will work in most but
+ not all situations.
+```
+
+## Captured Man Page
+
+```text
+No man page captured.
+```

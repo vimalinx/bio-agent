@@ -1,0 +1,80 @@
+plan_id: plan_rnaseq_de_001
+request_id: req_rnaseq_de_001
+title: Bulk RNA-seq differential expression analysis
+summary: >
+  Validate the RNA-seq inputs and environment, run QC and alignment, quantify
+  counts, perform differential expression, and return a reviewable result bundle.
+strategy_type: conservative
+assumptions:
+  - The provided FASTQ inputs are paired correctly by sample.
+  - The reference genome and annotation match the target organism.
+prerequisites:
+  - STAR is installed and indexed reference data are available or can be generated.
+  - featureCounts and pydeseq2 are available.
+expected_outputs:
+  - qc_report
+  - aligned_bams
+  - counts_matrix
+  - de_results
+  - analysis_summary
+risks:
+  - Reference mismatch can invalidate downstream counts.
+  - Large alignment stages may consume significant compute time.
+estimated_cost:
+  time: medium
+  compute: medium
+stages:
+  - stage_id: s1
+    name: input-and-environment-check
+    goal: Validate data presence, sample grouping, and required tools.
+    candidate_skills:
+      - request-normalizer
+      - execution-guard
+    requires_user_confirmation: false
+    outputs:
+      - validated_inputs
+      - env_status
+    validation:
+      - input_paths_exist
+      - required_tools_available
+  - stage_id: s2
+    name: qc-and-alignment
+    goal: Run QC and align reads against the reference.
+    candidate_skills:
+      - skill-router
+      - execution-guard
+      - star
+      - fastqc
+      - multiqc
+    requires_user_confirmation: true
+    outputs:
+      - qc_report
+      - aligned_bams
+    validation:
+      - multiqc_report_exists
+      - bam_files_exist
+  - stage_id: s3
+    name: quantification
+    goal: Convert aligned reads into a counts matrix.
+    candidate_skills:
+      - feature-counts
+      - stage-reviewer
+    requires_user_confirmation: false
+    outputs:
+      - counts_matrix
+    validation:
+      - counts_matrix_exists
+  - stage_id: s4
+    name: differential-expression
+    goal: Compute differential expression statistics and summarize results.
+    candidate_skills:
+      - pydeseq2
+      - stage-reviewer
+    requires_user_confirmation: false
+    outputs:
+      - de_results
+      - analysis_summary
+    validation:
+      - de_results_exist
+      - summary_exists
+approval_state: approved

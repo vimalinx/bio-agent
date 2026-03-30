@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bio-agent.local/schemas/run.schema.json",
+  "title": "Bio Skill System Run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["run_id", "plan_id", "request_id", "status", "current_stage"],
+  "properties": {
+    "run_id": { "type": "string", "minLength": 1 },
+    "plan_id": { "type": "string", "minLength": 1 },
+    "request_id": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "running", "paused", "completed", "failed"]
+    },
+    "current_stage": { "type": "string", "minLength": 1 },
+    "stage_status": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["pending", "running", "completed", "failed", "skipped"]
+      },
+      "default": {}
+    },
+    "stage_order": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "stage_context": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      },
+      "default": {}
+    },
+    "validation_results": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
+      "default": {}
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "type"],
+        "properties": {
+          "path": { "type": "string" },
+          "type": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      },
+      "default": []
+    },
+    "decisions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stage", "severity", "message"],
+        "properties": {
+          "stage": { "type": "string" },
+          "severity": {
+            "type": "string",
+            "enum": ["info", "warning", "error"]
+          },
+          "message": { "type": "string" }
+        }
+      },
+      "default": []
+    },
+    "resume_from": {
+      "type": "string"
+    },
+    "last_update": {
+      "type": "string"
+    }
+  }
+}

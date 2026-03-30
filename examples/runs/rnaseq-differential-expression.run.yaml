@@ -1,0 +1,26 @@
+run_id: run_rnaseq_de_001
+plan_id: plan_rnaseq_de_001
+request_id: req_rnaseq_de_001
+status: paused
+current_stage: s2
+stage_status:
+  s1: completed
+  s2: running
+  s3: pending
+  s4: pending
+artifacts:
+  - path: outputs/input_audit/validated_inputs.json
+    type: audit
+    description: Normalized and validated input record
+  - path: outputs/env/env_status.json
+    type: audit
+    description: Tool availability and environment snapshot
+decisions:
+  - User approved the conservative plan.
+  - User requested a pause before the alignment-heavy stage.
+issues:
+  - stage: s2
+    severity: warning
+    message: Alignment stage is paused pending explicit confirmation.
+resume_from: s2
+last_update: "2026-03-29T21:10:00+08:00"

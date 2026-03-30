@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+.benchmarks/
+
+task_plan.md
+findings.md
+progress.md
+
+reference/ClawBio/
+reference/LabClaw/

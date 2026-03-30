@@ -1,0 +1,8 @@
+{
+  "base_url": "http://localhost:3000/v1",
+  "model": "gpt-5.4",
+  "reasoning_effort": "xhigh",
+  "max_completion_tokens": 100000,
+  "request_retries": 3,
+  "api_key_env": "BIO_SKILL_FACTORY_API_KEY"
+}

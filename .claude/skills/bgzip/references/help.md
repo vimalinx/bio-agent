@@ -1,0 +1,46 @@
+# bgzip Help Reference
+
+- Command: `bgzip`
+- Sources: conda_bioconda
+- Local executable: `/home/vimalinx/miniforge3/envs/bio/bin/bgzip`
+- Summary: CLI installed by bioconda package htslib.
+- Package names: htslib
+
+## Captured Version
+
+```text
+$ bgzip --version
+bgzip (htslib) 1.22.1
+Copyright (C) 2025 Genome Research Ltd.
+```
+
+## Captured Help
+
+```text
+$ bgzip --help
+Version: 1.22.1
+Usage:   bgzip [OPTIONS] [FILE] ...
+Options:
+   -b, --offset INT           decompress at virtual file pointer (0-based uncompressed offset)
+   -c, --stdout               write on standard output, keep original files unchanged
+   -d, --decompress           decompress
+   -f, --force                overwrite files without asking
+   -g, --rebgzip              use an index file to bgzip a file
+   -h, --help                 give this help
+   -i, --index                compress and create BGZF index
+   -I, --index-name FILE      name of BGZF index file [file.gz.gzi]
+   -k, --keep                 don't delete input files during operation
+   -l, --compress-level INT   Compression level to use when compressing; 0 to 9, or -1 for default [-1]
+   -o, --output FILE          write to file, keep original files unchanged
+   -r, --reindex              (re)index compressed file
+   -s, --size INT             decompress INT bytes (uncompressed size)
+   -t, --test                 test integrity of compressed file
+       --binary               Don't align blocks with text lines
+   -@, --threads INT          number of compression threads to use [1]
+```
+
+## Captured Man Page
+
+```text
+No man page captured.
+```
