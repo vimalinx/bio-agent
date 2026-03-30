@@ -18,13 +18,17 @@
 - 控制台页：`docs/system/bio-skill-console.html`
 - 四仓代码真实性审计页：`docs/system/biomed-repo-code-audit.html`
 
-部署到 GitHub Pages 后，文档入口页位于：
+公开仓库：
 
-- `/bio-agent/`
+- https://github.com/vimalinx/bio-agent
 
-审计页位于：
+GitHub Pages 文档入口：
 
-- `/bio-agent/system/biomed-repo-code-audit.html`
+- https://vimalinx.xyz/bio-agent/
+
+审计页子网址：
+
+- https://vimalinx.xyz/bio-agent/system/biomed-repo-code-audit.html
 
 ## Status
 
