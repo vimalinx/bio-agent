@@ -1,49 +1,148 @@
 version: 1
 description: Seed workflow registry for the Bio Skill System local project.
-
 workflows:
-  - id: rnaseq-differential-expression
-    layer: workflow
-    summary: Differential expression workflow from FASTQ or counts input to validated result bundle.
-    request_tags: [rnaseq, differential-expression, bulk-transcriptomics]
-    stages:
-      - input-and-environment-check
-      - qc-and-alignment
-      - quantification
-      - statistical-analysis
-      - report-review
-    candidate_atomic_skills:
-      - fastqc
-      - multiqc
-      - star
-      - feature-counts
-      - pydeseq2
-
-  - id: sequence-search-and-annotation
-    layer: workflow
-    summary: Sequence-centric workflow for search, annotation, and evidence collection.
-    request_tags: [sequence-analysis, search, annotation]
-    stages:
-      - input-check
-      - search
-      - annotation
-      - review
-    candidate_atomic_skills:
-      - blastn
-      - blastp
-      - hmmscan
-      - hmmsearch
-
-  - id: protein-structure-analysis
-    layer: workflow
-    summary: Protein structure workflow for prediction, comparison, and report generation.
-    request_tags: [protein, structure, folding, design]
-    stages:
-      - input-check
-      - model-selection
-      - structure-run
-      - artifact-review
-    candidate_atomic_skills:
-      - esm
-      - alphafold-database
-      - rfdiffusion
+- id: rnaseq-differential-expression
+  layer: workflow
+  summary: Bulk RNA-seq differential expression
+  request_tags:
+  - rnaseq
+  - differential-expression
+  - bulk-transcriptomics
+  - fastq
+  - counts-matrix
+  stages:
+  - input-and-environment-check
+  - qc-and-alignment
+  - quantification
+  - statistical-analysis
+  - report-review
+  candidate_atomic_skills:
+  - fastqc
+  - multiqc
+  - star
+  - feature-counts
+  - pydeseq2
+  grounding: official-source
+  official_sources:
+  - label: nf-core/rnaseq
+    url: https://nf-co.re/rnaseq
+  - label: 'Galaxy Training: RNA-seq analysis and visualization'
+    url: https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-analysis-clustering-viz/tutorial.html
+- id: scrnaseq-preprocessing
+  layer: workflow
+  summary: Single-cell RNA-seq preprocessing and clustering-ready matrix generation
+  grounding: official-source
+  official_sources:
+  - label: nf-core/scrnaseq
+    url: https://nf-co.re/scrnaseq
+  - label: 'Galaxy Training: scRNA-seq preprocessing'
+    url: https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-preprocessing/tutorial.html
+  - label: 'Galaxy Training: scRNA-seq with Scanpy/Seurat-style downstream'
+    url: https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-seurat-pbmc3k/tutorial.html
+  request_tags:
+  - scrnaseq
+  - single-cell
+  - 10x
+  - umi
+  - cell-barcode
+  stages:
+  - input-and-reference-check
+  - barcode-and-umi-processing
+  - count-matrix-generation
+  - qc-and-clustering
+  - marker-review
+  candidate_atomic_skills:
+  - starsolo
+  - cellranger
+  - scanpy
+  - scvi-tools
+  - multiqc
+- id: atacseq-differential-accessibility
+  layer: workflow
+  summary: ATAC-seq peak calling and differential accessibility
+  grounding: official-source
+  official_sources:
+  - label: nf-core/atacseq
+    url: https://nf-co.re/atacseq
+  request_tags:
+  - atacseq
+  - atac-seq
+  - chromatin-accessibility
+  - peaks
+  - differential-accessibility
+  stages:
+  - input-and-reference-check
+  - trim-and-align
+  - filtering-and-qc
+  - peak-calling-and-consensus
+  - differential-accessibility-and-report
+  candidate_atomic_skills:
+  - fastqc
+  - multiqc
+  - bowtie2
+  - macs3
+  - deeptools
+- id: germline-short-variant-discovery
+  layer: workflow
+  summary: Germline SNP/Indel discovery for WGS/WES
+  grounding: official-source
+  official_sources:
+  - label: GATK Germline short variant discovery
+    url: https://gatk.broadinstitute.org/hc/en-us/articles/360035535932-Germline-short-variant-discovery-SNPs-Indels
+  - label: GATK Hard-filtering germline short variants
+    url: https://gatk.broadinstitute.org/hc/en-us/articles/360035890471-Hard-filtering-germline-short-variants
+  - label: nf-core/sarek
+    url: https://nf-co.re/sarek
+  request_tags:
+  - germline-variant
+  - variant-calling
+  - wes
+  - wgs
+  - gvcf
+  - snp-indel
+  stages:
+  - input-and-reference-check
+  - align-and-bqsr
+  - gvcf-calling
+  - joint-genotyping
+  - filtering-and-review
+  candidate_atomic_skills:
+  - bwa
+  - samtools
+  - gatk-haplotypecaller
+  - gatk-genotypegvcfs
+  - bcftools
+- id: sequence-search-and-annotation
+  layer: workflow
+  summary: Sequence-centric workflow for search, annotation, and evidence collection.
+  request_tags:
+  - sequence-analysis
+  - search
+  - annotation
+  stages:
+  - input-check
+  - search
+  - annotation
+  - review
+  candidate_atomic_skills:
+  - blastn
+  - blastp
+  - hmmscan
+  - hmmsearch
+- id: protein-structure-analysis
+  layer: workflow
+  summary: Protein structure workflow for prediction, comparison, and report generation.
+  request_tags:
+  - protein
+  - structure
+  - folding
+  - design
+  stages:
+  - input-check
+  - model-selection
+  - structure-run
+  - artifact-review
+  candidate_atomic_skills:
+  - esm
+  - alphafold-database
+  - rfdiffusion

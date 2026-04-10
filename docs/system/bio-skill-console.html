@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bio Skill System Control Console</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23191919'/%3E%3Cpath d='M18 20h28v6H18zm0 12h22v6H18zm0 12h28v6H18z' fill='%23b7ca9b'/%3E%3C/svg%3E"
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -12,43 +16,51 @@
     />
     <style>
       :root {
-        --bg: #fcfaf7;
-        --surface: #ffffff;
-        --surface-alt: #f4eee8;
-        --surface-strong: #efe4d6;
-        --line: #dfd4c8;
-        --text: #451a03;
-        --muted: #7c5a46;
-        --primary: #b45309;
-        --accent: #0f766e;
-        --warning: #9a3412;
-        --success: #166534;
-        --radius: 12px;
-        --shadow: 0 3px 12px rgba(69, 26, 3, 0.08);
-        --content-width: 1380px;
+        --bg: #191919;
+        --sidebar: #161616;
+        --surface: #1f1f1f;
+        --surface-alt: #252525;
+        --surface-soft: #202020;
+        --line: #2d2d2d;
+        --line-strong: #3b3b3b;
+        --text: #f1f1ee;
+        --muted: #a4a7a2;
+        --muted-strong: #c6c9c4;
+        --accent: #b7ca9b;
+        --accent-strong: #d4e0ba;
+        --warning: #c6875d;
+        --danger: #b06e6e;
+        --success: #8fb88b;
+        --shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+        --radius: 10px;
       }
 
       * {
         box-sizing: border-box;
       }
 
+      html,
+      body {
+        min-height: 100%;
+      }
+
       body {
         margin: 0;
-        background:
-          radial-gradient(circle at top right, rgba(217, 119, 6, 0.12), transparent 28%),
-          linear-gradient(180deg, #faf6f0 0%, #fcfaf7 100%);
+        background: var(--bg);
         color: var(--text);
-        font-family: "IBM Plex Sans", sans-serif;
-        line-height: 1.55;
+        font: 14px/1.5 "IBM Plex Sans", sans-serif;
+      }
+
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
       }
 
       a {
-        color: var(--primary);
+        color: inherit;
         text-decoration: none;
-      }
-
-      a:hover {
-        text-decoration: underline;
       }
 
       code,
@@ -56,742 +68,3788 @@
         font-family: "IBM Plex Mono", monospace;
       }
 
-      .shell {
-        max-width: var(--content-width);
-        margin: 0 auto;
-        padding: 28px 24px 56px;
+      .app {
+        min-height: 100vh;
         display: grid;
-        gap: 22px;
+        grid-template-columns: 226px minmax(0, 1fr);
       }
 
-      .hero,
+      .sidebar {
+        background: var(--sidebar);
+        border-right: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .brand {
+        padding: 18px 18px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand-mark {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--accent-strong);
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .brand-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 28px;
+        padding: 0 10px;
+        border: 1px solid #7f946d;
+        border-radius: 999px;
+      }
+
+      .sidebar-section {
+        padding: 16px 12px 0;
+      }
+
+      .sidebar-button {
+        width: 100%;
+        border: 1px solid #9eaf86;
+        background: var(--accent);
+        color: #202219;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-weight: 600;
+        text-align: left;
+      }
+
+      .nav-list,
+      .session-list,
+      .project-list {
+        display: grid;
+        gap: 4px;
+      }
+
+      .nav-item,
+      .session-item,
+      .project-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        border-radius: 8px;
+        padding: 9px 10px;
+        color: var(--muted-strong);
+      }
+
+      .session-item {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .nav-item.active,
+      .session-item.active {
+        background: var(--surface);
+        color: var(--text);
+      }
+
+      .nav-left,
+      .session-left,
+      .project-left {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .sidebar-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 12px 4px 8px;
+        color: #7f837d;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .sidebar-icon {
+        width: 16px;
+        height: 16px;
+        color: #898d87;
+        flex: 0 0 auto;
+      }
+
+      .session-empty {
+        margin-top: 12px;
+        border: 1px dashed var(--line-strong);
+        border-radius: 10px;
+        padding: 18px 14px;
+        text-align: center;
+        color: var(--muted);
+      }
+
+      .session-empty svg {
+        display: block;
+        margin: 0 auto 10px;
+        color: #7c7f7b;
+      }
+
+      .session-tools {
+        margin: 0 0 10px;
+      }
+
+      .session-filter-row,
+      .session-layout-row,
+      .session-bulk-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 0 0 10px;
+      }
+
+      .session-group {
+        display: grid;
+        gap: 6px;
+      }
+
+      .session-group + .session-group {
+        margin-top: 10px;
+      }
+
+      .session-group-title {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 0 2px;
+        cursor: pointer;
+        text-align: left;
+      }
+
+      .session-group-count {
+        color: #7f837d;
+        font-size: 11px;
+      }
+
+      .session-filter {
+        min-height: 28px;
+        padding: 0 8px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+      }
+
+      .session-filter.active {
+        border-color: #7f946d;
+        background: var(--surface);
+        color: var(--accent-strong);
+      }
+
+      .sidebar-form {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .sidebar-textarea {
+        width: 100%;
+        min-height: 74px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--text);
+        outline: none;
+        resize: vertical;
+      }
+
+      .sidebar-textarea::placeholder {
+        color: #727670;
+      }
+
+      .sidebar-form-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .session-label-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 22px;
+        padding: 0 7px;
+        border: 1px solid #7f946d;
+        border-radius: 7px;
+        color: var(--accent-strong);
+        background: var(--surface);
+        font-size: 11px;
+      }
+
+      .sidebar-input {
+        width: 100%;
+        min-height: 36px;
+        padding: 0 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--text);
+        outline: none;
+      }
+
+      .sidebar-input::placeholder {
+        color: #727670;
+      }
+
+      .session-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .saved-view-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .saved-view-button {
+        width: 100%;
+        min-height: 32px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--muted-strong);
+        text-align: left;
+        padding: 0 10px;
+        cursor: pointer;
+      }
+
+      .saved-view-button.active {
+        border-color: #7f946d;
+        background: var(--surface);
+        color: var(--accent-strong);
+      }
+
+      .saved-view-delete {
+        min-width: 32px;
+        height: 32px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .session-copy {
+        min-width: 0;
+        display: grid;
+        gap: 2px;
+      }
+
+      .session-name,
+      .session-subline {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .session-subline {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .session-pin {
+        min-width: 32px;
+        height: 32px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .session-pin.active,
+      .session-archive.active {
+        border-color: #7f946d;
+        background: var(--surface);
+        color: var(--accent-strong);
+      }
+
+      .session-copy-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .session-archive {
+        min-width: 32px;
+        height: 32px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .sidebar-footer {
+        margin-top: auto;
+        border-top: 1px solid var(--line);
+        padding: 16px 14px;
+      }
+
+      .profile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--accent);
+        color: #1e2018;
+        font-weight: 700;
+      }
+
+      .profile-meta {
+        line-height: 1.3;
+      }
+
+      .profile-meta small {
+        color: var(--muted);
+        display: block;
+      }
+
+      .main {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .topbar {
+        height: 54px;
+        border-bottom: 1px solid var(--line);
+        padding: 0 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .topbar-label {
+        color: var(--muted);
+      }
+
+      .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .source-strip {
+        width: min(860px, 100%);
+        margin: 0 auto 18px;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) minmax(220px, 0.9fr) auto auto auto;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .source-note,
+      .source-input {
+        min-height: 40px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface);
+        color: var(--muted-strong);
+      }
+
+      .source-note {
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .source-input {
+        width: 100%;
+        padding: 0 12px;
+        outline: none;
+      }
+
+      .source-input::placeholder {
+        color: #727670;
+      }
+
+      .hidden-input {
+        display: none;
+      }
+
+      .bundle-error {
+        width: min(860px, 100%);
+        margin: 0 auto 18px;
+      }
+
+      .shell {
+        width: min(1040px, calc(100vw - 290px));
+        margin: 0 auto;
+        padding: 58px 24px 54px;
+      }
+
+      .composer-zone {
+        text-align: center;
+        margin-bottom: 34px;
+      }
+
+      .composer-zone h1 {
+        margin: 0;
+        font-size: clamp(32px, 4vw, 50px);
+        line-height: 1.08;
+        font-weight: 700;
+      }
+
+      .composer-zone p {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      .composer-card {
+        width: min(690px, 100%);
+        margin: 30px auto 16px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: var(--shadow);
+      }
+
+      .composer-top,
+      .composer-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .composer-top {
+        margin-bottom: 12px;
+      }
+
+      .stack-inline {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .select-chip,
+      .status-chip,
+      .soft-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 30px;
+        padding: 0 11px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: var(--surface-alt);
+        color: var(--muted-strong);
+      }
+
+      .status-chip.accent {
+        border-color: #83966f;
+        background: var(--accent);
+        color: #22241b;
+      }
+
+      .status-chip.warning {
+        background: rgba(198, 135, 93, 0.16);
+        border-color: rgba(198, 135, 93, 0.35);
+        color: #f2d5c0;
+      }
+
+      .composer-textarea {
+        width: 100%;
+        min-height: 136px;
+        resize: vertical;
+        border: 0;
+        background: transparent;
+        color: var(--text);
+        outline: none;
+        padding: 10px 4px 14px;
+      }
+
+      .composer-textarea::placeholder {
+        color: #727670;
+      }
+
+      .secondary-button,
+      .ghost-button,
+      .primary-button {
+        border-radius: 8px;
+        padding: 9px 12px;
+        border: 1px solid var(--line-strong);
+        background: var(--surface-alt);
+        color: var(--muted-strong);
+      }
+
+      .primary-button {
+        border-color: #9fb087;
+        background: var(--accent);
+        color: #22241b;
+        font-weight: 600;
+      }
+
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .token-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--muted);
+      }
+
+      .example-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        color: var(--muted);
+      }
+
+      .workspace-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.95fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .stack {
+        display: grid;
+        gap: 16px;
+      }
+
+      .family-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .analysis-flow-grid,
+      .analysis-flow-stage-grid {
+        display: grid;
+        gap: 10px;
+      }
+
+      .analysis-flow-stage-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        margin-top: 12px;
+      }
+
+      .analysis-flow-stage {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface-soft);
+        padding: 12px 13px;
+      }
+
+      .analysis-flow-stage strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .analysis-flow-bundle {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .family-card {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface-soft);
+        padding: 13px 14px;
+        text-align: left;
+        color: var(--text);
+      }
+
+      .family-card strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .family-card p {
+        margin: 0 0 10px;
+        color: var(--muted);
+      }
+
+      .family-select {
+        width: 100%;
+        min-height: 34px;
+        margin-top: 10px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--text);
+        padding: 0 10px;
+      }
+
+      .family-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .family-meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .family-availability {
+        display: inline-flex;
+        align-items: center;
+        min-height: 22px;
+        padding: 0 8px;
+        border: 1px solid var(--line-strong);
+        border-radius: 7px;
+        font-size: 11px;
+      }
+
+      .family-availability.local {
+        border-color: rgba(143, 184, 139, 0.35);
+        color: var(--success);
+      }
+
+      .family-availability.partial {
+        border-color: rgba(198, 135, 93, 0.35);
+        color: #f2d5c0;
+      }
+
+      .family-availability.external {
+        border-color: rgba(176, 110, 110, 0.35);
+        color: #ebc5c5;
+      }
+
+      .family-warning,
+      .strategy-warning {
+        margin-top: 10px;
+        border: 1px solid rgba(176, 110, 110, 0.28);
+        border-radius: 8px;
+        padding: 10px;
+        color: #ebc5c5;
+        font-size: 12px;
+      }
+
       .panel {
         background: var(--surface);
         border: 1px solid var(--line);
         border-radius: var(--radius);
-        box-shadow: var(--shadow);
       }
 
-      .hero {
-        padding: 28px;
-        display: grid;
-        gap: 18px;
-      }
-
-      .eyebrow {
-        color: var(--primary);
-        font-size: 0.9rem;
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-      }
-
-      h1,
-      h2,
-      h3 {
-        margin: 0;
-        line-height: 1.2;
-      }
-
-      h1 {
-        font-size: 2.2rem;
-      }
-
-      h2 {
-        font-size: 1.35rem;
-        margin-bottom: 14px;
-      }
-
-      h3 {
-        font-size: 1rem;
-        margin-bottom: 8px;
-      }
-
-      p {
-        margin: 0;
-      }
-
-      .hero-grid,
-      .summary-grid,
-      .split-grid,
-      .metric-grid,
-      .plan-grid {
-        display: grid;
-        gap: 16px;
-      }
-
-      .hero-grid {
-        grid-template-columns: 1.4fr 1fr;
-      }
-
-      .summary-grid,
-      .metric-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
-
-      .split-grid {
-        grid-template-columns: 1.1fr 0.9fr;
-      }
-
-      .plan-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .tile,
-      .metric,
-      .plan-card,
-      .json-card,
-      .command-card {
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: var(--surface-alt);
-      }
-
-      .tile,
-      .metric,
-      .plan-card,
-      .json-card {
-        padding: 16px;
-      }
-
-      .tile strong,
-      .metric strong,
-      .plan-card strong {
-        display: block;
-        margin-bottom: 8px;
-      }
-
-      .hero-note {
-        color: var(--muted);
-        max-width: 62rem;
-      }
-
-      .hero-links {
+      .panel-head {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
         display: flex;
-        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
         gap: 12px;
       }
 
-      .button-link {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 10px 14px;
-        border-radius: 999px;
-        border: 1px solid var(--line);
-        background: var(--surface-alt);
-        color: var(--text);
+      .panel-head h2,
+      .panel-head h3 {
+        margin: 0;
+        font-size: 14px;
         font-weight: 600;
       }
 
-      .button-link.primary {
-        background: var(--text);
-        color: #fff9f3;
-        border-color: var(--text);
+      .panel-body {
+        padding: 16px;
       }
 
-      .panel {
-        padding: 22px 24px;
+      .session-metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 16px;
       }
 
-      .metric .value {
-        font-size: 1.7rem;
+      .metric {
+        background: var(--surface-soft);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 12px;
+      }
+
+      .metric strong {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      .metric span {
+        font-size: 22px;
         font-weight: 700;
       }
 
-      .metric .label,
-      .muted {
+      .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .detail-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .detail-row:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .detail-row strong,
+      .section-note {
         color: var(--muted);
       }
 
-      .command-lane {
+      .plan-list,
+      .stage-list,
+      .action-list,
+      .issue-list,
+      .history-list,
+      .file-list {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 16px;
+        gap: 10px;
       }
 
-      .command-card {
-        padding: 16px;
-        background: linear-gradient(180deg, #fffdf9 0%, #f7f1ea 100%);
-      }
-
-      .command-card code {
-        display: block;
-        margin-top: 10px;
-        padding: 10px 12px;
-        border-radius: 8px;
-        background: #fff9f0;
+      .plan-card,
+      .stage-item,
+      .history-item,
+      .issue-item,
+      .file-item {
         border: 1px solid var(--line);
-        white-space: pre-wrap;
+        border-radius: 10px;
+        background: var(--surface-soft);
       }
 
-      .badge-row,
-      .chip-row,
-      .tab-row {
+      .plan-card,
+      .history-item,
+      .issue-item,
+      .file-item {
+        padding: 13px 14px;
+      }
+
+      .plan-card header,
+      .stage-header,
+      .history-header,
+      .issue-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .plan-card p,
+      .muted-text {
+        color: var(--muted);
+      }
+
+      .plan-meta,
+      .history-meta,
+      .issue-meta,
+      .stage-meta {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+
+      .stage-item {
+        padding: 0;
+      }
+
+      .stage-item.active {
+        border-color: #7a8f65;
+      }
+
+      .stage-header {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .stage-body {
+        padding: 12px 14px 14px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .skill-row {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
       }
 
-      .badge,
-      .chip,
-      .json-tab {
+      .skill-chip {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 6px 10px;
+        min-height: 28px;
+        padding: 0 10px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: #282828;
+        color: var(--muted-strong);
+      }
+
+      .skill-chip.unresolved {
+        border-color: rgba(176, 110, 110, 0.35);
+        color: #edc1c1;
+      }
+
+      .tone-good {
+        color: var(--success);
+      }
+
+      .tone-warn {
+        color: var(--warning);
+      }
+
+      .tone-danger {
+        color: var(--danger);
+      }
+
+      .timeline-dot {
+        width: 8px;
+        height: 8px;
         border-radius: 999px;
-        border: 1px solid var(--line);
-        background: #fffdf9;
-        font-size: 0.9rem;
+        background: #5a5d58;
+        margin-top: 7px;
+        flex: 0 0 auto;
       }
 
-      .badge.status-paused {
-        color: var(--warning);
-        border-color: rgba(154, 52, 18, 0.22);
-        background: rgba(154, 52, 18, 0.08);
-      }
-
-      .badge.status-completed {
-        color: var(--success);
-        border-color: rgba(22, 101, 52, 0.22);
-        background: rgba(22, 101, 52, 0.08);
-      }
-
-      .badge.status-pending {
-        color: var(--primary);
-        border-color: rgba(180, 83, 9, 0.18);
-        background: rgba(180, 83, 9, 0.08);
-      }
-
-      .badge.resolution-open {
-        color: var(--warning);
-      }
-
-      .badge.resolution-resolved {
-        color: var(--success);
-      }
-
-      .plan-card.recommended {
-        border-color: rgba(15, 118, 110, 0.3);
-        box-shadow: inset 0 0 0 1px rgba(15, 118, 110, 0.12);
-      }
-
-      .plan-card header,
-      .tile header {
+      .history-item {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
         gap: 12px;
+      }
+
+      .history-copy {
+        min-width: 0;
+      }
+
+      .history-copy strong,
+      .issue-copy strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .data-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+
+      .data-tab {
+        border: 1px solid var(--line-strong);
+        background: var(--surface-alt);
+        color: var(--muted-strong);
+        border-radius: 8px;
+        padding: 7px 10px;
+      }
+
+      .data-tab.active {
+        background: #efefea;
+        border-color: #efefea;
+        color: #1f1f1c;
+      }
+
+      .data-view {
+        min-height: 320px;
+        margin: 0;
+        padding: 14px;
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #181818;
+        color: #d8dbd6;
+        font-size: 12px;
+      }
+
+      .action-item {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface-soft);
+        padding: 13px 14px;
+      }
+
+      .action-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .action-copy {
+        min-width: 72px;
+        padding: 7px 10px;
+      }
+
+      .action-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .editor-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+
+      .editor-input,
+      .editor-textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #181818;
+        color: var(--text);
+      }
+
+      .editor-input {
+        min-height: 40px;
+        padding: 0 12px;
+        margin-bottom: 12px;
+      }
+
+      .editor-textarea {
+        min-height: 260px;
+        resize: vertical;
+        padding: 12px;
+        outline: none;
+        font: 12px/1.55 "IBM Plex Mono", monospace;
+      }
+
+      .editor-status {
         margin-bottom: 10px;
       }
 
-      .stage-table {
-        width: 100%;
-        border-collapse: collapse;
+      .command-block {
+        margin: 10px 0 0;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #181818;
+        color: #d8dbd6;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-size: 12px;
       }
 
-      .stage-table th,
-      .stage-table td {
-        padding: 12px 10px;
-        text-align: left;
-        border-bottom: 1px solid var(--line);
-        vertical-align: top;
-      }
-
-      .stage-table th {
+      .empty-box,
+      .error-box {
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: var(--surface-soft);
+        padding: 14px;
         color: var(--muted);
-        font-size: 0.9rem;
-        font-weight: 600;
       }
 
-      .issue-box,
-      .next-action,
-      .warning-box {
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        padding: 14px 16px;
+      .error-box {
+        border-color: rgba(176, 110, 110, 0.35);
+        color: #ebc5c5;
       }
 
-      .issue-box,
-      .warning-box {
-        background: rgba(154, 52, 18, 0.06);
-        border-color: rgba(154, 52, 18, 0.18);
+      .mobile-topline {
+        display: none;
       }
 
-      .next-action {
-        background: rgba(15, 118, 110, 0.06);
-        border-color: rgba(15, 118, 110, 0.18);
-      }
+      @media (max-width: 1120px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
 
-      .json-tab {
-        cursor: pointer;
-      }
+        .sidebar {
+          display: none;
+        }
 
-      .json-tab.active {
-        background: var(--text);
-        color: #fff9f3;
-        border-color: var(--text);
-      }
+        .main {
+          min-height: 100vh;
+        }
 
-      .json-viewer {
-        min-height: 340px;
-        margin-top: 14px;
-        padding: 16px;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: #fffdf9;
-        overflow: auto;
-      }
+        .shell {
+          width: min(960px, 100vw);
+          padding: 22px 16px 38px;
+        }
 
-      .json-viewer pre {
-        margin: 0;
-        font-size: 0.9rem;
-      }
+        .mobile-topline {
+          display: block;
+          color: var(--muted);
+          margin-bottom: 16px;
+        }
 
-      .footer-note {
-        color: var(--muted);
-        font-size: 0.92rem;
-      }
+        .source-strip {
+          grid-template-columns: 1fr;
+        }
 
-      .loading,
-      .error {
-        padding: 18px;
-        border-radius: 10px;
-        border: 1px solid var(--line);
-      }
-
-      .loading {
-        background: var(--surface-alt);
-      }
-
-      .error {
-        background: rgba(154, 52, 18, 0.08);
-        border-color: rgba(154, 52, 18, 0.18);
-      }
-
-      @media (max-width: 1080px) {
-        .hero-grid,
-        .split-grid,
-        .summary-grid,
-        .metric-grid,
-        .plan-grid,
-        .command-lane {
+        .workspace-grid,
+        .detail-grid,
+        .session-metrics {
           grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
   <body>
-    <div class="shell">
-      <section class="hero">
-        <div class="eyebrow">Bio Agent / Runtime Console</div>
-        <div class="hero-grid">
-          <div>
-            <h1>Bio Skill System Control Console</h1>
-            <p class="hero-note">
-              这是一个静态但可读的控制台原型，用真实 CLI 输出把
-              <code>request -&gt; plans -&gt; approved plan -&gt; draft -&gt; run-status -&gt; run-review</code>
-              这条主链直接摊开。它的目标不是替代真正的前端，而是把当前控制平面讲清楚。
-            </p>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">
+            <span class="brand-badge">BIO</span>
+            <span>bio-agent</span>
           </div>
-          <div class="tile">
-            <strong>这一页适合看什么</strong>
-            <div class="badge-row">
-              <span class="badge">计划对比怎么给用户看</span>
-              <span class="badge">阶段状态如何落到 run</span>
-              <span class="badge">暂停点怎么解释</span>
-              <span class="badge">下一动作怎么给 agent</span>
-              <span class="badge">什么时候应该继续或先卡住</span>
+        </div>
+
+        <div class="sidebar-section">
+          <button id="new-session-button" class="sidebar-button" type="button">+ New Session</button>
+        </div>
+
+        <div class="sidebar-section">
+          <nav class="nav-list">
+            <a class="nav-item active" href="#composer">
+              <span class="nav-left">
+                <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M4 6h16M4 12h16M4 18h10" />
+                </svg>
+                <span>Research Inbox</span>
+              </span>
+            </a>
+            <a class="nav-item" href="#plans">
+              <span class="nav-left">
+                <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="m4 5 8 3 8-3" />
+                  <path d="m4 12 8 3 8-3" />
+                  <path d="m4 19 8 3 8-3" transform="translate(0 -2)" />
+                </svg>
+                <span>Generated Plans</span>
+              </span>
+            </a>
+            <a class="nav-item" href="#runtime">
+              <span class="nav-left">
+                <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M5 12h4l2-6 4 12 2-6h2" />
+                </svg>
+                <span>Runtime Center</span>
+              </span>
+            </a>
+            <a class="nav-item" href="#history">
+              <span class="nav-left">
+                <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M12 8v5l3 2" />
+                  <path d="M21 12a9 9 0 1 1-3-6.7" />
+                </svg>
+                <span>Session History</span>
+              </span>
+            </a>
+          </nav>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-heading">
+            <span>Projects</span>
+            <span>+</span>
+          </div>
+          <div id="project-list" class="project-list"></div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-heading">
+            <span>Recent Sessions</span>
+            <span id="session-count">0</span>
+          </div>
+          <div class="session-tools">
+            <input
+              id="session-search-input"
+              class="sidebar-input"
+              type="text"
+              spellcheck="false"
+              placeholder="Filter sessions..."
+            />
+          </div>
+          <div id="session-filter-row" class="session-filter-row">
+            <button type="button" class="session-filter active" data-session-scope="all">All</button>
+            <button type="button" class="session-filter" data-session-scope="pinned">Pinned</button>
+            <button type="button" class="session-filter" data-session-scope="needs_plan">Needs Plan</button>
+            <button type="button" class="session-filter" data-session-scope="in_run">In Run</button>
+            <button type="button" class="session-filter" data-session-scope="archived">Archived</button>
+          </div>
+          <div id="session-layout-row" class="session-layout-row">
+            <button type="button" class="session-filter active" data-session-layout="flat">Flat</button>
+            <button type="button" class="session-filter" data-session-layout="grouped">Grouped</button>
+          </div>
+          <div id="session-bulk-row" class="session-bulk-row">
+            <button type="button" class="session-filter" id="bulk-pin-visible">Pin Visible</button>
+            <button type="button" class="session-filter" id="bulk-archive-visible">Archive Visible</button>
+            <button type="button" class="session-filter" id="bulk-clear-visible-notes">Clear Visible Notes</button>
+          </div>
+          <div class="sidebar-form" style="margin-top: 0; margin-bottom: 10px;">
+            <input
+              id="saved-view-name-input"
+              class="sidebar-input"
+              type="text"
+              spellcheck="false"
+              placeholder="Saved view name..."
+            />
+            <div class="sidebar-form-actions">
+              <button id="saved-view-save-button" type="button" class="secondary-button">Save View</button>
+            </div>
+          </div>
+          <div id="saved-view-list" class="session-list"></div>
+          <div id="session-list" class="session-list"></div>
+          <div id="session-empty" class="session-empty">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+              <path d="M7 8h10" />
+              <path d="M7 12h7" />
+              <path d="M7 16h5" />
+              <rect x="4" y="4" width="16" height="16" rx="3" />
+            </svg>
+            <div>No session loaded yet.</div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-heading">
+            <span>Session Notes</span>
+            <span id="session-meta-pill">Local</span>
+          </div>
+          <div class="sidebar-form">
+            <input
+              id="session-label-input"
+              class="sidebar-input"
+              type="text"
+              spellcheck="false"
+              placeholder="Label for active session..."
+            />
+            <textarea
+              id="session-note-input"
+              class="sidebar-textarea"
+              spellcheck="false"
+              placeholder="Short note for the active session..."
+            ></textarea>
+            <div class="sidebar-form-actions">
+              <button id="session-meta-save-button" type="button" class="secondary-button">Save</button>
+              <button id="session-meta-clear-button" type="button" class="ghost-button">Clear</button>
             </div>
           </div>
         </div>
-        <div class="hero-links">
-          <a class="button-link primary" href="bio-skill-system.html">查看总架构页</a>
-          <a class="button-link" href="#json-inspector">查看结构化数据</a>
-        </div>
-      </section>
 
-      <section class="panel">
-        <h2>运行摘要</h2>
-        <div id="summary-root" class="summary-grid">
-          <div class="loading">Loading demo bundle...</div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2>命令链路</h2>
-        <div class="command-lane">
-          <div class="command-card">
-            <strong>1. 计划阶段</strong>
-            用户需求先归一化，再给两个方案做 trade-off。
-            <code>propose
-review
-approve
-edit</code>
-          </div>
-          <div class="command-card">
-            <strong>2. 执行准备</strong>
-            已批准 plan 冻结下来，再展开成候选 skill 草稿。
-            <code>draft
-run-init</code>
-          </div>
-          <div class="command-card">
-            <strong>3. 运行阶段</strong>
-            单 stage 推进，必要时暂停，再给人或 agent 一个可读摘要。
-            <code>run-next-stage
-run-pause
-run-resume
-run-status
-run-review</code>
+        <div class="sidebar-footer">
+          <div class="profile">
+            <span class="avatar">V</span>
+            <div class="profile-meta">
+              <div>vimalinx</div>
+              <small>bio-agent workspace</small>
+            </div>
           </div>
         </div>
-      </section>
+      </aside>
 
-      <section class="panel">
-        <h2>候选 Plan 对比</h2>
-        <div id="plan-root" class="plan-grid"></div>
-      </section>
+      <main class="main">
+        <header class="topbar">
+          <div class="topbar-label">Bio Skill System Control Console</div>
+          <div class="topbar-actions">
+            <span id="topbar-status" class="status-chip">Loading</span>
+            <span id="control-api-pill" class="soft-chip">CLI Only</span>
+            <a class="ghost-button" href="bio-skill-system.html">Architecture</a>
+          </div>
+        </header>
 
-      <section class="panel">
-        <h2>批准 Plan 与当前执行位点</h2>
-        <div class="split-grid">
-          <div>
-            <table class="stage-table">
-              <thead>
-                <tr>
-                  <th>Stage</th>
-                  <th>Goal</th>
-                  <th>Status</th>
-                  <th>Confirm</th>
-                  <th>Skills</th>
-                </tr>
-              </thead>
-              <tbody id="stage-table-body"></tbody>
-            </table>
-          </div>
-          <div class="stack">
-            <div class="warning-box" id="draft-warning"></div>
-            <div class="issue-box" id="latest-issue"></div>
-            <div class="next-action" id="next-action"></div>
-          </div>
+        <div class="shell">
+          <div class="mobile-topline">bio-agent workspace</div>
+
+          <section class="source-strip" aria-label="Bundle source controls">
+            <span class="soft-chip">Bundle Source</span>
+            <div id="bundle-source-note" class="source-note">Demo bundle</div>
+            <input
+              id="bundle-url-input"
+              class="source-input"
+              type="text"
+              spellcheck="false"
+              placeholder="?bundle=data/session-export.json target or full JSON URL"
+            />
+            <button id="load-url-button" type="button" class="secondary-button">Load URL</button>
+            <button id="load-demo-button" type="button" class="ghost-button">Demo</button>
+            <button id="upload-bundle-button" type="button" class="ghost-button">Upload JSON</button>
+            <input id="bundle-file-input" class="hidden-input" type="file" accept="application/json,.json" />
+          </section>
+
+          <div id="bundle-error" class="error-box bundle-error" hidden></div>
+
+          <section id="composer" class="composer-zone">
+            <h1>What can I help you model today?</h1>
+            <p>Plan-first control for biological research, session review, and staged execution.</p>
+
+            <div class="composer-card">
+              <div class="composer-top">
+                <div class="stack-inline">
+                  <span id="session-chip" class="select-chip">Session</span>
+                  <span id="plan-chip" class="status-chip accent">Plan</span>
+                </div>
+                <div class="stack-inline">
+                  <span id="verdict-chip" class="status-chip">Review</span>
+                  <span id="mode-chip" class="soft-chip">Half-automatic</span>
+                </div>
+              </div>
+
+              <textarea
+                id="request-box"
+                class="composer-textarea"
+                spellcheck="false"
+                placeholder="Describe the research goal, inputs, species, and expected outputs..."
+              ></textarea>
+
+              <div class="composer-bottom">
+                <div class="stack-inline">
+                  <button type="button" class="secondary-button">Upload inputs</button>
+                  <div id="request-tags" class="stack-inline"></div>
+                </div>
+                <div class="stack-inline">
+                  <div class="token-row">
+                    <span id="event-count">0 events</span>
+                    <span id="current-stage-copy">No stage</span>
+                  </div>
+                  <button id="next-action-button" type="button" class="primary-button">Next action</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="example-row" class="example-row"></div>
+          </section>
+
+          <section class="workspace-grid">
+            <div class="stack">
+              <article class="panel">
+                <div class="panel-head">
+                  <h2>Session Snapshot</h2>
+                  <span id="snapshot-status" class="status-chip">Session</span>
+                </div>
+                <div class="panel-body">
+                  <div id="session-metrics" class="session-metrics"></div>
+                  <div class="detail-grid">
+                    <div>
+                      <div class="section-note">Current session</div>
+                      <div id="session-details" class="detail-list"></div>
+                    </div>
+                    <div>
+                      <div class="section-note">Artifacts on disk</div>
+                      <div id="file-list" class="file-list"></div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <article id="plans" class="panel">
+                <div class="panel-head">
+                  <h2>Candidate Plans</h2>
+                  <span id="recommended-pill" class="status-chip accent">Recommended</span>
+                </div>
+                <div id="plan-list" class="panel-body plan-list"></div>
+              </article>
+
+              <article id="runtime" class="panel">
+                <div class="panel-head">
+                  <h2>Runtime Stages</h2>
+                  <span id="runtime-pill" class="status-chip">Runtime</span>
+                </div>
+                <div id="stage-list" class="panel-body stage-list"></div>
+              </article>
+            </div>
+
+            <div class="stack">
+              <article class="panel">
+                <div class="panel-head">
+                  <h3>Workflow Families</h3>
+                  <span id="family-pill" class="soft-chip">Catalog</span>
+                </div>
+                <div id="family-grid" class="panel-body family-grid"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <h3>Strategy</h3>
+                  <span id="strategy-pill" class="soft-chip">Session</span>
+                </div>
+                <div id="strategy-panel" class="panel-body"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <h3>Analysis Flow</h3>
+                  <span id="analysis-flow-pill" class="soft-chip">Flow</span>
+                </div>
+                <div id="analysis-flow-panel" class="panel-body"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <h3>Run Review</h3>
+                  <span id="review-pill" class="status-chip warning">Review</span>
+                </div>
+                <div class="panel-body">
+                  <div id="review-summary" class="detail-list"></div>
+                  <div style="margin-top: 16px" class="detail-grid">
+                    <div>
+                      <div class="section-note">Blocking</div>
+                      <div id="blocking-list" class="issue-list"></div>
+                    </div>
+                    <div>
+                      <div class="section-note">Upcoming</div>
+                      <div id="future-list" class="issue-list"></div>
+                    </div>
+                    <div>
+                      <div class="section-note">Delivery</div>
+                      <div id="delivery-list" class="issue-list"></div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <h3>Operator Actions</h3>
+                  <span id="actions-pill" class="soft-chip">CLI</span>
+                </div>
+                <div id="action-list" class="panel-body action-list"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <h3>Plan Editor</h3>
+                  <span id="plan-editor-pill" class="soft-chip">Idle</span>
+                </div>
+                <div class="panel-body">
+                  <div class="editor-toolbar">
+                    <div class="action-controls">
+                      <button id="plan-load-button" type="button" class="secondary-button">Load Current</button>
+                      <button id="plan-download-button" type="button" class="ghost-button">Download</button>
+                      <button id="plan-upload-button" type="button" class="ghost-button">Upload Draft</button>
+                      <button id="plan-approve-button" type="button" class="primary-button">Approve Edited</button>
+                    </div>
+                    <div id="plan-editor-file" class="soft-chip">editable-plan.md</div>
+                  </div>
+                  <div id="plan-editor-status" class="editor-status muted-text">
+                    Start the local console API to load and approve plan edits in-browser. Approving an edited plan will reset run artifacts from stage s1.
+                  </div>
+                  <input
+                    id="plan-editor-reason"
+                    class="editor-input"
+                    type="text"
+                    spellcheck="false"
+                    placeholder="Approval reason for the edited plan..."
+                  />
+                  <textarea
+                    id="plan-editor-text"
+                    class="editor-textarea"
+                    spellcheck="false"
+                    placeholder="Plan markdown will appear here after you load or upload it."
+                  ></textarea>
+                  <input id="plan-upload-input" class="hidden-input" type="file" accept=".md,.json,.yaml,.yml,text/markdown,application/json" />
+                </div>
+              </article>
+
+              <article id="history" class="panel">
+                <div class="panel-head">
+                  <h3>Session Timeline</h3>
+                  <span id="history-pill" class="status-chip">History</span>
+                </div>
+                <div id="history-list" class="panel-body history-list"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <h3>Data Inspector</h3>
+                  <span id="inspector-source-pill" class="soft-chip">Demo Bundle</span>
+                </div>
+                <div class="panel-body">
+                  <div id="data-tabs" class="data-tabs"></div>
+                  <pre id="data-view" class="data-view"></pre>
+                </div>
+              </article>
+            </div>
+          </section>
         </div>
-      </section>
-
-      <section class="panel">
-        <h2>Run Status 读法</h2>
-        <div id="metric-root" class="metric-grid"></div>
-        <div style="margin-top: 16px" class="split-grid">
-          <div class="tile">
-            <strong>为什么现在会停在这里</strong>
-            <p id="pause-explanation" class="muted"></p>
-          </div>
-          <div class="tile">
-            <strong>这一步应该怎么继续</strong>
-            <p id="resume-explanation" class="muted"></p>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2>Run Review 审查面</h2>
-        <div class="split-grid">
-          <div class="tile">
-            <strong>Verdict</strong>
-            <div id="review-verdict" style="margin-bottom: 10px"></div>
-            <p id="review-summary" class="muted"></p>
-          </div>
-          <div class="tile">
-            <strong>Current Stage Review</strong>
-            <div id="review-current-stage" class="muted"></div>
-          </div>
-        </div>
-        <div style="margin-top: 16px" class="split-grid">
-          <div class="issue-box" id="review-blockers"></div>
-          <div class="warning-box" id="review-future"></div>
-        </div>
-      </section>
-
-      <section class="panel" id="json-inspector">
-        <h2>结构化数据检查器</h2>
-        <div class="tab-row" id="json-tabs"></div>
-        <div class="json-viewer">
-          <pre id="json-output"></pre>
-        </div>
-      </section>
-
-      <p class="footer-note">
-        数据源: <code>docs/system/data/bio-skill-console-demo.json</code>。这个样本使用当前控制平面的真实命令流生成，不是手写的 UI 假数据。
-      </p>
+      </main>
     </div>
 
     <script>
-      const badgeClass = (status) => {
-        const value = String(status || "").toLowerCase();
-        if (value === "completed") return "badge status-completed";
-        if (value === "paused") return "badge status-paused";
-        return "badge status-pending";
+      const DEMO_BUNDLE_URL = "data/bio-skill-console-demo.json";
+      const DEFAULT_PLAN_EDITOR_STATUS = "No plan loaded. Approving an edited plan will reset run artifacts from stage s1.";
+      const PINNED_SESSIONS_STORAGE_KEY = "bio-agent.console.pinnedSessions";
+      const ARCHIVED_SESSIONS_STORAGE_KEY = "bio-agent.console.archivedSessions";
+      const SESSION_METADATA_STORAGE_KEY = "bio-agent.console.sessionMetadata";
+      const SESSION_LAYOUT_STORAGE_KEY = "bio-agent.console.sessionLayout";
+      const SESSION_GROUP_COLLAPSE_STORAGE_KEY = "bio-agent.console.sessionGroupCollapse";
+      const SESSION_SAVED_VIEWS_STORAGE_KEY = "bio-agent.console.savedViews";
+      const WORKFLOW_CATALOG_URL = "data/real-bioinformatics-workflows.json";
+
+      function createPlanEditorState(status = DEFAULT_PLAN_EDITOR_STATUS) {
+        return {
+          text: "",
+          fileName: "editable-plan.md",
+          reason: "",
+          loaded: false,
+          dirty: false,
+          status
+        };
+      }
+
+      const appState = {
+        data: null,
+        meta: null,
+        sessions: [],
+        planEditor: createPlanEditorState(),
+        control: {
+          enabled: false,
+          base: null,
+          health: null
+        },
+        sessionUi: {
+          query: "",
+          scope: "all",
+          layout: "flat",
+          archived: [],
+          pinned: [],
+          metadata: {},
+          collapsedGroups: {},
+          savedViews: []
+        },
+        workflowCatalog: [] ,
+        workflowStrategySelection: {},
+        busy: {
+          startingSession: false,
+          primaryAction: false
+        }
       };
 
       const jsonTabs = [
         ["request", "Request"],
+        ["analysis_flow", "Analysis Flow"],
+        ["candidate_plans", "Plans"],
+        ["session", "Session"],
         ["review", "Review"],
         ["approved_plan", "Approved Plan"],
-        ["execution_draft", "Execution Draft"],
+        ["execution_draft", "Draft"],
         ["run_state", "Run State"],
         ["run_status", "Run Status"],
-        ["run_review", "Run Review"]
+        ["run_review", "Run Review"],
+        ["history", "History"]
       ];
 
-      function renderSummary(data) {
-        const root = document.getElementById("summary-root");
-        const summaryItems = [
-          {
-            title: "Request Goal",
-            value: data.request.user_goal,
-            detail: data.request.request_tags.join(" / ")
-          },
-          {
-            title: "Recommended Plan",
-            value: data.review.recommended_plan_id,
-            detail: data.review.rationale
-          },
-          {
-            title: "Run Status",
-            value: data.run_status.status,
-            detail: `current_stage=${data.run_status.current_stage}`
-          },
-          {
-            title: "Next Action",
-            value: data.run_status.next_action,
-            detail: `resume_from=${data.run_status.resume_from}`
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function toneClass(value) {
+        const text = String(value || "").toLowerCase();
+        if (["completed", "ready_to_deliver", "ready_to_continue", "passed"].includes(text)) return "accent";
+        if (["blocked", "failed", "completed_with_environment_gaps"].includes(text)) return "warning";
+        if (["paused", "awaiting_confirmation", "warning"].includes(text)) return "warning";
+        return "";
+      }
+
+      function shellQuote(value) {
+        return `'${String(value ?? "").replace(/'/g, `'\\''`)}'`;
+      }
+
+      function readPinnedSessions() {
+        try {
+          const raw = window.localStorage.getItem(PINNED_SESSIONS_STORAGE_KEY);
+          const items = JSON.parse(raw || "[]");
+          if (!Array.isArray(items)) return [];
+          return [...new Set(items.filter((item) => typeof item === "string" && item.trim()))];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function writePinnedSessions(items) {
+        try {
+          window.localStorage.setItem(PINNED_SESSIONS_STORAGE_KEY, JSON.stringify(items));
+        } catch (error) {
+          return;
+        }
+      }
+
+      function readArchivedSessions() {
+        try {
+          const raw = window.localStorage.getItem(ARCHIVED_SESSIONS_STORAGE_KEY);
+          const items = JSON.parse(raw || "[]");
+          if (!Array.isArray(items)) return [];
+          return [...new Set(items.filter((item) => typeof item === "string" && item.trim()))];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function writeArchivedSessions(items) {
+        try {
+          window.localStorage.setItem(ARCHIVED_SESSIONS_STORAGE_KEY, JSON.stringify(items));
+        } catch (error) {
+          return;
+        }
+      }
+
+      function readSessionMetadata() {
+        try {
+          const raw = window.localStorage.getItem(SESSION_METADATA_STORAGE_KEY);
+          const payload = JSON.parse(raw || "{}");
+          return payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {};
+        } catch (error) {
+          return {};
+        }
+      }
+
+      function writeSessionMetadata(payload) {
+        try {
+          window.localStorage.setItem(SESSION_METADATA_STORAGE_KEY, JSON.stringify(payload));
+        } catch (error) {
+          return;
+        }
+      }
+
+      function readSessionLayout() {
+        try {
+          const value = window.localStorage.getItem(SESSION_LAYOUT_STORAGE_KEY);
+          return value === "grouped" ? "grouped" : "flat";
+        } catch (error) {
+          return "flat";
+        }
+      }
+
+      function writeSessionLayout(value) {
+        try {
+          window.localStorage.setItem(SESSION_LAYOUT_STORAGE_KEY, value);
+        } catch (error) {
+          return;
+        }
+      }
+
+      function readCollapsedGroups() {
+        try {
+          const raw = window.localStorage.getItem(SESSION_GROUP_COLLAPSE_STORAGE_KEY);
+          const payload = JSON.parse(raw || "{}");
+          return payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {};
+        } catch (error) {
+          return {};
+        }
+      }
+
+      function writeCollapsedGroups(payload) {
+        try {
+          window.localStorage.setItem(SESSION_GROUP_COLLAPSE_STORAGE_KEY, JSON.stringify(payload));
+        } catch (error) {
+          return;
+        }
+      }
+
+      function readSavedViews() {
+        try {
+          const raw = window.localStorage.getItem(SESSION_SAVED_VIEWS_STORAGE_KEY);
+          const items = JSON.parse(raw || "[]");
+          if (!Array.isArray(items)) return [];
+          return items.filter((item) => item && typeof item === "object" && item.name);
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function writeSavedViews(items) {
+        try {
+          window.localStorage.setItem(SESSION_SAVED_VIEWS_STORAGE_KEY, JSON.stringify(items));
+        } catch (error) {
+          return;
+        }
+      }
+
+      function apiBaseFromQuery() {
+        const raw = new URL(window.location.href).searchParams.get("api");
+        return raw ? raw.replace(/\/$/, "") : null;
+      }
+
+      function resolveApiBase() {
+        const queryBase = apiBaseFromQuery();
+        if (queryBase) return queryBase;
+        if (window.location.protocol.startsWith("http")) {
+          return window.location.origin;
+        }
+        return null;
+      }
+
+      function apiUrl(path) {
+        const base = appState.control.base;
+        if (!base) return null;
+        return `${base}${path}`;
+      }
+
+      function liveBundleMeta() {
+        const bundleUrl = apiUrl("/api/session/bundle") || "Live API Bundle";
+        return {
+          label: "Live API Bundle",
+          detail: bundleUrl,
+          urlValue: apiUrl("/api/session/bundle") || ""
+        };
+      }
+
+      function sessionBundleUrl(sessionDir) {
+        const endpoint = apiUrl("/api/session/bundle");
+        if (!endpoint) return null;
+        if (!sessionDir) return endpoint;
+        const url = new URL(endpoint);
+        url.searchParams.set("session_dir", sessionDir);
+        return url.toString();
+      }
+
+      function sessionMetadata(sessionDir) {
+        if (!sessionDir) return { label: "", note: "" };
+        const payload = appState.sessionUi.metadata?.[sessionDir] || {};
+        return {
+          label: String(payload.label || ""),
+          note: String(payload.note || "")
+        };
+      }
+
+      function saveSessionMetadata(sessionDir, nextMeta) {
+        if (!sessionDir) return;
+        const label = String(nextMeta.label || "").trim();
+        const note = String(nextMeta.note || "").trim();
+        if (!label && !note) {
+          delete appState.sessionUi.metadata[sessionDir];
+        } else {
+          appState.sessionUi.metadata[sessionDir] = { label, note };
+        }
+        writeSessionMetadata(appState.sessionUi.metadata);
+      }
+
+      function bulkPinSessions(sessionDirs) {
+        const next = [...new Set([...(sessionDirs || []).filter(Boolean), ...appState.sessionUi.pinned])];
+        appState.sessionUi.pinned = next;
+        writePinnedSessions(next);
+      }
+
+      function bulkArchiveSessions(sessionDirs) {
+        const next = [...new Set([...(sessionDirs || []).filter(Boolean), ...appState.sessionUi.archived])];
+        appState.sessionUi.archived = next;
+        writeArchivedSessions(next);
+      }
+
+      function bulkClearSessionMetadata(sessionDirs) {
+        for (const sessionDir of sessionDirs || []) {
+          if (sessionDir) delete appState.sessionUi.metadata[sessionDir];
+        }
+        writeSessionMetadata(appState.sessionUi.metadata);
+      }
+
+      function isSessionPinned(sessionDir) {
+        return appState.sessionUi.pinned.includes(sessionDir);
+      }
+
+      function isSessionArchived(sessionDir) {
+        return appState.sessionUi.archived.includes(sessionDir);
+      }
+
+      function togglePinnedSession(sessionDir) {
+        if (!sessionDir) return;
+        if (isSessionPinned(sessionDir)) {
+          appState.sessionUi.pinned = appState.sessionUi.pinned.filter((item) => item !== sessionDir);
+        } else {
+          appState.sessionUi.pinned = [sessionDir, ...appState.sessionUi.pinned];
+        }
+        writePinnedSessions(appState.sessionUi.pinned);
+        if (appState.data) {
+          renderSidebar(appState.data);
+        }
+      }
+
+      function toggleArchivedSession(sessionDir) {
+        if (!sessionDir) return;
+        if (isSessionArchived(sessionDir)) {
+          appState.sessionUi.archived = appState.sessionUi.archived.filter((item) => item !== sessionDir);
+        } else {
+          appState.sessionUi.archived = [sessionDir, ...appState.sessionUi.archived];
+        }
+        writeArchivedSessions(appState.sessionUi.archived);
+        if (appState.data) {
+          renderSidebar(appState.data);
+        }
+      }
+
+      function matchesSessionScope(item) {
+        const scope = appState.sessionUi.scope || "all";
+        if (scope === "archived") {
+          return isSessionArchived(item.session_dir);
+        }
+        if (scope === "pinned") {
+          return isSessionPinned(item.session_dir) && !isSessionArchived(item.session_dir);
+        }
+        if (scope === "needs_plan") {
+          return !item.approved_plan_id && !isSessionArchived(item.session_dir);
+        }
+        if (scope === "in_run") {
+          return Boolean(item.approved_plan_id || item.current_stage || item.run_status || item.run_verdict) && !isSessionArchived(item.session_dir);
+        }
+        return !isSessionArchived(item.session_dir);
+      }
+
+      function sessionLabelGroup(item) {
+        const label = sessionMetadata(item.session_dir).label.trim();
+        return label || "Unlabeled";
+      }
+
+      function isGroupCollapsed(label) {
+        return Boolean(appState.sessionUi.collapsedGroups?.[label]);
+      }
+
+      function toggleGroupCollapsed(label) {
+        if (!label) return;
+        const next = { ...(appState.sessionUi.collapsedGroups || {}) };
+        next[label] = !next[label];
+        appState.sessionUi.collapsedGroups = next;
+        writeCollapsedGroups(next);
+        if (appState.data) {
+          renderSidebar(appState.data);
+        }
+      }
+
+      function sessionRowMarkup(item, activeSessionDir) {
+        const active = item.session_dir === activeSessionDir ? "active" : "";
+        const trailingLabel = item.current_stage || item.history_event_count || 0;
+        const subtitle = [item.status, item.current_stage || item.run_verdict || item.run_status || "plan"]
+          .filter(Boolean)
+          .join(" · ");
+        const pinned = isSessionPinned(item.session_dir);
+        const archived = isSessionArchived(item.session_dir);
+        const meta = sessionMetadata(item.session_dir);
+        return `
+          <div class="session-row">
+            <button
+              type="button"
+              class="session-item ${active}"
+              data-session-dir="${escapeHtml(item.session_dir)}"
+              title="${escapeHtml([item.next_action || item.status || item.session_id, meta.note].filter(Boolean).join(" • "))}"
+            >
+              <span class="session-left">
+                <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M6 5h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
+                </svg>
+                <span class="session-copy">
+                  <span class="session-name">${escapeHtml(item.session_id)}</span>
+                  <span class="session-copy-meta">
+                    ${meta.label ? `<span class="session-label-chip">${escapeHtml(meta.label)}</span>` : ""}
+                    <span class="session-subline">${escapeHtml(subtitle)}</span>
+                  </span>
+                </span>
+              </span>
+              <span class="soft-chip">${escapeHtml(trailingLabel)}</span>
+            </button>
+            <button
+              type="button"
+              class="session-pin ${pinned ? "active" : ""}"
+              data-pin-session="${escapeHtml(item.session_dir)}"
+              title="${pinned ? "Unpin session" : "Pin session"}"
+              aria-label="${pinned ? "Unpin session" : "Pin session"}"
+            >
+              ${pinned ? "★" : "☆"}
+            </button>
+            <button
+              type="button"
+              class="session-archive ${archived ? "active" : ""}"
+              data-archive-session="${escapeHtml(item.session_dir)}"
+              title="${archived ? "Restore session" : "Hide session"}"
+              aria-label="${archived ? "Restore session" : "Hide session"}"
+            >
+              ${archived ? "R" : "H"}
+            </button>
+          </div>
+        `;
+      }
+
+      function currentViewState() {
+        return {
+          query: appState.sessionUi.query,
+          scope: appState.sessionUi.scope,
+          layout: appState.sessionUi.layout
+        };
+      }
+
+      async function loadWorkflowCatalog() {
+        try {
+          const response = await fetch(WORKFLOW_CATALOG_URL);
+          if (!response.ok) throw new Error(`workflow catalog ${response.status}`);
+          const payload = await response.json();
+          appState.workflowCatalog = Array.isArray(payload.workflows) ? payload.workflows : [];
+        } catch (error) {
+          appState.workflowCatalog = [];
+        }
+      }
+
+      function isSavedViewActive(view) {
+        const current = currentViewState();
+        return current.query === (view.query || "")
+          && current.scope === (view.scope || "all")
+          && current.layout === (view.layout || "flat");
+      }
+
+      function applySavedView(view) {
+        appState.sessionUi.query = String(view.query || "");
+        appState.sessionUi.scope = String(view.scope || "all");
+        appState.sessionUi.layout = String(view.layout || "flat");
+      }
+
+      function saveCurrentView(name) {
+        const viewName = String(name || "").trim();
+        if (!viewName) return false;
+        const view = {
+          id: `view-${Date.now()}`,
+          name: viewName,
+          ...currentViewState()
+        };
+        const next = appState.sessionUi.savedViews.filter((item) => item.name !== viewName);
+        next.unshift(view);
+        appState.sessionUi.savedViews = next;
+        writeSavedViews(next);
+        return true;
+      }
+
+      function removeSavedView(viewId) {
+        appState.sessionUi.savedViews = appState.sessionUi.savedViews.filter((item) => item.id !== viewId);
+        writeSavedViews(appState.sessionUi.savedViews);
+      }
+
+      function currentSidebarSessionItems() {
+        const sessionItems = mergeCurrentSessionIntoList(appState.sessions);
+        const filteredItems = visibleSessionItems(sessionItems);
+        return { sessionItems, filteredItems };
+      }
+
+      function currentWorkflowFamily(data) {
+        const plans = data?.candidate_plans || [];
+        const approved = data?.approved_plan || {};
+        const workflowId = approved.source_workflow_id || plans.find((item) => item.source_workflow_id)?.source_workflow_id;
+        if (!workflowId) return null;
+        return appState.workflowCatalog.find((item) => item.id === workflowId) || null;
+      }
+
+      function currentPlanStrategy(data) {
+        const session = data?.session || {};
+        const plans = data?.candidate_plans || [];
+        const approved = data?.approved_plan || {};
+        if (session.approved_plan_id && approved.selected_strategy_profile) {
+          return {
+            profile: approved.selected_strategy_profile,
+            label: approved.selected_strategy_label || approved.selected_strategy_profile
+          };
+        }
+        const recommended = plans.find((item) => item.recommended) || plans[0];
+        if (!recommended?.selected_strategy_profile) return null;
+        return {
+          profile: recommended.selected_strategy_profile,
+          label: recommended.selected_strategy_label || recommended.selected_strategy_profile
+        };
+      }
+
+      function currentStrategyProfileMeta(data) {
+        const family = currentWorkflowFamily(data);
+        const current = currentPlanStrategy(data);
+        if (!family || !current) return null;
+        return (family.strategy_profiles || []).find((item) => item.id === current.profile) || null;
+      }
+
+      function strategyWarningText(availability) {
+        if (availability === 'external') {
+          return 'This strategy is modeled from real workflows but is not backed by a local skill in this repo yet.';
+        }
+        if (availability === 'partial') {
+          return 'This strategy mixes local and unresolved tools; expect partial execution support.';
+        }
+        return '';
+      }
+
+      function visibleSessionItems(items) {
+        const query = appState.sessionUi.query.trim().toLowerCase();
+        const activeSessionDir = appState.data?.session?.session_dir || null;
+        const ordered = [...items]
+          .map((item, index) => ({ item, index }))
+          .sort((left, right) => {
+            const pinnedDiff = Number(isSessionPinned(right.item.session_dir)) - Number(isSessionPinned(left.item.session_dir));
+            return pinnedDiff || left.index - right.index;
+          })
+          .map(({ item }) => item);
+
+        const scoped = ordered.filter((item) => {
+          if (activeSessionDir && item.session_dir === activeSessionDir && isSessionArchived(item.session_dir) && appState.sessionUi.scope !== "archived") {
+            return true;
           }
+          return matchesSessionScope(item);
+        });
+        if (!query) return scoped;
+
+        return scoped.filter((item) => {
+          const meta = sessionMetadata(item.session_dir);
+          const haystack = [
+            item.session_id,
+            item.status,
+            item.current_stage,
+            item.run_status,
+            item.run_verdict,
+            item.next_action,
+            item.recommended_plan_id,
+            item.approved_plan_id,
+            meta.label,
+            meta.note
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+          return haystack.includes(query);
+        });
+      }
+
+      function currentSessionSummary() {
+        const session = appState.data?.session;
+        if (!session) return null;
+        return {
+          session_id: session.session_id,
+          session_dir: session.session_dir,
+          status: session.status,
+          current_stage: session.current_stage,
+          run_status: session.run_status,
+          run_verdict: session.run_verdict,
+          next_action: session.next_action,
+          recommended_plan_id: session.recommended_plan_id,
+          approved_plan_id: session.approved_plan_id,
+          history_event_count: session.history_event_count || 0,
+          latest_event_timestamp: session.latest_event_timestamp || null,
+          updated_at: session.updated_at || null,
+          is_default: appState.control.health?.default_session_dir === session.session_dir
+        };
+      }
+
+      function mergeCurrentSessionIntoList(items) {
+        const nextItems = Array.isArray(items) ? [...items] : [];
+        const current = currentSessionSummary();
+        if (!current?.session_dir) {
+          return nextItems;
+        }
+
+        const index = nextItems.findIndex((item) => item.session_dir === current.session_dir);
+        if (index >= 0) {
+          nextItems[index] = { ...nextItems[index], ...current };
+        } else {
+          nextItems.unshift(current);
+        }
+        return nextItems;
+      }
+
+      async function refreshSessionList() {
+        const endpoint = apiUrl("/api/sessions");
+        if (!endpoint || !appState.control.enabled) {
+          appState.sessions = mergeCurrentSessionIntoList([]);
+          if (appState.data) renderSidebar(appState.data);
+          return;
+        }
+
+        try {
+          const response = await fetch(endpoint);
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.error || `Failed to load sessions: ${response.status}`);
+          }
+          appState.sessions = mergeCurrentSessionIntoList(payload.items || []);
+          if (payload.default_session_dir && appState.control.health) {
+            appState.control.health.default_session_dir = payload.default_session_dir;
+          }
+        } catch (error) {
+          appState.sessions = mergeCurrentSessionIntoList(appState.sessions);
+        }
+
+        if (appState.data) {
+          renderSidebar(appState.data);
+        }
+      }
+
+      function resetPlanEditorState(status = DEFAULT_PLAN_EDITOR_STATUS) {
+        appState.planEditor = createPlanEditorState(status);
+        syncPlanEditorView();
+      }
+
+      function currentRequestDraft() {
+        const node = document.getElementById("request-box");
+        return String(node?.value || "").trim();
+      }
+
+      function liveSessionRequestText() {
+        return String(appState.data?.request?.request_text || "").trim();
+      }
+
+      function resolvePrimaryAction() {
+        const draftRequest = currentRequestDraft();
+        const liveRequest = liveSessionRequestText();
+
+        if (appState.control.enabled && draftRequest && draftRequest !== liveRequest) {
+          return {
+            mode: "start_session",
+            enabled: true,
+            label: "Start Session"
+          };
+        }
+
+        if (!appState.data) {
+          return {
+            mode: "idle",
+            enabled: false,
+            label: "Next action"
+          };
+        }
+
+        const runnableAction = buildOperatorActions(appState.data).find((item) => item.runnable);
+        if (appState.control.enabled && runnableAction) {
+          return {
+            mode: "run_action",
+            enabled: true,
+            label: runnableAction.label,
+            action: runnableAction
+          };
+        }
+
+        return {
+          mode: "idle",
+          enabled: false,
+          label: appState.data?.session?.next_action || "Next action"
+        };
+      }
+
+      function syncSessionControls() {
+        const newSessionButton = document.getElementById("new-session-button");
+        const nextActionButton = document.getElementById("next-action-button");
+        if (!newSessionButton || !nextActionButton) return;
+
+        const draftRequest = currentRequestDraft();
+        const primaryAction = resolvePrimaryAction();
+        const busy = appState.busy.startingSession || appState.busy.primaryAction;
+
+        newSessionButton.disabled = !appState.control.enabled || !draftRequest || busy;
+        nextActionButton.disabled = !primaryAction.enabled || busy;
+        nextActionButton.textContent = primaryAction.label;
+      }
+
+      async function startSessionFromComposer(options = {}) {
+        const endpoint = apiUrl("/api/session/start");
+        if (!endpoint) {
+          throw new Error("No control API is connected.");
+        }
+
+        const workflowFamily = String(options.workflowFamily || "").trim() || undefined;
+        const strategyProfile = String(options.strategyProfile || "").trim() || undefined;
+        const requestText = workflowFamily
+          ? (String(options.requestText || "").trim() || undefined)
+          : (String(options.requestText || currentRequestDraft() || "").trim() || undefined);
+        if (!requestText && !workflowFamily) {
+          throw new Error("Please enter a research request or choose a workflow family before starting a session.");
+        }
+
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            request_text: requestText,
+            goal: options.goal || undefined,
+            session_name: options.sessionName || undefined,
+            extra_tags: Array.isArray(options.extraTags) ? options.extraTags : undefined,
+            workflow_family: workflowFamily,
+            strategy_profile: strategyProfile
+          })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || `Failed to start session: ${response.status}`);
+        }
+        if (appState.control.health) {
+          appState.control.health.default_session_dir = result.session_dir;
+        }
+        return result;
+      }
+
+      function updateHistory(bundleUrl) {
+        const nextUrl = new URL(window.location.href);
+        if (bundleUrl) {
+          nextUrl.searchParams.set("bundle", bundleUrl);
+        } else {
+          nextUrl.searchParams.delete("bundle");
+        }
+        window.history.replaceState({}, "", nextUrl);
+      }
+
+      function setBundleError(message) {
+        const errorBox = document.getElementById("bundle-error");
+        if (!message) {
+          errorBox.hidden = true;
+          errorBox.textContent = "";
+          return;
+        }
+
+        errorBox.hidden = false;
+        errorBox.innerHTML = `
+          <strong>Bundle load failed.</strong>
+          <div style="margin-top: 8px">${escapeHtml(message)}</div>
+        `;
+      }
+
+      function renderControlState() {
+        const pill = document.getElementById("control-api-pill");
+        if (appState.control.enabled) {
+          pill.textContent = "Local API";
+          pill.className = "status-chip accent";
+          return;
+        }
+        pill.textContent = "CLI Only";
+        pill.className = "soft-chip";
+      }
+
+      function setPlanEditorStatus(message) {
+        appState.planEditor.status = message;
+        const node = document.getElementById("plan-editor-status");
+        if (node) {
+          node.textContent = message;
+        }
+      }
+
+      function syncPlanEditorView() {
+        document.getElementById("plan-editor-file").textContent = appState.planEditor.fileName || "editable-plan.md";
+        document.getElementById("plan-editor-reason").value = appState.planEditor.reason || "";
+        document.getElementById("plan-editor-text").value = appState.planEditor.text || "";
+        document.getElementById("plan-editor-pill").textContent = appState.control.enabled
+          ? appState.planEditor.loaded
+            ? "Ready"
+            : "API"
+          : "Offline";
+        setPlanEditorStatus(appState.planEditor.status || "No plan loaded.");
+
+        document.getElementById("plan-load-button").disabled = !appState.control.enabled;
+        document.getElementById("plan-approve-button").disabled = !appState.control.enabled || !appState.planEditor.text.trim();
+        document.getElementById("plan-download-button").disabled = !appState.planEditor.text.trim();
+      }
+
+      async function fetchBundle(url) {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Failed to load bundle: ${response.status}`);
+        }
+        return response.json();
+      }
+
+      async function detectControlApi() {
+        const base = resolveApiBase();
+        appState.control = {
+          enabled: false,
+          base,
+          health: null
+        };
+
+        if (!base) {
+          appState.sessions = mergeCurrentSessionIntoList([]);
+          renderControlState();
+          syncSessionControls();
+          return;
+        }
+
+        try {
+          const response = await fetch(`${base}/api/health`);
+          if (!response.ok) {
+            throw new Error(`health ${response.status}`);
+          }
+          const health = await response.json();
+          appState.control = {
+            enabled: true,
+            base,
+            health
+          };
+        } catch (error) {
+          appState.control = {
+            enabled: false,
+            base,
+            health: null
+          };
+          appState.sessions = mergeCurrentSessionIntoList([]);
+        }
+
+        renderControlState();
+        syncSessionControls();
+      }
+
+      async function runControlAction(actionId, payload) {
+        const endpoint = apiUrl("/api/session/action");
+        if (!endpoint) {
+          throw new Error("No control API is connected.");
+        }
+
+        const sessionDir = appState.data?.session?.session_dir || payload.session_dir;
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            action: actionId,
+            session_dir: sessionDir,
+            payload
+          })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || `Action failed: ${response.status}`);
+        }
+        return result;
+      }
+
+      async function fetchPlanMarkdown(options = {}) {
+        const endpoint = apiUrl("/api/session/plan-markdown");
+        if (!endpoint) {
+          throw new Error("No control API is connected.");
+        }
+
+        const params = new URLSearchParams();
+        const sessionDir = appState.data?.session?.session_dir;
+        if (sessionDir) {
+          params.set("session_dir", sessionDir);
+        }
+        if (options.approved) {
+          params.set("approved", "true");
+        }
+        if (options.planId) {
+          params.set("plan_id", options.planId);
+        }
+
+        const response = await fetch(`${endpoint}?${params.toString()}`);
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || `Failed to load plan markdown: ${response.status}`);
+        }
+        return payload;
+      }
+
+      function readBundleFile(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              resolve(JSON.parse(String(reader.result || "{}")));
+            } catch (error) {
+              reject(new Error(`Invalid JSON file: ${error.message || error}`));
+            }
+          };
+          reader.onerror = () => reject(new Error("Failed to read local bundle file."));
+          reader.readAsText(file, "utf-8");
+        });
+      }
+
+      function updateSourceUi(meta) {
+        document.getElementById("bundle-source-note").textContent = meta.detail;
+        document.getElementById("bundle-url-input").value = meta.urlValue || "";
+        document.getElementById("inspector-source-pill").textContent = meta.label;
+      }
+
+      function fallbackSession(data) {
+        const request = data.request || {};
+        const review = data.review || {};
+        const runStatus = data.run_status || {};
+        const runReview = data.run_review || {};
+        return {
+          session_id: `session-${request.request_id || "demo"}`,
+          session_dir: "sessions/demo-rnaseq",
+          request_id: request.request_id || null,
+          status: runReview.verdict || runStatus.status || "pending",
+          recommended_plan_id: review.recommended_plan_id || null,
+          approved_plan_id: data.approved_plan?.plan_id || null,
+          current_stage: runStatus.current_stage || null,
+          run_status: runStatus.status || null,
+          run_verdict: runReview.verdict || null,
+          next_action: runStatus.next_action || "Review candidate plans.",
+          history_event_count: 0,
+          latest_event_type: null,
+          latest_approval_reason: null,
+          latest_plan_change_count: null,
+          files: {}
+        };
+      }
+
+      function fallbackHistory() {
+        return { session_id: "demo-session", events: [] };
+      }
+
+      function renderSidebar(data) {
+        const session = data.session || fallbackSession(data);
+        const workflowId = data.scenario?.workflow_id || data.approved_plan?.source_workflow_id || "unknown-workflow";
+        const runStatus = data.run_status?.status || session.run_status || "pending";
+
+        const projectList = document.getElementById("project-list");
+        projectList.innerHTML = `
+          <div class="project-item">
+            <span class="project-left">
+              <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M4 7h16M7 4v16" />
+              </svg>
+              <span>${escapeHtml(workflowId)}</span>
+            </span>
+            <span class="soft-chip">${escapeHtml(runStatus)}</span>
+          </div>
+        `;
+
+        const savedViewList = document.getElementById("saved-view-list");
+        const sessionList = document.getElementById("session-list");
+        const { sessionItems, filteredItems } = currentSidebarSessionItems();
+        const activeSessionDir = session.session_dir;
+        const emptyBox = document.getElementById("session-empty");
+        const searchInput = document.getElementById("session-search-input");
+        const filterRow = document.getElementById("session-filter-row");
+        const layoutRow = document.getElementById("session-layout-row");
+        const labelInput = document.getElementById("session-label-input");
+        const noteInput = document.getElementById("session-note-input");
+        const metaPill = document.getElementById("session-meta-pill");
+
+        const activeMeta = sessionMetadata(activeSessionDir);
+        if (labelInput) labelInput.value = activeMeta.label;
+        if (noteInput) noteInput.value = activeMeta.note;
+        if (metaPill) metaPill.textContent = activeMeta.label || activeMeta.note ? "Saved" : "Local";
+
+        savedViewList.innerHTML = appState.sessionUi.savedViews.length
+          ? appState.sessionUi.savedViews.map((view) => `
+              <div class="saved-view-row">
+                <button
+                  type="button"
+                  class="saved-view-button ${isSavedViewActive(view) ? "active" : ""}"
+                  data-saved-view-id="${escapeHtml(view.id)}"
+                >
+                  ${escapeHtml(view.name)}
+                </button>
+                <button
+                  type="button"
+                  class="saved-view-delete"
+                  data-delete-saved-view="${escapeHtml(view.id)}"
+                  aria-label="Delete saved view"
+                  title="Delete saved view"
+                >
+                  ×
+                </button>
+              </div>
+            `).join("")
+          : "";
+
+        if (searchInput && searchInput.value !== appState.sessionUi.query) {
+          searchInput.value = appState.sessionUi.query;
+        }
+        if (filterRow) {
+          [...filterRow.querySelectorAll("[data-session-scope]")].forEach((button) => {
+            button.classList.toggle("active", button.dataset.sessionScope === appState.sessionUi.scope);
+          });
+        }
+        if (layoutRow) {
+          [...layoutRow.querySelectorAll("[data-session-layout]")].forEach((button) => {
+            button.classList.toggle("active", button.dataset.sessionLayout === appState.sessionUi.layout);
+          });
+        }
+
+        if (!filteredItems.length) {
+          sessionList.innerHTML = "";
+          document.getElementById("session-count").textContent = appState.sessionUi.query || appState.sessionUi.scope !== "all"
+            ? `0/${sessionItems.length}`
+            : "0";
+          emptyBox.style.display = "block";
+          emptyBox.querySelector("div").textContent = appState.sessionUi.query || appState.sessionUi.scope !== "all"
+            ? "No sessions match the current filter."
+            : "No session loaded yet.";
+          return;
+        }
+
+        if (appState.sessionUi.layout === "grouped") {
+          const groups = [];
+          for (const item of filteredItems) {
+            const label = sessionLabelGroup(item);
+            let group = groups.find((entry) => entry.label === label);
+            if (!group) {
+              group = { label, items: [] };
+              groups.push(group);
+            }
+            group.items.push(item);
+          }
+          sessionList.innerHTML = groups
+            .map((group) => {
+              const collapsed = isGroupCollapsed(group.label);
+              return `
+                <div class="session-group">
+                  <button type="button" class="session-group-title" data-group-label="${escapeHtml(group.label)}">
+                    <span>${escapeHtml(group.label)}</span>
+                    <span class="session-group-count">${collapsed ? "+" : "-"} ${group.items.length}</span>
+                  </button>
+                  ${collapsed ? "" : group.items.map((item) => sessionRowMarkup(item, activeSessionDir)).join("")}
+                </div>
+              `;
+            })
+            .join("");
+        } else {
+          sessionList.innerHTML = filteredItems
+            .map((item) => sessionRowMarkup(item, activeSessionDir))
+            .join("");
+        }
+
+        savedViewList.onclick = (event) => {
+          const deleteButton = event.target.closest("[data-delete-saved-view]");
+          if (deleteButton) {
+            removeSavedView(deleteButton.dataset.deleteSavedView);
+            if (appState.data) renderSidebar(appState.data);
+            return;
+          }
+
+          const applyButton = event.target.closest("[data-saved-view-id]");
+          if (!applyButton) return;
+          const view = appState.sessionUi.savedViews.find((item) => item.id === applyButton.dataset.savedViewId);
+          if (!view) return;
+          applySavedView(view);
+          writeSessionLayout(appState.sessionUi.layout);
+          if (appState.data) renderSidebar(appState.data);
+        };
+
+        sessionList.onclick = async (event) => {
+          const groupButton = event.target.closest("[data-group-label]");
+          if (groupButton) {
+            toggleGroupCollapsed(groupButton.dataset.groupLabel);
+            return;
+          }
+
+          const archiveButton = event.target.closest("[data-archive-session]");
+          if (archiveButton) {
+            toggleArchivedSession(archiveButton.dataset.archiveSession);
+            return;
+          }
+
+          const pinButton = event.target.closest("[data-pin-session]");
+          if (pinButton) {
+            togglePinnedSession(pinButton.dataset.pinSession);
+            return;
+          }
+
+          const button = event.target.closest(".session-item[data-session-dir]");
+          if (!button || !appState.control.enabled) return;
+          const targetSessionDir = button.dataset.sessionDir;
+          if (!targetSessionDir || targetSessionDir === activeSessionDir) return;
+
+          try {
+            const targetUrl = sessionBundleUrl(targetSessionDir);
+            if (!targetUrl) {
+              throw new Error("No control API is connected.");
+            }
+            await loadBundleFromUrl(targetUrl, {
+              label: "Live API Bundle",
+              detail: targetUrl,
+              urlValue: targetUrl
+            });
+            updateHistory(targetUrl);
+            setBundleError("");
+          } catch (error) {
+            setBundleError(error.message || error);
+          }
+        };
+
+        document.getElementById("session-count").textContent = appState.sessionUi.query || appState.sessionUi.scope !== "all"
+          ? `${filteredItems.length}/${sessionItems.length}`
+          : String(sessionItems.length);
+        emptyBox.style.display = "none";
+        emptyBox.querySelector("div").textContent = "No session loaded yet.";
+      }
+
+      function renderComposer(data) {
+        const session = data.session || fallbackSession(data);
+        const request = data.request || {};
+        const review = data.review || {};
+        const runStatus = data.run_status || {};
+        const runReview = data.run_review || {};
+
+        document.getElementById("topbar-status").textContent = session.status;
+        document.getElementById("topbar-status").className = `status-chip ${toneClass(session.status)}`;
+        document.getElementById("session-chip").textContent = session.session_id;
+        document.getElementById("plan-chip").textContent = session.recommended_plan_id || "Plan pending";
+        document.getElementById("verdict-chip").textContent = runReview.verdict || "Review";
+        document.getElementById("verdict-chip").className = `status-chip ${toneClass(runReview.verdict)}`;
+        document.getElementById("request-box").value = request.request_text || "";
+        document.getElementById("next-action-button").textContent = session.next_action;
+        document.getElementById("event-count").textContent = `${session.history_event_count || 0} events`;
+        document.getElementById("current-stage-copy").textContent = session.current_stage
+          ? `Current stage ${session.current_stage}`
+          : "Planning stage";
+
+        document.getElementById("request-tags").innerHTML = (request.request_tags || [])
+          .slice(0, 3)
+          .map((tag) => `<span class="soft-chip">${escapeHtml(tag)}</span>`)
+          .join("");
+
+        const exampleRow = document.getElementById("example-row");
+        const examples = [
+          request.user_goal,
+          review.recommended_plan_id,
+          runStatus.next_action
+        ].filter(Boolean);
+        exampleRow.innerHTML = examples
+          .map((item) => `<span class="soft-chip">${escapeHtml(item)}</span>`)
+          .join("");
+
+        renderControlState();
+        syncPlanEditorView();
+        syncSessionControls();
+      }
+
+      function renderSessionSnapshot(data) {
+        const session = data.session || fallbackSession(data);
+        const candidatePlans = data.candidate_plans || [];
+        const approvedStages = data.approved_plan?.stages || [];
+        const request = data.request || {};
+        const review = data.review || {};
+        const metrics = [
+          ["Plans", candidatePlans.length],
+          ["Stages", approvedStages.length],
+          ["Events", session.history_event_count || 0],
+          ["Current", session.current_stage || "plan"]
         ];
 
-        root.innerHTML = summaryItems
+        document.getElementById("snapshot-status").textContent = session.status;
+        document.getElementById("snapshot-status").className = `status-chip ${toneClass(session.status)}`;
+
+        document.getElementById("session-metrics").innerHTML = metrics
           .map(
-            (item) => `
-              <div class="tile">
-                <strong>${item.title}</strong>
-                <div>${item.value}</div>
-                <div class="muted" style="margin-top:8px">${item.detail}</div>
+            ([label, value]) => `
+              <div class="metric">
+                <strong>${escapeHtml(label)}</strong>
+                <span>${escapeHtml(value)}</span>
               </div>
             `
           )
           .join("");
+
+        const details = [
+          ["Session", session.session_id],
+          ["Request", request.request_id || "pending"],
+          ["Recommended", review.recommended_plan_id || "pending"],
+          ["Approved", session.approved_plan_id || "not approved"],
+          ["Reason", session.latest_approval_reason || "No explicit rationale recorded"],
+          ["Next", session.next_action]
+        ];
+
+        document.getElementById("session-details").innerHTML = details
+          .map(
+            ([label, value]) => `
+              <div class="detail-row">
+                <strong>${escapeHtml(label)}</strong>
+                <span>${escapeHtml(value)}</span>
+              </div>
+            `
+          )
+          .join("");
+
+        const fileEntries = Object.entries(session.files || {});
+        document.getElementById("file-list").innerHTML = fileEntries.length
+          ? fileEntries
+              .map(
+                ([key, value]) => `
+                  <div class="file-item">
+                    <strong>${escapeHtml(key)}</strong>
+                    <div class="muted-text">${escapeHtml(value)}</div>
+                  </div>
+                `
+              )
+              .join("")
+          : `<div class="empty-box">No session artifacts recorded yet.</div>`;
       }
 
       function renderPlans(data) {
-        const root = document.getElementById("plan-root");
-        root.innerHTML = data.candidate_plans
-          .map(
-            (plan) => `
-              <article class="plan-card ${plan.recommended ? "recommended" : ""}">
+        const session = data.session || fallbackSession(data);
+        document.getElementById("recommended-pill").textContent = session.recommended_plan_id || "Recommendation";
+
+        const plans = data.candidate_plans || [];
+        document.getElementById("plan-list").innerHTML = plans.length
+          ? plans
+              .map((plan) => {
+            const tone = plan.recommended ? "accent" : "";
+            const family = appState.workflowCatalog.find((item) => item.id === plan.source_workflow_id) || null;
+            const profile = family && plan.selected_strategy_profile
+              ? (family.strategy_profiles || []).find((item) => item.id === plan.selected_strategy_profile)
+              : null;
+            return `
+              <article class="plan-card">
                 <header>
                   <div>
-                    <strong>${plan.strategy_type}</strong>
-                    <div class="muted">${plan.plan_id}</div>
+                    <strong>${escapeHtml(plan.plan_id)}</strong>
+                    <div class="muted-text">${escapeHtml(plan.summary)}</div>
                   </div>
-                  <span class="badge ${plan.recommended ? "status-completed" : "status-pending"}">
-                    ${plan.recommended ? "recommended" : "alternative"}
-                  </span>
+                  <span class="status-chip ${tone}">${plan.recommended ? "Recommended" : plan.strategy_type}</span>
                 </header>
-                <p>${plan.summary}</p>
-                <div class="badge-row" style="margin-top:12px">
-                  <span class="badge">stages ${plan.stage_count}</span>
-                  <span class="badge">risks ${plan.risk_count}</span>
-                  <span class="badge">manual confirmations ${plan.manual_confirmations}</span>
-                  <span class="badge">time ${plan.estimated_cost.time}</span>
-                  <span class="badge">compute ${plan.estimated_cost.compute}</span>
+                <div class="plan-meta">
+                  <span class="soft-chip">stages ${escapeHtml(plan.stage_count)}</span>
+                  <span class="soft-chip">risks ${escapeHtml(plan.risk_count)}</span>
+                  <span class="soft-chip">confirm ${escapeHtml(plan.manual_confirmations)}</span>
+                  <span class="soft-chip">time ${escapeHtml(plan.estimated_cost.time)}</span>
+                  ${plan.selected_strategy_label ? `<span class="soft-chip">strategy ${escapeHtml(plan.selected_strategy_label)}</span>` : ''}
+                  ${profile ? `<span class="soft-chip">${escapeHtml(profile.availability)}</span>` : ''}
                 </div>
+              </article>
+            `;
+          })
+              .join("")
+          : `<div class="empty-box">No candidate plans in this bundle yet.</div>`;
+      }
+
+      function renderStages(data) {
+        const draftMap = new Map(
+          ((data.execution_draft?.stages || [])).map((stage) => [stage.stage_id, stage.candidate_skill_refs || []])
+        );
+        const runStatus = data.run_status || {};
+        const stageStatus = data.run_state?.stage_status || {};
+        const approvedStages = data.approved_plan?.stages || [];
+
+        document.getElementById("runtime-pill").textContent = runStatus.status || "pending";
+        document.getElementById("runtime-pill").className = `status-chip ${toneClass(runStatus.status)}`;
+
+        document.getElementById("stage-list").innerHTML = approvedStages.length
+          ? approvedStages
+              .map((stage) => {
+            const status = stageStatus[stage.stage_id] || "pending";
+            const skillRefs = draftMap.get(stage.stage_id) || [];
+            const unresolved = skillRefs.filter((item) => !item.resolved);
+            const active = runStatus.current_stage === stage.stage_id ? "active" : "";
+
+            return `
+              <article class="stage-item ${active}">
+                <div class="stage-header">
+                  <div>
+                    <strong>${escapeHtml(stage.stage_id)} · ${escapeHtml(stage.name)}</strong>
+                    <div class="muted-text">${escapeHtml(stage.goal)}</div>
+                  </div>
+                  <span class="status-chip ${toneClass(status)}">${escapeHtml(status)}</span>
+                </div>
+                <div class="stage-body">
+                  <div class="stage-meta">
+                    <span class="soft-chip">confirm ${stage.requires_user_confirmation ? "yes" : "no"}</span>
+                    ${stage.validation.map((item) => `<span class="soft-chip">${escapeHtml(item)}</span>`).join("")}
+                  </div>
+                  <div class="skill-row">
+                    ${skillRefs
+                      .map((item) => {
+                        const unresolvedClass = item.resolved ? "" : "unresolved";
+                        const label = item.resolved ? item.layer : "unresolved";
+                        return `
+                          <span class="skill-chip ${unresolvedClass}">
+                            ${escapeHtml(item.id)}
+                            <span class="muted-text">${escapeHtml(label)}</span>
+                          </span>
+                        `;
+                      })
+                      .join("")}
+                  </div>
+                  ${
+                    unresolved.length
+                      ? `<div class="muted-text tone-danger">Unresolved later-stage skills: ${escapeHtml(
+                          unresolved.map((item) => item.id).join(", ")
+                        )}</div>`
+                      : ""
+                  }
+                </div>
+              </article>
+            `;
+          })
+              .join("")
+          : `<div class="empty-box">Approved stages will appear after a plan is locked in.</div>`;
+      }
+
+      function renderReview(data) {
+        const review = data.run_review || {};
+        const currentStageReview = review.current_stage_review || {};
+        const reviewVerdict = review.verdict || data.run_status?.status || "pending";
+        document.getElementById("review-pill").textContent = reviewVerdict;
+        document.getElementById("review-pill").className = `status-chip ${toneClass(reviewVerdict)}`;
+
+        document.getElementById("review-summary").innerHTML = `
+          <div class="detail-row">
+            <strong>Summary</strong>
+            <span>${escapeHtml(review.summary || "Run review is not available yet.")}</span>
+          </div>
+          <div class="detail-row">
+            <strong>Current stage</strong>
+            <span>${escapeHtml(currentStageReview.stage_id || "n/a")} / ${escapeHtml(currentStageReview.name || "pending")}</span>
+          </div>
+          <div class="detail-row">
+            <strong>Next action</strong>
+            <span>${escapeHtml(review.next_action || data.run_status?.next_action || "Approve a plan or continue the run.")}</span>
+          </div>
+          <div class="detail-row">
+            <strong>Artifacts</strong>
+            <span>${escapeHtml(review.artifact_count || 0)}</span>
+          </div>
+        `;
+
+        const blockers = review.blocking_issues || [];
+        const future = review.future_issues || [];
+        const delivery = review.delivery_issues || [];
+
+        const renderIssues = (items, emptyMessage) =>
+          items.length
+            ? items
+                .map(
+                  (item) => `
+                    <div class="issue-item">
+                      <div class="issue-header">
+                        <div class="issue-copy">
+                          <strong>${escapeHtml(item.type)}</strong>
+                          <div class="muted-text">${escapeHtml(item.message)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  `
+                )
+                .join("")
+            : `<div class="empty-box">${escapeHtml(emptyMessage)}</div>`;
+
+        document.getElementById("blocking-list").innerHTML = renderIssues(blockers, "No blocking issues right now.");
+        document.getElementById("future-list").innerHTML = renderIssues(future, "No future issues in this demo bundle.");
+        document.getElementById("delivery-list").innerHTML = renderIssues(delivery, "No delivery-specific issues in this bundle.");
+      }
+
+      function renderAnalysisFlow(data) {
+        const root = document.getElementById("analysis-flow-panel");
+        const pill = document.getElementById("analysis-flow-pill");
+        if (!root || !pill) return;
+
+        const flow = data.analysis_flow || null;
+        if (!flow) {
+          pill.textContent = "No Flow";
+          root.innerHTML = `<div class="empty-box">No grounded analysis flow is attached to this bundle yet.</div>`;
+          return;
+        }
+
+        pill.textContent = flow.status || "flow";
+
+        const renderChips = (items) =>
+          (items || []).length
+            ? `<div class="analysis-flow-bundle">${items.map((item) => `<span class="soft-chip">${escapeHtml(item)}</span>`).join("")}</div>`
+            : `<div class="empty-box">No structured items recorded.</div>`;
+
+        const stageCards = (flow.stage_flows || [])
+          .map(
+            (stage) => `
+              <article class="analysis-flow-stage">
+                <strong>${escapeHtml(stage.stage_id)} · ${escapeHtml(stage.label || "stage")}</strong>
+                <div class="muted-text">${escapeHtml((stage.consumes || []).join(" -> ") || "No consumes listed")}</div>
+                <div class="analysis-flow-bundle">
+                  <span class="soft-chip">produce ${(stage.produces || []).length}</span>
+                  <span class="soft-chip">evidence ${(stage.evidence || []).length}</span>
+                  <span class="soft-chip">${stage.decision_gate ? "gate yes" : "gate no"}</span>
+                </div>
+                ${stage.transforms?.length ? `<div class="muted-text" style="margin-top:10px;">Transforms: ${escapeHtml(stage.transforms.join(", "))}</div>` : ""}
+                ${stage.produces?.length ? `<div class="muted-text" style="margin-top:6px;">Produces: ${escapeHtml(stage.produces.join(", "))}</div>` : ""}
               </article>
             `
           )
           .join("");
-      }
 
-      function renderStages(data) {
-        const body = document.getElementById("stage-table-body");
-        const draftMap = new Map(
-          data.execution_draft.stages.map((stage) => [stage.stage_id, stage.candidate_skill_refs])
-        );
-
-        body.innerHTML = data.approved_plan.stages
-          .map((stage) => {
-            const stageStatus = data.run_state.stage_status[stage.stage_id] || "pending";
-            const skillRefs = draftMap.get(stage.stage_id) || [];
-            const unresolvedCount = skillRefs.filter((item) => !item.resolved).length;
-            return `
-              <tr>
-                <td>
-                  <strong>${stage.stage_id}</strong>
-                  <div class="muted">${stage.name}</div>
-                </td>
-                <td>${stage.goal}</td>
-                <td><span class="${badgeClass(stageStatus)}">${stageStatus}</span></td>
-                <td>${stage.requires_user_confirmation ? "yes" : "no"}</td>
-                <td>
-                  <div class="chip-row">
-                    ${skillRefs
-                      .map(
-                        (item) => `
-                          <span class="chip">
-                            ${item.id}
-                            <span class="${item.resolved ? "badge resolution-resolved" : "badge resolution-open"}">
-                              ${item.resolved ? item.layer : "unresolved"}
-                            </span>
-                          </span>
-                        `
-                      )
-                      .join("")}
-                  </div>
-                  ${
-                    unresolvedCount
-                      ? `<div class="muted" style="margin-top:8px">unresolved ${unresolvedCount}</div>`
-                      : ""
-                  }
-                </td>
-              </tr>
-            `;
-          })
-          .join("");
-
-        const unresolved = data.execution_draft.unresolved_skill_ids;
-        document.getElementById("draft-warning").innerHTML = `
-          <strong>Draft Resolution Check</strong>
-          ${
-            unresolved.length
-              ? `<p>当前 draft 还有未解析 skill: <code>${unresolved.join(", ")}</code>。这正好说明控制台为什么需要把草稿质量暴露出来。</p>`
-              : "<p>当前 draft 的 skill refs 都已解析。</p>"
-          }
-        `;
-
-        const latestIssue = data.run_status.latest_issue;
-        document.getElementById("latest-issue").innerHTML = `
-          <strong>Latest Issue</strong>
-          <p>${latestIssue.message}</p>
-          <div class="muted" style="margin-top:8px">stage=${latestIssue.stage} / severity=${latestIssue.severity}</div>
-        `;
-
-        document.getElementById("next-action").innerHTML = `
-          <strong>Next Action</strong>
-          <p>${data.run_status.next_action}</p>
-          <div class="muted" style="margin-top:8px">resume_from=${data.run_status.resume_from}</div>
-        `;
-      }
-
-      function renderMetrics(data) {
-        const metrics = [
-          ["Total Stages", data.run_status.progress.total],
-          ["Completed", data.run_status.progress.completed],
-          ["Pending", data.run_status.progress.pending],
-          ["Current Stage", data.run_status.current_stage]
-        ];
-        document.getElementById("metric-root").innerHTML = metrics
-          .map(
-            ([label, value]) => `
-              <div class="metric">
-                <strong>${label}</strong>
-                <div class="value">${value}</div>
+        root.innerHTML = `
+          <div class="analysis-flow-grid">
+            <div class="detail-list">
+              <div class="detail-row">
+                <strong>Workflow</strong>
+                <span>${escapeHtml(flow.title || flow.workflow_id)}</span>
               </div>
-            `
-          )
-          .join("");
-
-        document.getElementById("pause-explanation").textContent =
-          "现在停在 s2，不是因为系统坏了，而是 conservative plan 明确要求在高计算量的 alignment 阶段前停一下，等待确认。";
-        document.getElementById("resume-explanation").textContent =
-          "控制台不需要重新推理整份 plan，只要读取 run-status 给出的 next_action，就知道应该确认并恢复 s2。";
-      }
-
-      function renderRunReview(data) {
-        const review = data.run_review;
-        document.getElementById("review-verdict").innerHTML = `
-          <span class="${badgeClass(review.status)}">${review.status}</span>
-          <span class="badge">${review.verdict}</span>
-        `;
-        document.getElementById("review-summary").textContent = review.summary;
-        document.getElementById("review-current-stage").innerHTML = `
-          <div><strong>${review.current_stage_review.stage_id}</strong> / ${review.current_stage_review.name}</div>
-          <div style="margin-top:8px">confirmation_required=${review.current_stage_review.confirmation_required}</div>
-          <div style="margin-top:8px">candidate_skills=${review.current_stage_review.candidate_skills.join(", ")}</div>
-          <div style="margin-top:8px">recorded_validations=${Object.keys(review.current_stage_review.recorded_validations).length}</div>
-        `;
-
-        document.getElementById("review-blockers").innerHTML = `
-          <strong>Blocking Issues</strong>
-          ${
-            review.blocking_issues.length
-              ? `<ul>${review.blocking_issues
-                  .map((item) => `<li>${item.type}: ${item.message}</li>`)
-                  .join("")}</ul>`
-              : "<p>No blocking issues.</p>"
-          }
-        `;
-
-        document.getElementById("review-future").innerHTML = `
-          <strong>Future Issues</strong>
-          ${
-            review.future_issues.length
-              ? `<ul>${review.future_issues
-                  .map((item) => `<li>${item.type}: ${item.message}</li>`)
-                  .join("")}</ul>`
-              : "<p>No future issues.</p>"
-          }
+              <div class="detail-row">
+                <strong>Status</strong>
+                <span>${escapeHtml(flow.status || "routeable")}</span>
+              </div>
+              <div class="detail-row">
+                <strong>Summary</strong>
+                <span>${escapeHtml(flow.summary || "No flow summary.")}</span>
+              </div>
+              <div class="detail-row">
+                <strong>Stages</strong>
+                <span>${escapeHtml((flow.stage_flows || []).length)}</span>
+              </div>
+            </div>
+            <div>
+              <div class="section-note">Primary Inputs</div>
+              ${renderChips(flow.primary_inputs || [])}
+            </div>
+            <div>
+              <div class="section-note">Reference Inputs</div>
+              ${renderChips(flow.reference_inputs || [])}
+            </div>
+            <div>
+              <div class="section-note">Metadata Inputs</div>
+              ${renderChips(flow.metadata_inputs || [])}
+            </div>
+            <div>
+              <div class="section-note">Delivery Bundle</div>
+              ${renderChips(flow.delivery_bundle || [])}
+            </div>
+            <div>
+              <div class="section-note">Stage Flow</div>
+              <div class="analysis-flow-stage-grid">
+                ${stageCards || `<div class="empty-box">No stage flows attached.</div>`}
+              </div>
+            </div>
+          </div>
         `;
       }
 
-      function renderJsonInspector(data) {
-        const tabRoot = document.getElementById("json-tabs");
-        const output = document.getElementById("json-output");
-        const state = { currentKey: "run_status" };
+      function buildOperatorActions(data) {
+        const session = data.session || fallbackSession(data);
+        const runStatus = data.run_status || {};
+        const runReview = data.run_review || {};
+        const review = data.review || {};
 
-        function refresh() {
-          output.textContent = JSON.stringify(data[state.currentKey], null, 2);
-          [...tabRoot.querySelectorAll(".json-tab")].forEach((button) => {
-            button.classList.toggle("active", button.dataset.key === state.currentKey);
+        const sessionDir = String(session.session_dir || "sessions/demo-rnaseq");
+        const marker = "/sessions/";
+        const markerIndex = sessionDir.indexOf(marker);
+        const repoRoot = sessionDir.startsWith("/") && markerIndex !== -1 ? sessionDir.slice(0, markerIndex) : "";
+        const cliTarget = repoRoot
+          ? shellQuote(`${repoRoot}/scripts/bio_skill_system.py`)
+          : "scripts/bio_skill_system.py";
+        const cliPrefix = `python3 ${cliTarget}`;
+        const sessionArg = shellQuote(sessionDir);
+        const editablePlanPath = sessionDir.startsWith("/")
+          ? `${sessionDir}/editable-plan.md`
+          : `${sessionDir}/editable-plan.md`;
+        const exportPath = sessionDir.startsWith("/")
+          ? `${sessionDir}/session-export.json`
+          : `${sessionDir}/session-export.json`;
+
+        const items = [];
+
+        if (!session.approved_plan_id && review.recommended_plan_id) {
+          items.push({
+            label: "Approve Recommended Plan",
+            detail: "Lock the recommended candidate and initialize draft and run artifacts.",
+            command: `${cliPrefix} session-approve --session-dir ${sessionArg} --plan-id ${shellQuote(review.recommended_plan_id)}`,
+            actionId: "approve_recommended",
+            payload: {
+              plan_id: review.recommended_plan_id,
+              reason: "Approved from local console."
+            },
+            runnable: true
           });
         }
 
-        tabRoot.innerHTML = jsonTabs
+        if (session.approved_plan_id) {
+          items.push({
+            label: "Render Editable Plan",
+            detail: "Export the approved plan as Markdown with embedded YAML for human or agent edits.",
+            command: `${cliPrefix} session-render-plan --session-dir ${sessionArg} --approved --output ${shellQuote(editablePlanPath)}`,
+            runnable: false
+          });
+        }
+
+        if (runReview.verdict === "awaiting_confirmation") {
+          items.push({
+            label: "Confirm Current Stage",
+            detail: "Advance the paused confirmation gate with explicit approval.",
+            command: `${cliPrefix} session-next-stage --session-dir ${sessionArg} --confirm`,
+            actionId: "next_stage",
+            payload: {
+              confirm: true
+            },
+            runnable: true
+          });
+        } else if (runStatus.status === "paused") {
+          items.push({
+            label: "Resume Run",
+            detail: "Resume a manually paused run at the current stage.",
+            command: `${cliPrefix} session-resume --session-dir ${sessionArg}`,
+            actionId: "resume_run",
+            payload: {},
+            runnable: true
+          });
+        } else if (session.approved_plan_id && runStatus.status !== "completed") {
+          items.push({
+            label: "Advance Run",
+            detail: "Move the execution state machine to the next stage.",
+            command: `${cliPrefix} session-next-stage --session-dir ${sessionArg}`,
+            actionId: "next_stage",
+            payload: {},
+            runnable: true
+          });
+        }
+
+        if (session.approved_plan_id && runStatus.status && runStatus.status !== "completed") {
+          items.push({
+            label: "Pause Run",
+            detail: "Force a manual checkpoint if you need to inspect or intervene.",
+            command: `${cliPrefix} session-pause --session-dir ${sessionArg} --reason ${shellQuote("Manual checkpoint from console review.")}`,
+            actionId: "pause_run",
+            payload: {
+              reason: "Manual checkpoint from console review."
+            },
+            runnable: true
+          });
+        }
+
+        items.push({
+          label: "Export Console Bundle",
+          detail: "Write a fresh bundle JSON into the active session directory.",
+          command: `${cliPrefix} session-export-console --session-dir ${sessionArg} --output ${shellQuote(exportPath)}`,
+          actionId: "export_bundle_file",
+          payload: {
+            output_path: exportPath
+          },
+          runnable: true
+        });
+
+        return items;
+      }
+
+      function renderOperatorActions(data) {
+        const actions = buildOperatorActions(data);
+        document.getElementById("actions-pill").textContent = appState.control.enabled
+          ? `API + CLI`
+          : `${actions.length} cmds`;
+
+        const root = document.getElementById("action-list");
+        root.innerHTML = actions.length
+          ? actions
+              .map(
+                (action, index) => `
+                  <article class="action-item">
+                    <div class="action-header">
+                      <div>
+                        <strong>${escapeHtml(action.label)}</strong>
+                        <div class="muted-text">${escapeHtml(action.detail)}</div>
+                      </div>
+                      <div class="action-controls">
+                        ${
+                          appState.control.enabled && action.runnable
+                            ? `
+                              <button
+                                type="button"
+                                class="secondary-button action-run"
+                                data-action-id="${escapeHtml(action.actionId || "")}"
+                                data-payload="${encodeURIComponent(JSON.stringify(action.payload || {}))}"
+                                data-index="${index}"
+                              >
+                                Run
+                              </button>
+                            `
+                            : ""
+                        }
+                        <button
+                          type="button"
+                          class="ghost-button action-copy"
+                          data-command="${encodeURIComponent(action.command)}"
+                          data-index="${index}"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                    <pre class="command-block">${escapeHtml(action.command)}</pre>
+                  </article>
+                `
+              )
+              .join("")
+          : `<div class="empty-box">No operator actions available for this bundle yet.</div>`;
+
+        if (!appState.control.enabled) {
+          root.insertAdjacentHTML(
+            "afterbegin",
+            `<div class="empty-box">No local control API detected. Start <code>session-serve-console</code> to run actions directly, or keep using copy-and-run.</div>`
+          );
+        }
+
+        root.onclick = async (event) => {
+          const runButton = event.target.closest(".action-run");
+          if (runButton) {
+            const actionId = runButton.dataset.actionId || "";
+            const payload = JSON.parse(decodeURIComponent(runButton.dataset.payload || "%7B%7D"));
+            try {
+              runButton.disabled = true;
+              runButton.textContent = "Running";
+              const result = await runControlAction(actionId, payload);
+              setBundleError("");
+              renderApp(result.bundle, liveBundleMeta());
+            } catch (error) {
+              setBundleError(error.message || error);
+            } finally {
+              runButton.disabled = false;
+              runButton.textContent = "Run";
+            }
+            return;
+          }
+
+          const button = event.target.closest(".action-copy");
+          if (!button) return;
+
+          const command = decodeURIComponent(button.dataset.command || "");
+          try {
+            if (!navigator.clipboard?.writeText) {
+              throw new Error("Clipboard API unavailable");
+            }
+            await navigator.clipboard.writeText(command);
+            button.textContent = "Copied";
+            window.setTimeout(() => {
+              button.textContent = "Copy";
+            }, 1200);
+          } catch (error) {
+            button.textContent = "Unavailable";
+            window.setTimeout(() => {
+              button.textContent = "Copy";
+            }, 1200);
+          }
+        };
+      }
+
+      function wirePlanEditorControls() {
+        const textArea = document.getElementById("plan-editor-text");
+        const reasonInput = document.getElementById("plan-editor-reason");
+        const loadButton = document.getElementById("plan-load-button");
+        const downloadButton = document.getElementById("plan-download-button");
+        const uploadButton = document.getElementById("plan-upload-button");
+        const approveButton = document.getElementById("plan-approve-button");
+        const uploadInput = document.getElementById("plan-upload-input");
+
+        textArea.oninput = (event) => {
+          appState.planEditor.text = event.target.value;
+          appState.planEditor.loaded = Boolean(appState.planEditor.text.trim());
+          appState.planEditor.dirty = true;
+          appState.planEditor.status = appState.planEditor.loaded
+            ? `Editing ${appState.planEditor.fileName}.`
+            : "Plan editor is empty.";
+          syncPlanEditorView();
+        };
+
+        reasonInput.oninput = (event) => {
+          appState.planEditor.reason = event.target.value;
+        };
+
+        loadButton.onclick = async () => {
+          try {
+            const approved = Boolean(appState.data?.session?.approved_plan_id);
+            const payload = await fetchPlanMarkdown({
+              approved,
+              planId: approved ? null : appState.data?.review?.recommended_plan_id
+            });
+            appState.planEditor.text = payload.text || "";
+            appState.planEditor.fileName = payload.file_name || "editable-plan.md";
+            appState.planEditor.loaded = true;
+            appState.planEditor.dirty = false;
+            appState.planEditor.status = payload.approved
+              ? `Loaded approved plan ${payload.plan_id || ""}.`
+              : `Loaded candidate plan ${payload.plan_id || ""}.`;
+            setBundleError("");
+            syncPlanEditorView();
+          } catch (error) {
+            setBundleError(error.message || error);
+          }
+        };
+
+        downloadButton.onclick = () => {
+          if (!appState.planEditor.text.trim()) return;
+          const blob = new Blob([appState.planEditor.text], { type: "text/markdown;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement("a");
+          anchor.href = url;
+          anchor.download = appState.planEditor.fileName || "editable-plan.md";
+          document.body.appendChild(anchor);
+          anchor.click();
+          anchor.remove();
+          URL.revokeObjectURL(url);
+        };
+
+        uploadButton.onclick = () => uploadInput.click();
+
+        uploadInput.onchange = async (event) => {
+          const file = event.target.files?.[0];
+          if (!file) return;
+
+          try {
+            const text = await file.text();
+            appState.planEditor.text = text;
+            appState.planEditor.fileName = file.name || "uploaded-plan.md";
+            appState.planEditor.loaded = Boolean(text.trim());
+            appState.planEditor.dirty = true;
+            appState.planEditor.status = `Loaded local file ${appState.planEditor.fileName}.`;
+            setBundleError("");
+            syncPlanEditorView();
+          } catch (error) {
+            setBundleError(error.message || error);
+          } finally {
+            uploadInput.value = "";
+          }
+        };
+
+        approveButton.onclick = async () => {
+          if (!appState.planEditor.text.trim()) {
+            setBundleError("Plan editor is empty.");
+            return;
+          }
+
+          try {
+            approveButton.disabled = true;
+            approveButton.textContent = "Applying";
+            const result = await runControlAction("approve_plan_document", {
+              plan_text: appState.planEditor.text,
+              file_name: appState.planEditor.fileName || "editable-plan.md",
+              reason: appState.planEditor.reason || "Approved from plan editor."
+            });
+            setBundleError("");
+            renderApp(result.bundle, liveBundleMeta());
+            try {
+              const payload = await fetchPlanMarkdown({ approved: true });
+              appState.planEditor.text = payload.text || appState.planEditor.text;
+              appState.planEditor.fileName = payload.file_name || appState.planEditor.fileName;
+              appState.planEditor.loaded = true;
+              appState.planEditor.dirty = false;
+              appState.planEditor.status = "Approved edited plan, reset run artifacts from stage s1, and reloaded the latest markdown view.";
+              syncPlanEditorView();
+            } catch (error) {
+              appState.planEditor.status = "Approved edited plan and reset run artifacts from stage s1. Markdown reload failed, but session state is updated.";
+              syncPlanEditorView();
+            }
+          } catch (error) {
+            setBundleError(error.message || error);
+          } finally {
+            approveButton.disabled = false;
+            approveButton.textContent = "Approve Edited";
+          }
+        };
+      }
+
+      function wireSessionSidebarControls() {
+        const searchInput = document.getElementById("session-search-input");
+        const filterRow = document.getElementById("session-filter-row");
+        const layoutRow = document.getElementById("session-layout-row");
+        const bulkPinButton = document.getElementById("bulk-pin-visible");
+        const bulkArchiveButton = document.getElementById("bulk-archive-visible");
+        const bulkClearNotesButton = document.getElementById("bulk-clear-visible-notes");
+        const savedViewNameInput = document.getElementById("saved-view-name-input");
+        const savedViewSaveButton = document.getElementById("saved-view-save-button");
+        const labelInput = document.getElementById("session-label-input");
+        const noteInput = document.getElementById("session-note-input");
+        const saveButton = document.getElementById("session-meta-save-button");
+        const clearButton = document.getElementById("session-meta-clear-button");
+        if (!searchInput || !filterRow || !layoutRow || !bulkPinButton || !bulkArchiveButton || !bulkClearNotesButton || !savedViewNameInput || !savedViewSaveButton || !labelInput || !noteInput || !saveButton || !clearButton) return;
+
+        searchInput.value = appState.sessionUi.query;
+        searchInput.oninput = (event) => {
+          appState.sessionUi.query = String(event.target.value || "");
+          if (appState.data) {
+            renderSidebar(appState.data);
+          }
+        };
+
+        filterRow.onclick = (event) => {
+          const button = event.target.closest("[data-session-scope]");
+          if (!button) return;
+          appState.sessionUi.scope = button.dataset.sessionScope || "all";
+          if (appState.data) {
+            renderSidebar(appState.data);
+          }
+        };
+
+        layoutRow.onclick = (event) => {
+          const button = event.target.closest("[data-session-layout]");
+          if (!button) return;
+          appState.sessionUi.layout = button.dataset.sessionLayout || "flat";
+          writeSessionLayout(appState.sessionUi.layout);
+          if (appState.data) {
+            renderSidebar(appState.data);
+          }
+        };
+
+        bulkPinButton.onclick = () => {
+          const visible = currentSidebarSessionItems().filteredItems.map((item) => item.session_dir);
+          bulkPinSessions(visible);
+          if (appState.data) renderSidebar(appState.data);
+        };
+
+        bulkArchiveButton.onclick = () => {
+          const visible = currentSidebarSessionItems().filteredItems.map((item) => item.session_dir);
+          bulkArchiveSessions(visible);
+          if (appState.data) renderSidebar(appState.data);
+        };
+
+        bulkClearNotesButton.onclick = () => {
+          const visible = currentSidebarSessionItems().filteredItems.map((item) => item.session_dir);
+          bulkClearSessionMetadata(visible);
+          if (appState.data) renderSidebar(appState.data);
+        };
+
+        savedViewSaveButton.onclick = () => {
+          const ok = saveCurrentView(savedViewNameInput.value);
+          if (!ok) return;
+          savedViewNameInput.value = "";
+          if (appState.data) renderSidebar(appState.data);
+        };
+
+        saveButton.onclick = () => {
+          const sessionDir = appState.data?.session?.session_dir;
+          if (!sessionDir) return;
+          saveSessionMetadata(sessionDir, {
+            label: labelInput.value,
+            note: noteInput.value
+          });
+          if (appState.data) {
+            renderSidebar(appState.data);
+          }
+        };
+
+        clearButton.onclick = () => {
+          const sessionDir = appState.data?.session?.session_dir;
+          if (!sessionDir) return;
+          labelInput.value = "";
+          noteInput.value = "";
+          saveSessionMetadata(sessionDir, { label: "", note: "" });
+          if (appState.data) {
+            renderSidebar(appState.data);
+          }
+        };
+      }
+
+      function wireSessionControls() {
+        const requestBox = document.getElementById("request-box");
+        const newSessionButton = document.getElementById("new-session-button");
+        const nextActionButton = document.getElementById("next-action-button");
+
+        requestBox.oninput = () => {
+          syncSessionControls();
+        };
+
+        newSessionButton.onclick = async () => {
+          const idleLabel = "+ New Session";
+          try {
+            appState.busy.startingSession = true;
+            newSessionButton.textContent = "Starting";
+            syncSessionControls();
+            const result = await startSessionFromComposer();
+            setBundleError("");
+            renderApp(result.bundle, liveBundleMeta());
+            resetPlanEditorState("New session created. Load the recommended plan to inspect or edit it before approval.");
+            updateHistory(null);
+          } catch (error) {
+            setBundleError(error.message || error);
+          } finally {
+            appState.busy.startingSession = false;
+            newSessionButton.textContent = idleLabel;
+            syncSessionControls();
+          }
+        };
+
+        nextActionButton.onclick = async () => {
+          const primaryAction = resolvePrimaryAction();
+          if (!primaryAction.enabled) {
+            if (!appState.control.enabled) {
+              setBundleError("Start the local control API before running the next action.");
+            }
+            return;
+          }
+
+          try {
+            appState.busy.primaryAction = true;
+            syncSessionControls();
+
+            if (primaryAction.mode === "start_session") {
+              nextActionButton.textContent = "Starting";
+              const result = await startSessionFromComposer();
+              setBundleError("");
+              renderApp(result.bundle, liveBundleMeta());
+              resetPlanEditorState("New session created. Load the recommended plan to inspect or edit it before approval.");
+              updateHistory(null);
+              return;
+            }
+
+            if (primaryAction.mode === "run_action" && primaryAction.action) {
+              nextActionButton.textContent = "Running";
+              const result = await runControlAction(primaryAction.action.actionId, primaryAction.action.payload);
+              setBundleError("");
+              renderApp(result.bundle, liveBundleMeta());
+            }
+          } catch (error) {
+            setBundleError(error.message || error);
+          } finally {
+            appState.busy.primaryAction = false;
+            syncSessionControls();
+          }
+        };
+
+        syncSessionControls();
+      }
+
+      function renderHistory(data) {
+        const history = data.history || fallbackHistory();
+        document.getElementById("history-pill").textContent = `${history.events.length} events`;
+
+        document.getElementById("history-list").innerHTML = history.events.length
+          ? history.events
+              .map((event) => {
+                const diffLines = event.data?.plan_diff?.summary_lines || [];
+                const reason = event.data?.reason;
+                return `
+                  <article class="history-item">
+                    <span class="timeline-dot"></span>
+                    <div class="history-copy">
+                      <div class="history-header">
+                        <div>
+                          <strong>${escapeHtml(event.type)}</strong>
+                          <div class="muted-text">${escapeHtml(event.message)}</div>
+                        </div>
+                        <span class="soft-chip">${escapeHtml(event.timestamp)}</span>
+                      </div>
+                      <div class="history-meta">
+                        ${reason ? `<span class="soft-chip">reason ${escapeHtml(reason)}</span>` : ""}
+                        ${
+                          diffLines.length
+                            ? `<span class="soft-chip">diff ${escapeHtml(diffLines.join(" / "))}</span>`
+                            : ""
+                        }
+                      </div>
+                    </div>
+                  </article>
+                `;
+              })
+              .join("")
+          : `<div class="empty-box">No history recorded yet.</div>`;
+      }
+
+      function renderInspector(data) {
+        const root = document.getElementById("data-tabs");
+        const output = document.getElementById("data-view");
+        const state = { key: data.session ? "session" : "request" };
+
+        const refresh = () => {
+          if (!(state.key in data)) {
+            state.key = data.session ? "session" : "request";
+          }
+          output.textContent = JSON.stringify(data[state.key], null, 2);
+          [...root.querySelectorAll(".data-tab")].forEach((button) => {
+            button.classList.toggle("active", button.dataset.key === state.key);
+          });
+        };
+
+        root.innerHTML = jsonTabs
           .map(
             ([key, label]) => `
-              <button class="json-tab" type="button" data-key="${key}">
+              <button class="data-tab" type="button" data-key="${key}">
                 ${label}
               </button>
             `
           )
           .join("");
 
-        tabRoot.addEventListener("click", (event) => {
-          const button = event.target.closest(".json-tab");
+        root.onclick = (event) => {
+          const button = event.target.closest(".data-tab");
           if (!button) return;
-          state.currentKey = button.dataset.key;
+          state.key = button.dataset.key;
           refresh();
-        });
+        };
 
         refresh();
       }
 
-      async function main() {
-        try {
-          const response = await fetch("data/bio-skill-console-demo.json");
-          if (!response.ok) {
-            throw new Error(`Failed to load demo bundle: ${response.status}`);
+      function selectedFamilyStrategy(card, family) {
+        const selectedId = appState.workflowStrategySelection[family.id];
+        if (selectedId && Array.isArray(family.strategy_profiles)) {
+          const matched = family.strategy_profiles.find((item) => item.id === selectedId);
+          if (matched) return matched;
+        }
+        const select = card?.querySelector('[data-family-strategy]');
+        if (!select || !Array.isArray(family.strategy_profiles)) return null;
+        return family.strategy_profiles.find((item) => item.id === select.value) || null;
+      }
+
+      function setFamilyStrategySelection(familyId, strategyId) {
+        if (!familyId) return;
+        appState.workflowStrategySelection[familyId] = strategyId;
+      }
+
+      function applyWorkflowFamilyPreset(family, strategy = null) {
+        const requestBox = document.getElementById('request-box');
+        if (requestBox) {
+          requestBox.value = strategy?.default_request_text || family.default_request_text || `Plan a ${family.title.toLowerCase()} workflow with stage-by-stage review and a final evidence bundle.`;
+        }
+        document.getElementById('bundle-error').hidden = true;
+        appState.sessionUi.query = family.default_query || family.id.split('-')[0];
+        appState.sessionUi.scope = 'all';
+        appState.sessionUi.layout = 'flat';
+        syncSessionControls();
+        if (appState.data) {
+          renderSidebar(appState.data);
+        }
+      }
+
+      function familyStartOptions(family, strategy = null) {
+        return {
+          workflowFamily: family.id,
+          strategyProfile: strategy?.id || undefined
+        };
+      }
+
+      function renderStrategyPanel(data) {
+        const root = document.getElementById('strategy-panel');
+        const pill = document.getElementById('strategy-pill');
+        if (!root || !pill) return;
+        const family = currentWorkflowFamily(data);
+        const current = currentPlanStrategy(data);
+        if (!family) {
+          pill.textContent = 'No Family';
+          root.innerHTML = `<div class="empty-box">No workflow family is active in this session yet.</div>`;
+          return;
+        }
+        const session = data.session || {};
+        const selected = (family.strategy_profiles || []).find((item) => item.id === (appState.workflowStrategySelection[family.id] || current?.profile)) || currentStrategyProfileMeta(data) || (family.strategy_profiles || [])[0] || null;
+        const warning = strategyWarningText(selected?.availability);
+        pill.textContent = selected?.availability || 'strategy';
+        root.innerHTML = `
+          <div class="detail-list">
+            <div class="detail-row"><strong>Family</strong><span>${escapeHtml(family.title)}</span></div>
+            <div class="detail-row"><strong>Current</strong><span>${escapeHtml(current?.label || 'default')}</span></div>
+          </div>
+          ${(family.strategy_profiles || []).length ? `
+            <select id="strategy-session-select" class="family-select">
+              ${(family.strategy_profiles || []).map((profile) => `<option value="${escapeHtml(profile.id)}" ${selected && profile.id === selected.id ? 'selected' : ''}>${escapeHtml(profile.label)}</option>`).join('')}
+            </select>
+            ${warning ? `<div class="strategy-warning">${escapeHtml(warning)}</div>` : ''}
+            <div class="family-actions">
+              <button type="button" class="secondary-button" id="strategy-apply-button">Use Strategy</button>
+              ${!session.approved_plan_id ? `<button type="button" class="primary-button" id="strategy-rebuild-button">Rebuild Plans</button>` : ''}
+            </div>
+            ${session.approved_plan_id ? `<div class="muted-text">Switch strategies before approval. After approval, start a fresh family session.</div>` : ''}
+          ` : `<div class="empty-box">No strategy profiles registered for this workflow family.</div>`}
+        `;
+
+        const select = document.getElementById('strategy-session-select');
+        const applyButton = document.getElementById('strategy-apply-button');
+        const rebuildButton = document.getElementById('strategy-rebuild-button');
+        if (select) {
+          select.onchange = () => {
+            setFamilyStrategySelection(family.id, select.value);
+            renderStrategyPanel(data);
+            renderPlans(data);
+          };
+        }
+        if (applyButton) {
+          applyButton.onclick = () => {
+            const strategy = (family.strategy_profiles || []).find((item) => item.id === select.value) || null;
+            applyWorkflowFamilyPreset(family, strategy);
+          };
+        }
+        if (rebuildButton) {
+          rebuildButton.onclick = async () => {
+            const strategy = (family.strategy_profiles || []).find((item) => item.id === select.value) || null;
+            try {
+              rebuildButton.disabled = true;
+              rebuildButton.textContent = 'Rebuilding';
+              const result = await startSessionFromComposer(familyStartOptions(family, strategy));
+              setBundleError('');
+              renderApp(result.bundle, liveBundleMeta());
+              resetPlanEditorState('Strategy-switched session created. Review the regenerated candidate plans before approval.');
+              updateHistory(null);
+            } catch (error) {
+              setBundleError(error.message || error);
+            }
+          };
+        }
+      }
+
+      function renderWorkflowFamilies() {
+        const root = document.getElementById("family-grid");
+        const pill = document.getElementById("family-pill");
+        if (!root || !pill) return;
+
+        if (!appState.workflowCatalog.length) {
+          pill.textContent = "No Catalog";
+          root.innerHTML = `<div class="empty-box">Workflow catalog is not loaded.</div>`;
+          return;
+        }
+
+        pill.textContent = `${appState.workflowCatalog.length} families`;
+        root.innerHTML = appState.workflowCatalog.map((item) => {
+          const strategyProfiles = item.strategy_profiles || [];
+          const selected = strategyProfiles.find((profile) => profile.id === appState.workflowStrategySelection[item.id]) || strategyProfiles[0] || null;
+          const availability = selected?.availability || 'external';
+          const warning = availability === 'external'
+            ? 'This strategy is modeled from real workflows but is not backed by a local skill in this repo yet.'
+            : availability === 'partial'
+              ? 'This strategy mixes local and unresolved tools; expect partial execution support.'
+              : '';
+          return `
+            <article class="family-card" data-workflow-family="${escapeHtml(item.id)}">
+              <strong>${escapeHtml(item.title)}</strong>
+              <p>${escapeHtml((item.domains || []).join(' · '))}</p>
+              <div class="chip-row">
+                ${(item.request_tags || []).slice(0, 3).map((tag) => `<span class="soft-chip">${escapeHtml(tag)}</span>`).join('')}
+              </div>
+              ${strategyProfiles.length ? `
+                <select class="family-select" data-family-strategy="${escapeHtml(item.id)}">
+                  ${strategyProfiles.map((profile) => `<option value="${escapeHtml(profile.id)}" ${selected && profile.id === selected.id ? 'selected' : ''}>${escapeHtml(profile.label)}</option>`).join('')}
+                </select>
+                <div class="family-meta-row">
+                  <span class="family-availability ${escapeHtml(availability)}">${escapeHtml(availability)}</span>
+                  <span class="muted-text">${escapeHtml(selected?.label || '')}</span>
+                </div>
+                ${warning ? `<div class="family-warning">${escapeHtml(warning)}</div>` : ''}
+              ` : ''}
+              <div class="family-actions">
+                <button type="button" class="secondary-button" data-workflow-prefill="${escapeHtml(item.id)}">Use Family</button>
+                ${appState.control.enabled ? `<button type="button" class="primary-button" data-workflow-start="${escapeHtml(item.id)}">Start</button>` : ''}
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        root.onchange = (event) => {
+          const select = event.target.closest('[data-family-strategy]');
+          if (!select) return;
+          setFamilyStrategySelection(select.dataset.familyStrategy, select.value);
+          renderWorkflowFamilies();
+        };
+
+        root.onclick = async (event) => {
+          const startButton = event.target.closest('[data-workflow-start]');
+          if (startButton) {
+            const family = appState.workflowCatalog.find((item) => item.id === startButton.dataset.workflowStart);
+            if (!family) return;
+            const strategy = selectedFamilyStrategy(startButton.closest('[data-workflow-family]'), family);
+            try {
+              startButton.disabled = true;
+              startButton.textContent = 'Starting';
+              const result = await startSessionFromComposer(familyStartOptions(family, strategy));
+              setBundleError('');
+              renderApp(result.bundle, liveBundleMeta());
+              resetPlanEditorState('New family-based session created. Load the recommended plan to inspect or edit it before approval.');
+              updateHistory(null);
+            } catch (error) {
+              setBundleError(error.message || error);
+            } finally {
+              renderWorkflowFamilies();
+            }
+            return;
           }
-          const data = await response.json();
-          renderSummary(data);
-          renderPlans(data);
-          renderStages(data);
-          renderMetrics(data);
-          renderRunReview(data);
-          renderJsonInspector(data);
+
+          const button = event.target.closest('[data-workflow-prefill], [data-workflow-family]');
+          if (!button) return;
+          const familyId = button.dataset.workflowPrefill || button.dataset.workflowFamily;
+          const family = appState.workflowCatalog.find((item) => item.id === familyId);
+          if (!family) return;
+          const strategy = selectedFamilyStrategy(button.closest('[data-workflow-family]'), family);
+          applyWorkflowFamilyPreset(family, strategy);
+        };
+      }
+
+      function renderApp(data, meta) {
+        appState.data = data;
+        appState.meta = meta;
+        appState.sessions = mergeCurrentSessionIntoList(appState.sessions);
+        updateSourceUi(meta);
+        renderSidebar(data);
+        renderComposer(data);
+        renderSessionSnapshot(data);
+        renderPlans(data);
+        renderStages(data);
+        renderWorkflowFamilies();
+        renderStrategyPanel(data);
+        renderAnalysisFlow(data);
+        renderReview(data);
+        renderOperatorActions(data);
+        renderHistory(data);
+        renderInspector(data);
+        if (appState.control.enabled) {
+          void refreshSessionList();
+        }
+      }
+
+      async function loadBundleFromUrl(url, meta) {
+        const data = await fetchBundle(url);
+        renderApp(data, meta);
+        setBundleError("");
+      }
+
+      function wireBundleControls() {
+        const urlInput = document.getElementById("bundle-url-input");
+        const loadUrlButton = document.getElementById("load-url-button");
+        const loadDemoButton = document.getElementById("load-demo-button");
+        const uploadButton = document.getElementById("upload-bundle-button");
+        const fileInput = document.getElementById("bundle-file-input");
+
+        loadUrlButton.onclick = async () => {
+          const rawUrl = urlInput.value.trim();
+          if (!rawUrl) {
+            setBundleError("Please enter a JSON bundle URL or relative path.");
+            return;
+          }
+
+          try {
+            await loadBundleFromUrl(rawUrl, {
+              label: "Remote Bundle",
+              detail: rawUrl,
+              urlValue: rawUrl
+            });
+            updateHistory(rawUrl);
+          } catch (error) {
+            setBundleError(error.message || error);
+          }
+        };
+
+        loadDemoButton.onclick = async () => {
+          try {
+            await loadBundleFromUrl(DEMO_BUNDLE_URL, {
+              label: "Demo Bundle",
+              detail: DEMO_BUNDLE_URL,
+              urlValue: ""
+            });
+            updateHistory(null);
+          } catch (error) {
+            setBundleError(error.message || error);
+          }
+        };
+
+        uploadButton.onclick = () => fileInput.click();
+
+        fileInput.onchange = async (event) => {
+          const file = event.target.files?.[0];
+          if (!file) return;
+
+          try {
+            const data = await readBundleFile(file);
+            renderApp(data, {
+              label: "Local Upload",
+              detail: file.name,
+              urlValue: ""
+            });
+            updateHistory(null);
+            setBundleError("");
+          } catch (error) {
+            setBundleError(error.message || error);
+          } finally {
+            fileInput.value = "";
+          }
+        };
+      }
+
+      async function main() {
+        appState.sessionUi.archived = readArchivedSessions();
+        appState.sessionUi.pinned = readPinnedSessions();
+        appState.sessionUi.metadata = readSessionMetadata();
+        appState.sessionUi.layout = readSessionLayout();
+        appState.sessionUi.collapsedGroups = readCollapsedGroups();
+        appState.sessionUi.savedViews = readSavedViews();
+        await loadWorkflowCatalog();
+        wireBundleControls();
+        wirePlanEditorControls();
+        wireSessionSidebarControls();
+        wireSessionControls();
+        await detectControlApi();
+
+        const queryBundle = new URL(window.location.href).searchParams.get("bundle");
+        let startupWarning = "";
+
+        try {
+          if (queryBundle) {
+            document.getElementById("bundle-url-input").value = queryBundle;
+            try {
+              await loadBundleFromUrl(queryBundle, {
+                label: "Query Bundle",
+                detail: queryBundle,
+                urlValue: queryBundle
+              });
+              return;
+            } catch (error) {
+              startupWarning = `Query bundle failed and the page fell back to demo data. ${error.message || error}`;
+            }
+          }
+
+          if (appState.control.enabled) {
+            try {
+              await loadBundleFromUrl(apiUrl("/api/session/bundle"), {
+                label: "Live API Bundle",
+                detail: apiUrl("/api/session/bundle"),
+                urlValue: apiUrl("/api/session/bundle")
+              });
+            } catch (error) {
+              startupWarning = startupWarning || `Live API bundle failed and the page fell back to demo data. ${error.message || error}`;
+              await loadBundleFromUrl(DEMO_BUNDLE_URL, {
+                label: "Demo Bundle",
+                detail: DEMO_BUNDLE_URL,
+                urlValue: ""
+              });
+            }
+          } else {
+            await loadBundleFromUrl(DEMO_BUNDLE_URL, {
+              label: "Demo Bundle",
+              detail: DEMO_BUNDLE_URL,
+              urlValue: ""
+            });
+          }
+          if (startupWarning) {
+            setBundleError(startupWarning);
+          }
         } catch (error) {
-          document.getElementById("summary-root").innerHTML = `
-            <div class="error">
-              <strong>Failed to load demo bundle.</strong>
-              <div style="margin-top:8px">${String(error.message || error)}</div>
+          document.querySelector(".shell").innerHTML = `
+            <div class="error-box">
+              <strong>Failed to load console bundle.</strong>
+              <div style="margin-top: 8px">${escapeHtml(error.message || error)}</div>
             </div>
           `;
         }

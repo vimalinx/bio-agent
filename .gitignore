@@ -3,6 +3,9 @@ __pycache__/
 .pytest_cache/
 
 .benchmarks/
+.omx/
+sessions/
+docs/system/data/session-export.json
 
 task_plan.md
 findings.md

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real Analysis Information Flows</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #faf8f5;
+        --surface: #ffffff;
+        --surface-alt: #f4eee8;
+        --line: #dfd4c8;
+        --text: #451a03;
+        --muted: #7c5a46;
+        --primary: #b45309;
+        --accent: #0f766e;
+        --radius: 10px;
+        --shadow: 0 2px 8px rgba(69, 26, 3, 0.08);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", sans-serif; line-height: 1.55; }
+      a { color: var(--primary); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .shell { max-width: 1360px; margin: 0 auto; display: grid; grid-template-columns: 252px minmax(0, 1fr); gap: 24px; padding: 24px; }
+      .sidebar, .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+      .sidebar { position: sticky; top: 16px; align-self: start; padding: 20px 18px; }
+      .nav { display: grid; gap: 8px; }
+      .nav a { display: block; padding: 8px 10px; border-radius: 8px; color: var(--text); }
+      .nav a:hover { background: var(--surface-alt); text-decoration: none; }
+      .meta { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); font-size: .92rem; color: var(--muted); }
+      .content { display: grid; gap: 20px; }
+      .panel { padding: 24px 26px; }
+      h1,h2 { margin: 0 0 12px; line-height: 1.2; }
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.32rem; }
+      p { margin: 0 0 12px; }
+      .callout { border-left: 4px solid var(--accent); padding-left: 12px; }
+      .muted { color: var(--muted); }
+      .split { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+      .tile { border: 1px solid var(--line); background: var(--surface-alt); border-radius: 8px; padding: 16px; }
+      .tile strong { display: block; margin-bottom: 8px; }
+      .flow-grid { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 12px; margin-top: 12px; }
+      .flow-stage { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #fffdfa; }
+      .flow-stage strong { display: block; margin-bottom: 6px; }
+      code { font-family: "IBM Plex Mono", monospace; }
+      @media (max-width: 1180px) { .flow-grid { grid-template-columns: 1fr; } }
+      @media (max-width: 1040px) { .shell { grid-template-columns: 1fr; } .sidebar { position: static; } .split { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <h2>Analysis Flows</h2>
+        <nav class="nav">
+          <a href="#summary">概览</a>
+          <a href="bio-skill-system.html">系统架构页</a>
+          <a href="real-bioinformatics-workflow-map.html">真实流程地图</a>
+          <a href="bio-skill-console.html">运行控制台</a>
+          <a href="#routeable">Routeable Flows</a>
+          <a href="#rnaseq-differential-expression">Bulk RNA-seq</a>
+          <a href="#scrnaseq-preprocessing">scRNA-seq</a>
+          <a href="#atacseq-differential-accessibility">ATAC-seq</a>
+          <a href="#germline-short-variant-discovery">Germline Variants</a>
+        </nav>
+        <div class="meta">
+          <div>Registry: <code>registry/analysis_flows.yaml</code></div>
+          <div>Docs JSON: <code>docs/system/data/real-analysis-information-flows.json</code></div>
+        </div>
+      </aside>
+      <main class="content">
+        <section class="panel" id="summary">
+          <h1>Real Analysis Information Flows</h1>
+          <p>这一页把 grounded workflow family 的真实分析信息流显式展开，不只说有哪些 stage，而是说每个 stage 消耗什么、产生什么、在哪里形成证据、最终交付包应该长什么样。</p>
+          <p class="callout">这层的目标是让 bio-agent 同时理解控制流和分析流。用户批准的不只是 stage 顺序，也是在批准一条 artifact handoff 和 evidence accumulation 路径。</p>
+          <div class="split" style="margin-top:16px;">
+            <div class="tile"><strong>架构位置</strong>workflow registry 负责 family routing；analysis flow registry 负责真实数据移动和交付语义。</div>
+            <div class="tile"><strong>当前覆盖</strong>先覆盖 4 条已 grounded 且已 routeable 的 family：bulk RNA-seq、scRNA-seq、ATAC-seq、germline short variant discovery。</div>
+          </div>
+        </section>
+        <section class="panel" id="routeable">
+          <h2>Routeable Flows</h2>
+          <p>这 4 条 flow 已同时具备 grounded workflow 定义、strategy profile、example plan/request，以及显式 analysis-flow 定义。</p>
+        </section>
+        <section class="panel" id="rnaseq-differential-expression">
+          <h2>Bulk RNA-seq differential expression</h2>
+          <p class="muted">FASTQ -> QC/alignment -> count matrix -> DE result bundle</p>
+          <div class="flow-grid">
+            <div class="flow-stage"><strong>s1 Input Check</strong>validated input manifest</div>
+            <div class="flow-stage"><strong>s2 QC + Alignment</strong>FastQC, MultiQC, aligned BAMs</div>
+            <div class="flow-stage"><strong>s3 Quantification</strong>gene count matrix</div>
+            <div class="flow-stage"><strong>s4 Statistics</strong>DE table, QC plots</div>
+            <div class="flow-stage"><strong>s5 Delivery</strong>analysis summary, delivery bundle</div>
+          </div>
+        </section>
+        <section class="panel" id="scrnaseq-preprocessing">
+          <h2>Single-cell RNA-seq preprocessing</h2>
+          <p class="muted">single-cell FASTQ -> chemistry-aware processing -> filtered matrix -> clustering-ready outputs</p>
+          <div class="flow-grid">
+            <div class="flow-stage"><strong>s1 Input Check</strong>validated sample manifest</div>
+            <div class="flow-stage"><strong>s2 Barcode / UMI</strong>barcode-aware intermediates</div>
+            <div class="flow-stage"><strong>s3 Matrix Build</strong>raw and filtered matrices</div>
+            <div class="flow-stage"><strong>s4 QC + Clustering</strong>QC metrics, embeddings, clusters</div>
+            <div class="flow-stage"><strong>s5 Marker Review</strong>marker table, review summary</div>
+          </div>
+        </section>
+        <section class="panel" id="atacseq-differential-accessibility">
+          <h2>ATAC-seq differential accessibility</h2>
+          <p class="muted">ATAC FASTQ -> filtered alignments -> peak universe -> DA result bundle</p>
+          <div class="flow-grid">
+            <div class="flow-stage"><strong>s1 Input Check</strong>validated sample manifest</div>
+            <div class="flow-stage"><strong>s2 Align</strong>aligned BAMs, alignment logs</div>
+            <div class="flow-stage"><strong>s3 Filter + QC</strong>filtered BAMs, QC, tracks</div>
+            <div class="flow-stage"><strong>s4 Peaks + Consensus</strong>peak set, consensus matrix</div>
+            <div class="flow-stage"><strong>s5 DA + Report</strong>DA table, analysis summary</div>
+          </div>
+        </section>
+        <section class="panel" id="germline-short-variant-discovery">
+          <h2>Germline SNP/Indel discovery for WGS/WES</h2>
+          <p class="muted">cohort FASTQ/BAM -> analysis-ready BAM -> gVCF -> joint VCF -> filtered callset</p>
+          <div class="flow-grid">
+            <div class="flow-stage"><strong>s1 Input Check</strong>validated cohort manifest</div>
+            <div class="flow-stage"><strong>s2 Align + BQSR</strong>analysis-ready BAMs, recalibration metrics</div>
+            <div class="flow-stage"><strong>s3 gVCF Calling</strong>gVCF bundle</div>
+            <div class="flow-stage"><strong>s4 Joint Genotyping</strong>joint cohort VCF</div>
+            <div class="flow-stage"><strong>s5 Filtering + Review</strong>filtered VCF, cohort QC summary</div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

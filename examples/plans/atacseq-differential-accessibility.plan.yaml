@@ -1,0 +1,95 @@
+plan_id: plan_atacseq_da_001
+request_id: req_atacseq_da_001
+title: ATAC-seq peak calling and differential accessibility analysis
+summary: Validate ATAC-seq inputs, align and filter reads, call peaks, build a consensus
+  accessibility matrix, and summarize differential accessibility.
+strategy_type: conservative
+assumptions:
+- The experiment design supports replicate-aware differential accessibility.
+- Reference genome and blacklist resources are available.
+prerequisites:
+- Alignment and peak-calling tools are installed.
+- Blacklist and chromosome naming are compatible with the reference build.
+expected_outputs:
+- filtered_bams
+- bigwig_tracks
+- peak_set
+- consensus_matrix
+- da_results
+risks:
+- Mitochondrial contamination or duplicate inflation can distort peak quality.
+- Improper blacklist handling can inflate false peaks.
+estimated_cost:
+  time: medium
+  compute: medium
+stages:
+- stage_id: s1
+  name: input-and-reference-check
+  goal: Validate ATAC-seq FASTQ, design sheet, and reference assets.
+  candidate_skills:
+  - request-normalizer
+  - execution-guard
+  requires_user_confirmation: false
+  outputs:
+  - validated_inputs
+  - reference_assets
+  validation:
+  - input_paths_exist
+  - reference_assets_available
+- stage_id: s2
+  name: trim-and-align
+  goal: Trim adapters and align reads for chromatin accessibility analysis.
+  candidate_skills:
+  - skill-router
+  - execution-guard
+  - fastqc
+  - multiqc
+  - bowtie2
+  requires_user_confirmation: true
+  outputs:
+  - aligned_bams
+  - alignment_qc
+  validation:
+  - bam_files_exist
+  - alignment_qc_exists
+- stage_id: s3
+  name: filtering-and-qc
+  goal: Remove duplicates, blacklist regions, and produce coverage tracks and QC.
+  candidate_skills:
+  - deeptools
+  - stage-reviewer
+  requires_user_confirmation: false
+  outputs:
+  - filtered_bams
+  - bigwig_tracks
+  - filter_qc
+  validation:
+  - filtered_bams_exist
+  - bigwig_tracks_exist
+- stage_id: s4
+  name: peak-calling-and-consensus
+  goal: Call peaks and construct a consensus accessibility matrix.
+  candidate_skills:
+  - macs3
+  - stage-reviewer
+  requires_user_confirmation: false
+  outputs:
+  - peak_set
+  - consensus_matrix
+  validation:
+  - peak_set_exists
+  - consensus_matrix_exists
+- stage_id: s5
+  name: differential-accessibility-and-report
+  goal: Run differential accessibility and prepare a reviewable report.
+  candidate_skills:
+  - deeptools
+  - stage-reviewer
+  requires_user_confirmation: false
+  outputs:
+  - da_results
+  - analysis_summary
+  validation:
+  - da_results_exist
+  - summary_exists
+approval_state: approved

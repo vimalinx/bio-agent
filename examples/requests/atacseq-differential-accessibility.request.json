@@ -1,0 +1,20 @@
+{
+  "request_id": "req_atacseq_da_001",
+  "user_goal": "Call peaks and identify differential accessibility from ATAC-seq FASTQ files.",
+  "request_text": "I need an ATAC-seq workflow from FASTQ to peaks and differential accessibility results.",
+  "request_tags": [
+    "atacseq",
+    "chromatin-accessibility",
+    "differential-accessibility"
+  ],
+  "inputs": [],
+  "constraints": [
+    "Pause before alignment and peak calling"
+  ],
+  "preferred_outputs": [
+    "peak_set",
+    "consensus_matrix",
+    "da_results"
+  ],
+  "context_notes": []
+}

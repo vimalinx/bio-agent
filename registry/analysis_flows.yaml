@@ -1,0 +1,228 @@
+version: 1
+description: Canonical analysis information flows for grounded bioinformatics workflow families in bio-agent.
+flows:
+  - workflow_id: rnaseq-differential-expression
+    title: Bulk RNA-seq differential expression
+    status: routeable
+    summary: Move from raw paired-end FASTQ reads to a counts matrix and differential expression result bundle with explicit QC and review boundaries.
+    primary_inputs:
+      - paired FASTQ reads
+      - sample sheet with condition and replicate metadata
+    reference_inputs:
+      - reference genome FASTA
+      - gene annotation GTF
+      - aligner index or index recipe
+    metadata_inputs:
+      - library strandedness expectation
+      - contrast definition for DE testing
+    stage_flows:
+      - stage_id: s1
+        label: input-and-environment-check
+        consumes: [FASTQ pairs, sample sheet, reference pointers]
+        transforms: [validate sample metadata, confirm reference build, verify output contract]
+        produces: [validated input manifest, reference bundle manifest]
+        evidence: [input manifest, reference manifest]
+        decision_gate: false
+      - stage_id: s2
+        label: qc-and-alignment
+        consumes: [validated input manifest, reference bundle]
+        transforms: [run read QC, align reads, aggregate cohort QC]
+        produces: [per-sample QC reports, aligned BAMs, alignment summaries, cohort MultiQC]
+        evidence: [FastQC outputs, alignment logs, MultiQC report]
+        decision_gate: true
+      - stage_id: s3
+        label: quantification
+        consumes: [aligned BAMs, annotation GTF]
+        transforms: [count reads per feature, compile count matrix]
+        produces: [gene count matrix, count summary]
+        evidence: [count matrix, featureCounts summary]
+        decision_gate: false
+      - stage_id: s4
+        label: statistical-analysis
+        consumes: [count matrix, contrast metadata]
+        transforms: [normalize counts, fit differential model, produce ranked results]
+        produces: [DE results table, QC plots, contrast summary]
+        evidence: [result table, dispersion/MA/PCA plots]
+        decision_gate: false
+      - stage_id: s5
+        label: report-review
+        consumes: [DE results table, QC plots, count summary]
+        transforms: [assemble evidence bundle, summarize caveats, prepare delivery package]
+        produces: [analysis summary, delivery bundle]
+        evidence: [summary note, exported evidence bundle]
+        decision_gate: false
+    delivery_bundle:
+      - aligned BAM inventory
+      - MultiQC report
+      - gene count matrix
+      - differential expression result table
+      - analysis summary
+  - workflow_id: scrnaseq-preprocessing
+    title: Single-cell RNA-seq preprocessing and clustering-ready matrix generation
+    status: routeable
+    summary: Move from raw single-cell reads and chemistry metadata to a filtered matrix, QC metrics, embeddings, and marker-review artifacts.
+    primary_inputs:
+      - single-cell FASTQ reads
+      - sample / library / lane metadata
+    reference_inputs:
+      - transcriptome or genome reference bundle
+      - barcode whitelist or chemistry-specific configuration
+    metadata_inputs:
+      - platform chemistry
+      - expected cell count or filtering heuristics
+    stage_flows:
+      - stage_id: s1
+        label: input-and-reference-check
+        consumes: [FASTQ reads, sample metadata, chemistry metadata, reference bundle]
+        transforms: [validate chemistry/reference compatibility, check lane/sample consistency]
+        produces: [validated sample manifest, resolved chemistry profile]
+        evidence: [sample manifest, chemistry decision note]
+        decision_gate: false
+      - stage_id: s2
+        label: barcode-and-umi-processing
+        consumes: [validated sample manifest, chemistry profile, reference bundle]
+        transforms: [demultiplex or barcode-aware alignment, UMI collapsing]
+        produces: [barcode-aware alignment outputs, raw matrix intermediates, QC logs]
+        evidence: [alignment logs, barcode/UMI metrics]
+        decision_gate: true
+      - stage_id: s3
+        label: count-matrix-generation
+        consumes: [barcode-aware intermediates]
+        transforms: [build raw matrix, filter low-quality droplets or cells]
+        produces: [raw count matrix, filtered count matrix]
+        evidence: [matrix files, filtering summary]
+        decision_gate: false
+      - stage_id: s4
+        label: qc-and-clustering
+        consumes: [filtered count matrix]
+        transforms: [compute QC covariates, reduce dimensionality, cluster cells]
+        produces: [QC metrics table, embeddings, cluster assignments]
+        evidence: [QC table, UMAP/tSNE coordinates, cluster summary]
+        decision_gate: false
+      - stage_id: s5
+        label: marker-review
+        consumes: [cluster assignments, filtered matrix, embeddings]
+        transforms: [identify markers, assemble review-ready summary]
+        produces: [marker table, marker review summary]
+        evidence: [marker table, review note]
+        decision_gate: false
+    delivery_bundle:
+      - filtered matrix
+      - QC metrics table
+      - embeddings and cluster assignments
+      - marker table
+      - marker review summary
+  - workflow_id: atacseq-differential-accessibility
+    title: ATAC-seq peak calling and differential accessibility
+    status: routeable
+    summary: Move from raw ATAC-seq reads to filtered alignments, peak sets, consensus accessibility matrices, and differential accessibility results.
+    primary_inputs:
+      - paired-end ATAC-seq FASTQ reads
+      - sample sheet with condition / replicate metadata
+    reference_inputs:
+      - reference genome FASTA
+      - blacklist regions
+      - chromosome sizes / annotation aids
+    metadata_inputs:
+      - replicate grouping
+      - peak-calling / consensus strategy
+    stage_flows:
+      - stage_id: s1
+        label: input-and-reference-check
+        consumes: [FASTQ reads, sample sheet, reference bundle, blacklist]
+        transforms: [validate sample grouping, confirm reference/blacklist compatibility]
+        produces: [validated sample manifest, reference/blacklist manifest]
+        evidence: [manifest files, reference decision note]
+        decision_gate: false
+      - stage_id: s2
+        label: trim-and-align
+        consumes: [validated sample manifest, reference bundle]
+        transforms: [trim adapters if needed, align reads, sort/index BAMs]
+        produces: [aligned BAMs, alignment logs]
+        evidence: [BAM inventory, alignment metrics]
+        decision_gate: true
+      - stage_id: s3
+        label: filtering-and-qc
+        consumes: [aligned BAMs, blacklist]
+        transforms: [remove low-quality/duplicate/mitochondrial reads, compute accessibility QC]
+        produces: [filtered BAMs, QC metrics, normalized tracks]
+        evidence: [filtered BAM inventory, QC table, bigWig inventory]
+        decision_gate: false
+      - stage_id: s4
+        label: peak-calling-and-consensus
+        consumes: [filtered BAMs]
+        transforms: [call peaks per sample/group, merge into consensus peak universe]
+        produces: [peak set, consensus peak matrix]
+        evidence: [peak manifest, consensus matrix]
+        decision_gate: false
+      - stage_id: s5
+        label: differential-accessibility-and-report
+        consumes: [consensus matrix, replicate metadata]
+        transforms: [fit differential model, summarize gains/losses in accessibility]
+        produces: [DA results, final analysis summary]
+        evidence: [DA table, summary note]
+        decision_gate: false
+    delivery_bundle:
+      - filtered BAM inventory
+      - accessibility QC summary
+      - bigWig track inventory
+      - consensus peak matrix
+      - differential accessibility result table
+      - analysis summary
+  - workflow_id: germline-short-variant-discovery
+    title: Germline SNP/Indel discovery for WGS/WES
+    status: routeable
+    summary: Move from raw WES/WGS reads to analysis-ready BAMs, gVCFs, a joint cohort VCF, filtered variants, and final cohort review artifacts.
+    primary_inputs:
+      - paired-end WES/WGS FASTQ reads or unmapped BAM inputs
+      - cohort or pedigree metadata
+    reference_inputs:
+      - reference genome FASTA
+      - known-sites resources
+      - interval lists when applicable
+    metadata_inputs:
+      - cohort size
+      - filtering strategy choice (hard-filter vs VQSR)
+    stage_flows:
+      - stage_id: s1
+        label: input-and-reference-check
+        consumes: [cohort manifest, reference bundle, known-sites resources]
+        transforms: [validate sample identity, verify reference/known-sites coherence]
+        produces: [validated cohort manifest, resolved reference bundle]
+        evidence: [cohort manifest, reference bundle manifest]
+        decision_gate: false
+      - stage_id: s2
+        label: align-and-bqsr
+        consumes: [validated cohort manifest, reference bundle]
+        transforms: [align reads, sort/index BAMs, optionally run BQSR]
+        produces: [analysis-ready BAMs, recalibration metrics]
+        evidence: [BAM inventory, recalibration metrics]
+        decision_gate: true
+      - stage_id: s3
+        label: gvcf-calling
+        consumes: [analysis-ready BAMs, reference bundle]
+        transforms: [call per-sample variants in GVCF mode]
+        produces: [gVCF bundle]
+        evidence: [gVCF manifest]
+        decision_gate: false
+      - stage_id: s4
+        label: joint-genotyping
+        consumes: [gVCF bundle, reference bundle]
+        transforms: [joint genotype cohort]
+        produces: [joint cohort VCF]
+        evidence: [joint VCF manifest]
+        decision_gate: false
+      - stage_id: s5
+        label: filtering-and-review
+        consumes: [joint cohort VCF, cohort metadata]
+        transforms: [apply filtering policy, summarize final callset quality]
+        produces: [filtered VCF, QC summary]
+        evidence: [filtered VCF manifest, summary note]
+        decision_gate: false
+    delivery_bundle:
+      - analysis-ready BAM inventory
+      - recalibration metrics
+      - gVCF manifest
+      - joint VCF manifest
+      - filtered VCF manifest
+      - cohort QC summary

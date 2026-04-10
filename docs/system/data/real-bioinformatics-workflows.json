@@ -1,0 +1,271 @@
+{
+  "version": 1,
+  "description": "Official-source-grounded bioinformatics workflow map for bio-agent.",
+  "workflows": [
+    {
+      "id": "rnaseq-differential-expression",
+      "title": "Bulk RNA-seq differential expression",
+      "grounding": "official-source",
+      "domains": [
+        "transcriptomics",
+        "bulk-rnaseq"
+      ],
+      "official_sources": [
+        {
+          "label": "nf-core/rnaseq",
+          "url": "https://nf-co.re/rnaseq"
+        },
+        {
+          "label": "Galaxy Training: RNA-seq analysis and visualization",
+          "url": "https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-analysis-clustering-viz/tutorial.html"
+        }
+      ],
+      "request_tags": [
+        "rnaseq",
+        "differential-expression",
+        "bulk-transcriptomics",
+        "fastq",
+        "counts-matrix"
+      ],
+      "canonical_stage_chain": [
+        "input-and-environment-check",
+        "qc-and-alignment",
+        "quantification",
+        "statistical-analysis",
+        "report-review"
+      ],
+      "typical_outputs": [
+        "multiqc",
+        "aligned BAMs",
+        "counts matrix",
+        "DE result table",
+        "analysis summary"
+      ],
+      "agent_fit": "High",
+      "default_request_text": "Plan a bulk RNA-seq differential expression workflow with explicit QC, alignment, quantification, DE testing, and a final evidence bundle.",
+      "default_goal": "Generate a staged bulk RNA-seq differential expression plan.",
+      "default_session_name": "bulk-rnaseq",
+      "default_query": "rnaseq",
+      "strategy_profiles": [
+        {
+          "id": "star-featurecounts",
+          "label": "STAR + featureCounts",
+          "availability": "local",
+          "request_tag": "strategy-star-featurecounts",
+          "default_request_text": "Plan a bulk RNA-seq differential expression workflow with explicit QC, alignment, quantification, DE testing, and a final evidence bundle. Use the STAR + featureCounts strategy.",
+          "default_goal": "Generate a staged bulk RNA-seq differential expression plan.",
+          "session_name_suffix": "star-featurecounts"
+        },
+        {
+          "id": "salmon-tximport",
+          "label": "Salmon + tximport",
+          "availability": "external",
+          "request_tag": "strategy-salmon-tximport",
+          "default_request_text": "Plan a bulk RNA-seq differential expression workflow with explicit QC, alignment, quantification, DE testing, and a final evidence bundle. Use the Salmon + tximport strategy.",
+          "default_goal": "Generate a staged bulk RNA-seq differential expression plan.",
+          "session_name_suffix": "salmon-tximport"
+        }
+      ]
+    },
+    {
+      "id": "scrnaseq-preprocessing",
+      "title": "Single-cell RNA-seq preprocessing and clustering-ready matrix generation",
+      "grounding": "official-source",
+      "domains": [
+        "single-cell",
+        "scrnaseq"
+      ],
+      "official_sources": [
+        {
+          "label": "nf-core/scrnaseq",
+          "url": "https://nf-co.re/scrnaseq"
+        },
+        {
+          "label": "Galaxy Training: scRNA-seq preprocessing",
+          "url": "https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-preprocessing/tutorial.html"
+        },
+        {
+          "label": "Galaxy Training: scRNA-seq with Scanpy/Seurat-style downstream",
+          "url": "https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-seurat-pbmc3k/tutorial.html"
+        }
+      ],
+      "request_tags": [
+        "scrnaseq",
+        "single-cell",
+        "10x",
+        "umi",
+        "cell-barcode"
+      ],
+      "canonical_stage_chain": [
+        "input-and-reference-check",
+        "barcode-and-umi-processing",
+        "count-matrix-generation",
+        "qc-and-clustering",
+        "marker-review"
+      ],
+      "typical_outputs": [
+        "raw count matrix",
+        "filtered matrix",
+        "QC metrics",
+        "embedding/clusters",
+        "marker table"
+      ],
+      "agent_fit": "High",
+      "default_request_text": "Plan a single-cell RNA-seq preprocessing workflow that ends with a filtered matrix, QC metrics, clustering-ready embeddings, and marker review.",
+      "default_goal": "Generate a staged scRNA-seq preprocessing plan.",
+      "default_session_name": "scrnaseq",
+      "default_query": "scrnaseq",
+      "strategy_profiles": [
+        {
+          "id": "starsolo",
+          "label": "STARsolo",
+          "availability": "external",
+          "request_tag": "strategy-starsolo",
+          "default_request_text": "Plan a single-cell RNA-seq preprocessing workflow that ends with a filtered matrix, QC metrics, clustering-ready embeddings, and marker review. Use the STARsolo strategy.",
+          "default_goal": "Generate a staged scRNA-seq preprocessing plan.",
+          "session_name_suffix": "starsolo"
+        },
+        {
+          "id": "cellranger",
+          "label": "Cell Ranger",
+          "availability": "external",
+          "request_tag": "strategy-cellranger",
+          "default_request_text": "Plan a single-cell RNA-seq preprocessing workflow that ends with a filtered matrix, QC metrics, clustering-ready embeddings, and marker review. Use the Cell Ranger strategy.",
+          "default_goal": "Generate a staged scRNA-seq preprocessing plan.",
+          "session_name_suffix": "cellranger"
+        }
+      ]
+    },
+    {
+      "id": "atacseq-differential-accessibility",
+      "title": "ATAC-seq peak calling and differential accessibility",
+      "grounding": "official-source",
+      "domains": [
+        "epigenomics",
+        "atacseq"
+      ],
+      "official_sources": [
+        {
+          "label": "nf-core/atacseq",
+          "url": "https://nf-co.re/atacseq"
+        }
+      ],
+      "request_tags": [
+        "atacseq",
+        "atac-seq",
+        "chromatin-accessibility",
+        "peaks",
+        "differential-accessibility"
+      ],
+      "canonical_stage_chain": [
+        "input-and-reference-check",
+        "trim-and-align",
+        "filtering-and-qc",
+        "peak-calling-and-consensus",
+        "differential-accessibility-and-report"
+      ],
+      "typical_outputs": [
+        "filtered BAMs",
+        "bigWig",
+        "peak set",
+        "consensus peak matrix",
+        "DA results"
+      ],
+      "agent_fit": "High",
+      "default_request_text": "Plan an ATAC-seq workflow from FASTQ to filtered BAMs, peak calling, consensus peak matrix, and differential accessibility report.",
+      "default_goal": "Generate a staged ATAC-seq differential accessibility plan.",
+      "default_session_name": "atacseq",
+      "default_query": "atacseq",
+      "strategy_profiles": [
+        {
+          "id": "bowtie2-macs3",
+          "label": "bowtie2 + MACS3",
+          "availability": "partial",
+          "request_tag": "strategy-bowtie2-macs3",
+          "default_request_text": "Plan an ATAC-seq workflow from FASTQ to filtered BAMs, peak calling, consensus peak matrix, and differential accessibility report. Use the bowtie2 + MACS3 strategy.",
+          "default_goal": "Generate a staged ATAC-seq differential accessibility plan.",
+          "session_name_suffix": "bowtie2-macs3"
+        },
+        {
+          "id": "bwa-macs3",
+          "label": "BWA + MACS3",
+          "availability": "partial",
+          "request_tag": "strategy-bwa-macs3",
+          "default_request_text": "Plan an ATAC-seq workflow from FASTQ to filtered BAMs, peak calling, consensus peak matrix, and differential accessibility report. Use the BWA + MACS3 strategy.",
+          "default_goal": "Generate a staged ATAC-seq differential accessibility plan.",
+          "session_name_suffix": "bwa-macs3"
+        }
+      ]
+    },
+    {
+      "id": "germline-short-variant-discovery",
+      "title": "Germline SNP/Indel discovery for WGS/WES",
+      "grounding": "official-source",
+      "domains": [
+        "genomics",
+        "variant-calling"
+      ],
+      "official_sources": [
+        {
+          "label": "GATK Germline short variant discovery",
+          "url": "https://gatk.broadinstitute.org/hc/en-us/articles/360035535932-Germline-short-variant-discovery-SNPs-Indels"
+        },
+        {
+          "label": "GATK Hard-filtering germline short variants",
+          "url": "https://gatk.broadinstitute.org/hc/en-us/articles/360035890471-Hard-filtering-germline-short-variants"
+        },
+        {
+          "label": "nf-core/sarek",
+          "url": "https://nf-co.re/sarek"
+        }
+      ],
+      "request_tags": [
+        "germline-variant",
+        "variant-calling",
+        "wes",
+        "wgs",
+        "gvcf",
+        "snp-indel"
+      ],
+      "canonical_stage_chain": [
+        "input-and-reference-check",
+        "align-and-bqsr",
+        "gvcf-calling",
+        "joint-genotyping",
+        "filtering-and-review"
+      ],
+      "typical_outputs": [
+        "analysis-ready BAM",
+        "gVCF",
+        "joint VCF",
+        "filtered VCF",
+        "QC summary"
+      ],
+      "agent_fit": "High",
+      "default_request_text": "Plan a germline short variant discovery workflow from WES or WGS reads to gVCFs, joint genotyping, filtering, and cohort review.",
+      "default_goal": "Generate a staged germline short variant discovery plan.",
+      "default_session_name": "germline-variant",
+      "default_query": "germline",
+      "strategy_profiles": [
+        {
+          "id": "bwa-gatk-hardfilter",
+          "label": "BWA + GATK Hard Filter",
+          "availability": "partial",
+          "request_tag": "strategy-bwa-gatk-hardfilter",
+          "default_request_text": "Plan a germline short variant discovery workflow from WES or WGS reads to gVCFs, joint genotyping, filtering, and cohort review. Use the BWA + GATK Hard Filter strategy.",
+          "default_goal": "Generate a staged germline short variant discovery plan.",
+          "session_name_suffix": "bwa-gatk-hardfilter"
+        },
+        {
+          "id": "bwa-gatk-vqsr",
+          "label": "BWA + GATK VQSR",
+          "availability": "partial",
+          "request_tag": "strategy-bwa-gatk-vqsr",
+          "default_request_text": "Plan a germline short variant discovery workflow from WES or WGS reads to gVCFs, joint genotyping, filtering, and cohort review. Use the BWA + GATK VQSR strategy.",
+          "default_goal": "Generate a staged germline short variant discovery plan.",
+          "session_name_suffix": "bwa-gatk-vqsr"
+        }
+      ]
+    }
+  ]
+}

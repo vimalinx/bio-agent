@@ -47,6 +47,39 @@
     "recommended_plan_id": "plan_rnaseq-differential-expression_conservative",
     "rationale": "Recommended conservative plan because it preserves explicit checkpoints and clearer validation boundaries."
   },
+  "session": {
+    "session_id": "demo-rnaseq-session",
+    "session_dir": "sessions/demo-rnaseq",
+    "request_id": "req_generate-candidate-plans-for-rna-seq-dif",
+    "status": "awaiting_confirmation",
+    "available_plan_ids": [
+      "plan_rnaseq-differential-expression_conservative",
+      "plan_rnaseq-differential-expression_efficient"
+    ],
+    "recommended_plan_id": "plan_rnaseq-differential-expression_conservative",
+    "approved_plan_id": "plan_rnaseq-differential-expression_conservative",
+    "current_stage": "s2",
+    "run_status": "paused",
+    "run_verdict": "awaiting_confirmation",
+    "next_action": "Confirm and resume stage s2.",
+    "history_event_count": 4,
+    "latest_event_type": "run_advanced",
+    "latest_event_timestamp": "2026-03-30T19:23:46+08:00",
+    "latest_approval_reason": "User accepted the conservative plan for the first alignment pass.",
+    "latest_plan_change_count": 0,
+    "files": {
+      "request": "request.json",
+      "plans": "plans.json",
+      "review": "review.json",
+      "approved_plan": "approved-plan.json",
+      "execution_draft": "execution-draft.json",
+      "run": "run.json",
+      "run_status": "run-status.json",
+      "run_review": "run-review.json",
+      "history": "history.json",
+      "session": "session.json"
+    }
+  },
   "approved_plan": {
     "plan_id": "plan_rnaseq-differential-expression_conservative",
     "summary": "Conservative plan for `rnaseq-differential-expression` with explicit stage validation and manual checkpoints.",
@@ -319,5 +352,210 @@
     ],
     "next_action": "Confirm and resume stage s2.",
     "last_update": "2026-03-30T19:23:46+08:00"
+  },
+  "history": {
+    "session_id": "demo-rnaseq-session",
+    "events": [
+      {
+        "event_id": "evt_0001",
+        "timestamp": "2026-03-30T19:20:10+08:00",
+        "type": "session_started",
+        "message": "Session started and candidate plans were generated.",
+        "data": {
+          "request_id": "req_generate-candidate-plans-for-rna-seq-dif",
+          "plan_count": 2
+        }
+      },
+      {
+        "event_id": "evt_0002",
+        "timestamp": "2026-03-30T19:21:03+08:00",
+        "type": "plan_approved",
+        "message": "Approved plan plan_rnaseq-differential-expression_conservative. Reason: User accepted the conservative plan for the first alignment pass.",
+        "data": {
+          "approved_plan_id": "plan_rnaseq-differential-expression_conservative",
+          "reason": "User accepted the conservative plan for the first alignment pass.",
+          "source": "plan_id",
+          "plan_diff": {
+            "baseline_plan_id": "plan_rnaseq-differential-expression_conservative",
+            "target_plan_id": "plan_rnaseq-differential-expression_conservative",
+            "changed": false,
+            "change_count": 0,
+            "changed_fields": [],
+            "list_changes": {},
+            "stage_changes": [],
+            "added_stage_ids": [],
+            "removed_stage_ids": [],
+            "summary_lines": []
+          }
+        }
+      },
+      {
+        "event_id": "evt_0003",
+        "timestamp": "2026-03-30T19:22:18+08:00",
+        "type": "run_advanced",
+        "message": "Advanced run from stage s1 to s2.",
+        "data": {
+          "from_stage": "s1",
+          "to_stage": "s2",
+          "status": "pending",
+          "confirm": false
+        }
+      },
+      {
+        "event_id": "evt_0004",
+        "timestamp": "2026-03-30T19:23:46+08:00",
+        "type": "run_advanced",
+        "message": "Run paused at stage s2.",
+        "data": {
+          "from_stage": "s2",
+          "to_stage": "s2",
+          "status": "paused",
+          "confirm": false
+        }
+      }
+    ]
+  },
+  "analysis_flow": {
+    "workflow_id": "rnaseq-differential-expression",
+    "title": "Bulk RNA-seq differential expression",
+    "status": "routeable",
+    "summary": "Move from raw paired-end FASTQ reads to a counts matrix and differential expression result bundle with explicit QC and review boundaries.",
+    "primary_inputs": [
+      "paired FASTQ reads",
+      "sample sheet with condition and replicate metadata"
+    ],
+    "reference_inputs": [
+      "reference genome FASTA",
+      "gene annotation GTF",
+      "aligner index or index recipe"
+    ],
+    "metadata_inputs": [
+      "library strandedness expectation",
+      "contrast definition for DE testing"
+    ],
+    "stage_flows": [
+      {
+        "stage_id": "s1",
+        "label": "input-and-environment-check",
+        "consumes": [
+          "FASTQ pairs",
+          "sample sheet",
+          "reference pointers"
+        ],
+        "transforms": [
+          "validate sample metadata",
+          "confirm reference build",
+          "verify output contract"
+        ],
+        "produces": [
+          "validated input manifest",
+          "reference bundle manifest"
+        ],
+        "evidence": [
+          "input manifest",
+          "reference manifest"
+        ],
+        "decision_gate": false
+      },
+      {
+        "stage_id": "s2",
+        "label": "qc-and-alignment",
+        "consumes": [
+          "validated input manifest",
+          "reference bundle"
+        ],
+        "transforms": [
+          "run read QC",
+          "align reads",
+          "aggregate cohort QC"
+        ],
+        "produces": [
+          "per-sample QC reports",
+          "aligned BAMs",
+          "alignment summaries",
+          "cohort MultiQC"
+        ],
+        "evidence": [
+          "FastQC outputs",
+          "alignment logs",
+          "MultiQC report"
+        ],
+        "decision_gate": true
+      },
+      {
+        "stage_id": "s3",
+        "label": "quantification",
+        "consumes": [
+          "aligned BAMs",
+          "annotation GTF"
+        ],
+        "transforms": [
+          "count reads per feature",
+          "compile count matrix"
+        ],
+        "produces": [
+          "gene count matrix",
+          "count summary"
+        ],
+        "evidence": [
+          "count matrix",
+          "featureCounts summary"
+        ],
+        "decision_gate": false
+      },
+      {
+        "stage_id": "s4",
+        "label": "statistical-analysis",
+        "consumes": [
+          "count matrix",
+          "contrast metadata"
+        ],
+        "transforms": [
+          "normalize counts",
+          "fit differential model",
+          "produce ranked results"
+        ],
+        "produces": [
+          "DE results table",
+          "QC plots",
+          "contrast summary"
+        ],
+        "evidence": [
+          "result table",
+          "dispersion/MA/PCA plots"
+        ],
+        "decision_gate": false
+      },
+      {
+        "stage_id": "s5",
+        "label": "report-review",
+        "consumes": [
+          "DE results table",
+          "QC plots",
+          "count summary"
+        ],
+        "transforms": [
+          "assemble evidence bundle",
+          "summarize caveats",
+          "prepare delivery package"
+        ],
+        "produces": [
+          "analysis summary",
+          "delivery bundle"
+        ],
+        "evidence": [
+          "summary note",
+          "exported evidence bundle"
+        ],
+        "decision_gate": false
+      }
+    ],
+    "delivery_bundle": [
+      "aligned BAM inventory",
+      "MultiQC report",
+      "gene count matrix",
+      "differential expression result table",
+      "analysis summary"
+    ]
   }
 }

@@ -377,8 +377,11 @@
         <nav class="nav">
           <a href="#summary">概览</a>
           <a href="bio-skill-console.html">运行控制台</a>
+          <a href="real-bioinformatics-workflow-map.html">真实流程地图</a>
+          <a href="real-analysis-information-flows.html">真实分析信息流</a>
           <a href="#objects">核心对象</a>
           <a href="#layers">分层架构</a>
+          <a href="#information-flows">分析信息流层</a>
           <a href="#lifecycle">请求到执行流程</a>
           <a href="#taxonomy">Skill 分类</a>
           <a href="#contract">Plan 与 Run</a>
@@ -508,12 +511,39 @@
                 <div class="chip">skills.yaml</div>
                 <div class="chip">workflows.yaml</div>
                 <div class="chip">routing_rules.yaml</div>
+                <div class="chip">analysis_flows.yaml</div>
                 <div class="chip">request.schema.json</div>
                 <div class="chip">plan.schema.json</div>
                 <div class="chip">run.schema.json</div>
               </div>
             </div>
           </div>
+        </section>
+
+        <section class="panel" id="information-flows">
+          <h2>分析信息流层</h2>
+          <p>
+            workflow registry 解决“该选哪条流程”，analysis flow registry 解决“这条流程里的数据、
+            中间产物、证据和最终交付包怎么流动”。没有这层时，plan 只管 stage 名称，不管 artifact
+            handoff。
+          </p>
+          <div class="section-grid">
+            <div class="tile">
+              <strong>新增源数据</strong>
+              <code>registry/analysis_flows.yaml</code> 明确定义 grounded family 的 primary inputs、reference inputs、
+              stage-level consumes / produces、evidence points 和 delivery bundle。
+            </div>
+            <div class="tile">
+              <strong>新增导出语义</strong>
+              session export bundle 现在会附带 active workflow 的 <code>analysis_flow</code>，这样控制台和后续 agent
+              都能直接消费真实分析流，不必只猜 stage 名称。
+            </div>
+          </div>
+          <p style="margin-top: 14px;">
+            当前已经给 4 条 grounded family 补了显式 analysis flow：bulk RNA-seq、scRNA-seq、ATAC-seq、
+            germline short variant discovery。详情见
+            <a href="real-analysis-information-flows.html"><code>real-analysis-information-flows.html</code></a>。
+          </p>
         </section>
 
         <section class="panel" id="lifecycle">
@@ -905,7 +935,9 @@
             实施计划位于
             <code>docs/plans/2026-03-29-bio-skill-system-implementation.md</code>。
             如果你想直接在浏览器里看 request、plan、run-status、run-review 的控制台原型，可以打开
-            <a href="bio-skill-console.html"><code>docs/system/bio-skill-console.html</code></a>。
+            <a href="bio-skill-console.html"><code>docs/system/bio-skill-console.html</code></a>。如果你要看官方来源驱动的真实生信流程家族，可以再打开
+            <a href="real-bioinformatics-workflow-map.html"><code>docs/system/real-bioinformatics-workflow-map.html</code></a>。如果你要看这些 family 的真实分析信息流，可以再打开
+            <a href="real-analysis-information-flows.html"><code>docs/system/real-analysis-information-flows.html</code></a>。
           </p>
         </section>
       </main>

@@ -1,48 +1,95 @@
 version: 1
-description: Routing heuristics for mapping normalized requests to workflows and skill layers.
-
+description: Routing heuristics for mapping normalized requests to workflows and skill
+  layers.
 routing_rules:
-  - id: prefer-local-layered-skills
-    when:
-      request_has_any_tags: [bioinformatics, biology]
-    then:
-      prefer_skill_roots:
-        - .claude/skills/orchestrator
-        - .claude/skills/workflow
-        - .claude/skills/policy
-        - .claude/skills/atomic
-
-  - id: rnaseq-workflow-routing
-    when:
-      request_has_any_tags: [rnaseq, differential-expression, fastq, counts-matrix]
-    then:
-      propose_workflows:
-        - rnaseq-differential-expression
-
-  - id: sequence-workflow-routing
-    when:
-      request_has_any_tags: [sequence, blast, annotation, homolog]
-    then:
-      propose_workflows:
-        - sequence-search-and-annotation
-
-  - id: structure-workflow-routing
-    when:
-      request_has_any_tags: [protein, structure, folding, diffusion-design]
-    then:
-      propose_workflows:
-        - protein-structure-analysis
-
-  - id: pause-on-risk
-    when:
-      stage_has_any_flags: [downloads_external_data, long_gpu_job, overwrite_outputs, missing_reference]
-    then:
-      require_confirmation: true
-
-  - id: always-validate-stage-output
-    when:
-      approved_plan_exists: true
-    then:
-      require_policy_skills:
-        - execution-guard
-        - stage-reviewer
+- id: prefer-local-layered-skills
+  when:
+    request_has_any_tags:
+    - bioinformatics
+    - biology
+  then:
+    prefer_skill_roots:
+    - .claude/skills/orchestrator
+    - .claude/skills/workflow
+    - .claude/skills/policy
+    - .claude/skills/atomic
+- id: scrnaseq-workflow-routing
+  when:
+    request_has_any_tags:
+    - scrnaseq
+    - single-cell
+    - 10x
+    - umi
+    - cell-barcode
+  then:
+    propose_workflows:
+    - scrnaseq-preprocessing
+- id: atacseq-workflow-routing
+  when:
+    request_has_any_tags:
+    - atacseq
+    - atac-seq
+    - chromatin-accessibility
+    - peaks
+    - differential-accessibility
+  then:
+    propose_workflows:
+    - atacseq-differential-accessibility
+- id: germline-workflow-routing
+  when:
+    request_has_any_tags:
+    - germline-variant
+    - variant-calling
+    - wes
+    - wgs
+    - gvcf
+    - snp-indel
+  then:
+    propose_workflows:
+    - germline-short-variant-discovery
+- id: rnaseq-workflow-routing
+  when:
+    request_has_any_tags:
+    - rnaseq
+    - differential-expression
+    - counts-matrix
+    - bulk-transcriptomics
+  then:
+    propose_workflows:
+    - rnaseq-differential-expression
+- id: sequence-workflow-routing
+  when:
+    request_has_any_tags:
+    - sequence
+    - blast
+    - annotation
+    - homolog
+  then:
+    propose_workflows:
+    - sequence-search-and-annotation
+- id: structure-workflow-routing
+  when:
+    request_has_any_tags:
+    - protein
+    - structure
+    - folding
+    - diffusion-design
+  then:
+    propose_workflows:
+    - protein-structure-analysis
+- id: pause-on-risk
+  when:
+    stage_has_any_flags:
+    - downloads_external_data
+    - long_gpu_job
+    - overwrite_outputs
+    - missing_reference
+  then:
+    require_confirmation: true
+- id: always-validate-stage-output
+  when:
+    approved_plan_exists: true
+  then:
+    require_policy_skills:
+    - execution-guard
+    - stage-reviewer

@@ -1,0 +1,328 @@
+version: 1
+description: Local workflow-organization knowledge layer for bio-agent. This file
+  explains how workflow families should be structured, selected, and managed by agents.
+organization_principles:
+- Organize workflows by biological analysis family, not by individual CLI tool.
+- Keep a stable canonical stage chain per family so plans are comparable across tool
+  strategies.
+- Separate workflow family selection from tool strategy selection; tool choice is
+  a stage-local concern.
+- Attach official-source grounding to each family and keep at least one representative
+  source in the registry.
+- Define confirmation gates at heavy compute, external download, overwrite risk, or
+  ambiguous reference-selection points.
+- Define output contracts explicitly so run-review and artifact-validation can reason
+  about completion.
+stage_taxonomy:
+- id: input-and-reference-check
+  purpose: Validate inputs, references, design sheets, sample metadata, and environment
+    assumptions.
+  typical_confirm: false
+- id: heavy-compute
+  purpose: Alignment, matrix generation, joint genotyping, or similarly expensive
+    primary computation.
+  typical_confirm: true
+- id: intermediate-artifact-generation
+  purpose: Generate matrices, peak sets, gVCFs, or equivalent structured analysis
+    artifacts.
+  typical_confirm: false
+- id: statistical-or-interpretive-stage
+  purpose: Differential testing, clustering, variant filtering, marker review, or
+    report synthesis.
+  typical_confirm: false
+- id: report-review
+  purpose: Summarize outputs, capture evidence links, and expose final user-facing
+    review artifacts.
+  typical_confirm: false
+family_templates:
+- family_id: bulk-rnaseq
+  registry_workflow_id: rnaseq-differential-expression
+  selection_cues:
+  - bulk rna-seq
+  - rna-seq differential expression
+  - counts matrix
+  - treated vs control transcriptomics
+  canonical_stage_chain:
+  - input-and-environment-check
+  - qc-and-alignment
+  - quantification
+  - statistical-analysis
+  - report-review
+  tool_strategy_examples:
+  - STAR + featureCounts + DESeq2
+  - Salmon + tximport + DESeq2
+  confirmation_policy:
+  - Pause before alignment when references or sample sheet are not fully validated.
+  output_contract:
+  - qc_report
+  - aligned_bams
+  - counts_matrix
+  - de_results
+  - analysis_summary
+  official_sources:
+  - nf-core/rnaseq
+  - Galaxy transcriptomics RNA-seq tutorial
+  strategy_profiles:
+  - id: star-featurecounts
+    label: STAR + featureCounts
+    availability: local
+    request_tag: strategy-star-featurecounts
+    summary_suffix: Strategy profile `STAR + featureCounts` selected.
+    note: Use alignment-first quantification with STAR and featureCounts.
+    stage_overrides:
+      s2:
+        candidate_skills:
+        - skill-router
+        - execution-guard
+        - star
+        - fastqc
+        - multiqc
+        requires_user_confirmation: true
+      s3:
+        candidate_skills:
+        - feature-counts
+        - stage-reviewer
+  - id: salmon-tximport
+    label: Salmon + tximport
+    availability: external
+    request_tag: strategy-salmon-tximport
+    summary_suffix: Strategy profile `Salmon + tximport` selected.
+    note: Use alignment-free quantification with Salmon and tximport-style summarization.
+    stage_overrides:
+      s2:
+        candidate_skills:
+        - skill-router
+        - execution-guard
+        - salmon
+        - fastqc
+        - multiqc
+        requires_user_confirmation: true
+      s3:
+        candidate_skills:
+        - tximport
+        - stage-reviewer
+- family_id: scrnaseq
+  registry_workflow_id: scrnaseq-preprocessing
+  selection_cues:
+  - 10x scRNA-seq
+  - single-cell RNA-seq preprocessing
+  - UMI matrix
+  - barcode whitelist
+  canonical_stage_chain:
+  - input-and-reference-check
+  - barcode-and-umi-processing
+  - count-matrix-generation
+  - qc-and-clustering
+  - marker-review
+  tool_strategy_examples:
+  - STARsolo
+  - Cell Ranger
+  - kallisto|bustools
+  confirmation_policy:
+  - Pause before raw matrix generation when chemistry or reference bundle is ambiguous.
+  output_contract:
+  - raw_count_matrix
+  - filtered_matrix
+  - qc_metrics
+  - embedding_clusters
+  - marker_table
+  official_sources:
+  - nf-core/scrnaseq
+  - Galaxy scRNA preprocessing tutorial
+  strategy_profiles:
+  - id: starsolo
+    label: STARsolo
+    availability: external
+    request_tag: strategy-starsolo
+    summary_suffix: Strategy profile `STARsolo` selected.
+    note: Prefer STARsolo for barcode-aware matrix generation.
+    stage_overrides:
+      s2:
+        candidate_skills:
+        - skill-router
+        - execution-guard
+        - starsolo
+        - multiqc
+        requires_user_confirmation: true
+      s3:
+        candidate_skills:
+        - scanpy
+        - stage-reviewer
+  - id: cellranger
+    label: Cell Ranger
+    availability: external
+    request_tag: strategy-cellranger
+    summary_suffix: Strategy profile `Cell Ranger` selected.
+    note: Prefer Cell Ranger when chemistry support and references match 10x expectations.
+    stage_overrides:
+      s2:
+        candidate_skills:
+        - skill-router
+        - execution-guard
+        - cellranger
+        - multiqc
+        requires_user_confirmation: true
+      s3:
+        candidate_skills:
+        - scanpy
+        - stage-reviewer
+- family_id: atacseq
+  registry_workflow_id: atacseq-differential-accessibility
+  selection_cues:
+  - ATAC-seq
+  - chromatin accessibility
+  - peak calling
+  - differential accessibility
+  canonical_stage_chain:
+  - input-and-reference-check
+  - trim-and-align
+  - filtering-and-qc
+  - peak-calling-and-consensus
+  - differential-accessibility-and-report
+  tool_strategy_examples:
+  - bowtie2 + MACS3 + deepTools
+  - bwa + MACS3 + custom peak matrix
+  confirmation_policy:
+  - Pause before alignment or peak calling if blacklist or reference naming is unclear.
+  output_contract:
+  - filtered_bams
+  - bigwig_tracks
+  - peak_set
+  - consensus_matrix
+  - da_results
+  official_sources:
+  - nf-core/atacseq
+  strategy_profiles:
+  - id: bowtie2-macs3
+    label: bowtie2 + MACS3
+    availability: partial
+    request_tag: strategy-bowtie2-macs3
+    summary_suffix: Strategy profile `bowtie2 + MACS3` selected.
+    note: Use bowtie2 for alignment and MACS3 for peak calling.
+    stage_overrides:
+      s2:
+        candidate_skills:
+        - skill-router
+        - execution-guard
+        - fastqc
+        - multiqc
+        - bowtie2
+        requires_user_confirmation: true
+      s4:
+        candidate_skills:
+        - macs3
+        - stage-reviewer
+  - id: bwa-macs3
+    label: BWA + MACS3
+    availability: partial
+    request_tag: strategy-bwa-macs3
+    summary_suffix: Strategy profile `BWA + MACS3` selected.
+    note: Use BWA for alignment and MACS3 for peak calling.
+    stage_overrides:
+      s2:
+        candidate_skills:
+        - skill-router
+        - execution-guard
+        - fastqc
+        - multiqc
+        - bwa
+        requires_user_confirmation: true
+      s4:
+        candidate_skills:
+        - macs3
+        - stage-reviewer
+- family_id: germline-short-variants
+  registry_workflow_id: germline-short-variant-discovery
+  selection_cues:
+  - germline SNP/Indel discovery
+  - WES cohort VCF
+  - gVCF
+  - joint genotyping
+  canonical_stage_chain:
+  - input-and-reference-check
+  - align-and-bqsr
+  - gvcf-calling
+  - joint-genotyping
+  - filtering-and-review
+  tool_strategy_examples:
+  - BWA + HaplotypeCaller + GenotypeGVCFs + VQSR
+  - BWA + HaplotypeCaller + hard filtering
+  confirmation_policy:
+  - Pause before cohort-scale genotyping or filtering-policy selection when cohort
+    size is unclear.
+  output_contract:
+  - analysis_ready_bams
+  - gvcf_bundle
+  - joint_vcf
+  - filtered_vcf
+  - qc_summary
+  official_sources:
+  - GATK germline discovery
+  - GATK hard filtering
+  - nf-core/sarek
+  strategy_profiles:
+  - id: bwa-gatk-hardfilter
+    label: BWA + GATK Hard Filter
+    availability: partial
+    request_tag: strategy-bwa-gatk-hardfilter
+    summary_suffix: Strategy profile `BWA + GATK Hard Filter` selected.
+    note: Prefer BWA alignment with GATK calling and hard filtering for smaller cohorts.
+    stage_overrides:
+      s2:
+        candidate_skills:
+        - skill-router
+        - execution-guard
+        - bwa
+        - samtools
+        requires_user_confirmation: true
+      s3:
+        candidate_skills:
+        - gatk-haplotypecaller
+        - stage-reviewer
+      s4:
+        candidate_skills:
+        - gatk-genotypegvcfs
+        - stage-reviewer
+      s5:
+        candidate_skills:
+        - bcftools
+        - stage-reviewer
+  - id: bwa-gatk-vqsr
+    label: BWA + GATK VQSR
+    availability: partial
+    request_tag: strategy-bwa-gatk-vqsr
+    summary_suffix: Strategy profile `BWA + GATK VQSR` selected.
+    note: Prefer BWA alignment with GATK calling and VQSR for larger cohorts.
+    stage_overrides:
+      s2:
+        candidate_skills:
+        - skill-router
+        - execution-guard
+        - bwa
+        - samtools
+        requires_user_confirmation: true
+      s3:
+        candidate_skills:
+        - gatk-haplotypecaller
+        - stage-reviewer
+      s4:
+        candidate_skills:
+        - gatk-genotypegvcfs
+        - stage-reviewer
+      s5:
+        candidate_skills:
+        - variantrecalibrator
+        - stage-reviewer
+agent_management_rules:
+  primary_registry_files:
+  - registry/workflows.yaml
+  - registry/routing_rules.yaml
+  - registry/workflow_knowledge.yaml
+  human_context_files:
+  - docs/context/PROJECT_CONTEXT.md
+  - docs/context/WORKFLOW_KNOWLEDGE_BASE.md
+  example_assets:
+  - examples/plans/*.yaml
+  - examples/requests/*.json
+  review_rule: When adding a new workflow family, update structured registry data,
+    one example plan, one request example, and the workflow knowledge base together.

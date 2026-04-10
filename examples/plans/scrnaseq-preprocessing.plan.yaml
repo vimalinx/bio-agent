@@ -1,0 +1,95 @@
+plan_id: plan_scrnaseq_pre_001
+request_id: req_scrnaseq_pre_001
+title: Single-cell RNA-seq preprocessing and clustering-ready matrix generation
+summary: Validate single-cell inputs, generate a count matrix, run core QC and clustering,
+  and produce marker-ready outputs.
+strategy_type: conservative
+assumptions:
+- The input library is UMI-based single-cell RNA-seq with known chemistry or reference
+  configuration.
+- The user needs a preprocessing-first workflow before downstream annotation.
+prerequisites:
+- Reference transcriptome bundle is available for the target organism.
+- One of STARsolo, Cell Ranger, or equivalent matrix-generation tooling is available.
+expected_outputs:
+- raw_count_matrix
+- filtered_matrix
+- qc_metrics
+- embedding_clusters
+- marker_table
+risks:
+- Chemistry mismatch or barcode whitelist mismatch can invalidate matrix generation.
+- Aggressive filtering can erase rare cell populations.
+estimated_cost:
+  time: medium
+  compute: medium
+stages:
+- stage_id: s1
+  name: input-and-reference-check
+  goal: Validate single-cell FASTQ, sample sheet, and reference bundle.
+  candidate_skills:
+  - request-normalizer
+  - execution-guard
+  requires_user_confirmation: false
+  outputs:
+  - validated_inputs
+  - reference_bundle
+  validation:
+  - input_paths_exist
+  - reference_bundle_available
+- stage_id: s2
+  name: barcode-and-umi-processing
+  goal: Run barcode-aware alignment or pseudoalignment to generate raw counts.
+  candidate_skills:
+  - skill-router
+  - execution-guard
+  - starsolo
+  - cellranger
+  - multiqc
+  requires_user_confirmation: true
+  outputs:
+  - raw_count_matrix
+  - barcode_qc
+  validation:
+  - raw_count_matrix_exists
+  - barcode_qc_exists
+- stage_id: s3
+  name: count-matrix-generation
+  goal: Produce a filtered feature-barcode matrix and cell-level QC metrics.
+  candidate_skills:
+  - scanpy
+  - stage-reviewer
+  requires_user_confirmation: false
+  outputs:
+  - filtered_matrix
+  - qc_metrics
+  validation:
+  - filtered_matrix_exists
+  - qc_metrics_exist
+- stage_id: s4
+  name: qc-and-clustering
+  goal: Normalize, embed, and cluster cells for downstream review.
+  candidate_skills:
+  - scanpy
+  - scvi-tools
+  - stage-reviewer
+  requires_user_confirmation: false
+  outputs:
+  - embedding_clusters
+  validation:
+  - embedding_exists
+  - cluster_labels_exist
+- stage_id: s5
+  name: marker-review
+  goal: Summarize marker genes and prepare downstream annotation-ready artifacts.
+  candidate_skills:
+  - scanpy
+  - stage-reviewer
+  requires_user_confirmation: false
+  outputs:
+  - marker_table
+  - analysis_summary
+  validation:
+  - marker_table_exists
+  - summary_exists
+approval_state: approved

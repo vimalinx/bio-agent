@@ -1,0 +1,90 @@
+plan_id: plan_germline_sv_001
+request_id: req_germline_sv_001
+title: Germline short variant discovery for WGS/WES cohorts
+summary: Validate cohort inputs, align and recalibrate reads, produce gVCFs, joint
+  genotype, and filter the final cohort VCF for review.
+strategy_type: conservative
+assumptions:
+- The cohort is intended for germline SNP/Indel discovery rather than somatic calling.
+- Known-sites resources or an agreed hard-filtering fallback are available.
+prerequisites:
+- Reference FASTA, known-sites VCFs, and interval definitions are available as needed.
+- The user has agreed on VQSR versus hard filtering based on cohort size.
+expected_outputs:
+- analysis_ready_bams
+- gvcf_bundle
+- joint_vcf
+- filtered_vcf
+- qc_summary
+risks:
+- Reference and known-sites mismatch can invalidate BQSR and downstream quality scores.
+- Using VQSR on undersized cohorts can produce unstable recalibration.
+estimated_cost:
+  time: high
+  compute: high
+stages:
+- stage_id: s1
+  name: input-and-reference-check
+  goal: Validate FASTQ/BAM inputs, pedigree or cohort metadata, and reference resources.
+  candidate_skills:
+  - request-normalizer
+  - execution-guard
+  requires_user_confirmation: false
+  outputs:
+  - validated_inputs
+  - reference_bundle
+  validation:
+  - input_paths_exist
+  - reference_bundle_available
+- stage_id: s2
+  name: align-and-bqsr
+  goal: Align reads and prepare analysis-ready BAM files with recalibration where
+    applicable.
+  candidate_skills:
+  - skill-router
+  - execution-guard
+  - bwa
+  - samtools
+  requires_user_confirmation: true
+  outputs:
+  - analysis_ready_bams
+  - recalibration_metrics
+  validation:
+  - analysis_ready_bams_exist
+  - recalibration_metrics_exist
+- stage_id: s3
+  name: gvcf-calling
+  goal: Run per-sample germline calling to emit gVCFs.
+  candidate_skills:
+  - gatk-haplotypecaller
+  - stage-reviewer
+  requires_user_confirmation: false
+  outputs:
+  - gvcf_bundle
+  validation:
+  - gvcf_bundle_exists
+- stage_id: s4
+  name: joint-genotyping
+  goal: Joint genotype the cohort from gVCFs into a cohort VCF.
+  candidate_skills:
+  - gatk-genotypegvcfs
+  - stage-reviewer
+  requires_user_confirmation: false
+  outputs:
+  - joint_vcf
+  validation:
+  - joint_vcf_exists
+- stage_id: s5
+  name: filtering-and-review
+  goal: Apply VQSR or hard filtering and summarize callable cohort outputs.
+  candidate_skills:
+  - bcftools
+  - stage-reviewer
+  requires_user_confirmation: false
+  outputs:
+  - filtered_vcf
+  - qc_summary
+  validation:
+  - filtered_vcf_exists
+  - summary_exists
+approval_state: approved

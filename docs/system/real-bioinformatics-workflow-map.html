@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real Bioinformatics Workflow Map</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #faf8f5;
+        --surface: #ffffff;
+        --surface-alt: #f4eee8;
+        --line: #dfd4c8;
+        --text: #451a03;
+        --muted: #7c5a46;
+        --primary: #b45309;
+        --accent: #0f766e;
+        --radius: 10px;
+        --shadow: 0 2px 8px rgba(69, 26, 3, 0.08);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", sans-serif; line-height: 1.55; }
+      a { color: var(--primary); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .shell { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 252px minmax(0, 1fr); gap: 24px; padding: 24px; }
+      .sidebar, .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+      .sidebar { position: sticky; top: 16px; align-self: start; padding: 20px 18px; }
+      .nav { display: grid; gap: 8px; }
+      .nav a { display: block; padding: 8px 10px; border-radius: 8px; color: var(--text); }
+      .nav a:hover { background: var(--surface-alt); text-decoration: none; }
+      .meta { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); font-size: .92rem; color: var(--muted); }
+      .content { display: grid; gap: 20px; }
+      .panel { padding: 24px 26px; }
+      h1,h2,h3 { margin: 0 0 12px; line-height: 1.2; }
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.32rem; }
+      p { margin: 0 0 12px; }
+      .muted { color: var(--muted); }
+      .tile { border: 1px solid var(--line); background: var(--surface-alt); border-radius: 8px; padding: 16px; }
+      .tile strong { display: block; margin-bottom: 8px; }
+      .split { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+      .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+      .chip { border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; background: #fffdf9; font-family: "IBM Plex Mono", monospace; font-size: .9rem; }
+      .list { margin: 0; padding-left: 20px; }
+      table { width: 100%; border-collapse: collapse; font-size: .96rem; }
+      th, td { border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; padding: 10px 12px; }
+      th { font-weight: 600; }
+      .callout { border-left: 4px solid var(--accent); padding-left: 12px; }
+      code, pre { font-family: "IBM Plex Mono", monospace; }
+      @media (max-width: 1040px) { .shell { grid-template-columns: 1fr; } .sidebar { position: static; } .split { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <h2>Real Workflow Map</h2>
+        <nav class="nav">
+          <a href="#summary">概览</a>
+          <a href="bio-skill-system.html">系统架构页</a>
+          <a href="real-analysis-information-flows.html">真实分析信息流</a>
+          <a href="bio-skill-console.html">运行控制台</a>
+          <a href="#comparison">流程对照</a>
+          <a href="#mapping">Agent 映射</a>
+          <a href="#sources">官方来源</a>
+          <a href="#rnaseq-differential-expression">Bulk RNA-seq differential expression</a><a href="#scrnaseq-preprocessing">Single-cell RNA-seq preprocessing and clustering-ready matrix generation</a><a href="#atacseq-differential-accessibility">ATAC-seq peak calling and differential accessibility</a><a href="#germline-short-variant-discovery">Germline SNP/Indel discovery for WGS/WES</a>
+        </nav>
+        <div class="meta">
+          <div>范围: 官方来源驱动的常见生信流程</div>
+          <div>用途: workflow 选型 / stage 模板 / agent plan grounding</div>
+          <div>Catalog: <code>docs/system/data/real-bioinformatics-workflows.json</code></div>
+          <div>Flows: <code>docs/system/data/real-analysis-information-flows.json</code></div>
+        </div>
+      </aside>
+      <main class="content">
+        <section class="panel" id="summary">
+          <h1>Real Bioinformatics Workflow Map</h1>
+          <p>这一页只收录可追溯到官方或成熟社区工作流的流程家族，用来给 bio-agent 的 request normalization、workflow matching、candidate plan generation 提供 grounded 参考。</p>
+          <p class="callout">当前优先落地的是 4 类高价值流程：bulk RNA-seq、scRNA-seq、ATAC-seq、germline short variant discovery。它们的输入边界、阶段结构和输出合同都比较稳定，最适合转成 agent workflow。对应的真实分析信息流已单独整理在 <a href="real-analysis-information-flows.html"><code>real-analysis-information-flows.html</code></a>。</p>
+          <div class="split" style="margin-top:16px;">
+            <div class="tile"><strong>为什么先做这些</strong>官方/社区文档成熟，阶段化强，输入输出边界清楚，适合自然语言到 plan 的半自动调度。</div>
+            <div class="tile"><strong>这页不做什么</strong>不把营销文案当流程，不把 broken repo 说明当能力，也不默认所有候选工具在本仓库已落地可执行。</div>
+          </div>
+        </section>
+
+        <section class="panel" id="comparison">
+          <h2>流程对照</h2>
+          <table>
+            <thead><tr><th>Workflow</th><th>Domain</th><th>Canonical Stage Chain</th><th>Typical Outputs</th></tr></thead>
+            <tbody>
+              <tr><td>Bulk RNA-seq differential expression</td><td>transcriptomics, bulk-rnaseq</td><td>input-and-environment-check → qc-and-alignment → quantification ...</td><td>multiqc, aligned BAMs, counts matrix</td></tr><tr><td>Single-cell RNA-seq preprocessing and clustering-ready matrix generation</td><td>single-cell, scrnaseq</td><td>input-and-reference-check → barcode-and-umi-processing → count-matrix-generation ...</td><td>raw count matrix, filtered matrix, QC metrics</td></tr><tr><td>ATAC-seq peak calling and differential accessibility</td><td>epigenomics, atacseq</td><td>input-and-reference-check → trim-and-align → filtering-and-qc ...</td><td>filtered BAMs, bigWig, peak set</td></tr><tr><td>Germline SNP/Indel discovery for WGS/WES</td><td>genomics, variant-calling</td><td>input-and-reference-check → align-and-bqsr → gvcf-calling ...</td><td>analysis-ready BAM, gVCF, joint VCF</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="panel" id="mapping">
+          <h2>Agent 映射</h2>
+          <p>这些真实流程可以统一压进你当前 bio-agent 的 stage skeleton：</p>
+          <div class="chip-row">
+            <div class="chip">s1 input-and-reference-check</div>
+            <div class="chip">s2 heavy compute / alignment / matrix build</div>
+            <div class="chip">s3 intermediate artifact generation</div>
+            <div class="chip">s4 statistics / peak / genotype / clustering</div>
+            <div class="chip">s5 report-review</div>
+          </div>
+          <p class="muted" style="margin-top:12px;">高算力、覆盖写入、外部下载、参考资源不明确的阶段，默认都应该挂到 execution-guard 的确认点。</p>
+        </section>
+
+        <section class="panel" id="rnaseq-differential-expression">
+  <h2>Bulk RNA-seq differential expression</h2>
+  <p class="muted">Grounding: official-source · Agent fit: High</p>
+  <div class="split">
+    <div class="tile">
+      <strong>Canonical Stages</strong>
+      <div class="chip-row"><span class="chip">input-and-environment-check</span><span class="chip">qc-and-alignment</span><span class="chip">quantification</span><span class="chip">statistical-analysis</span><span class="chip">report-review</span></div>
+    </div>
+    <div class="tile">
+      <strong>Typical Outputs</strong>
+      <ul class="list"><li>multiqc</li><li>aligned BAMs</li><li>counts matrix</li><li>DE result table</li><li>analysis summary</li></ul>
+    </div>
+  </div>
+  <div class="tile" style="margin-top:16px;">
+    <strong>Official Sources</strong>
+    <ul class="list"><li><a href="https://nf-co.re/rnaseq">nf-core/rnaseq</a></li><li><a href="https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-analysis-clustering-viz/tutorial.html">Galaxy Training: RNA-seq analysis and visualization</a></li></ul>
+  </div>
+</section><section class="panel" id="scrnaseq-preprocessing">
+  <h2>Single-cell RNA-seq preprocessing and clustering-ready matrix generation</h2>
+  <p class="muted">Grounding: official-source · Agent fit: High</p>
+  <div class="split">
+    <div class="tile">
+      <strong>Canonical Stages</strong>
+      <div class="chip-row"><span class="chip">input-and-reference-check</span><span class="chip">barcode-and-umi-processing</span><span class="chip">count-matrix-generation</span><span class="chip">qc-and-clustering</span><span class="chip">marker-review</span></div>
+    </div>
+    <div class="tile">
+      <strong>Typical Outputs</strong>
+      <ul class="list"><li>raw count matrix</li><li>filtered matrix</li><li>QC metrics</li><li>embedding/clusters</li><li>marker table</li></ul>
+    </div>
+  </div>
+  <div class="tile" style="margin-top:16px;">
+    <strong>Official Sources</strong>
+    <ul class="list"><li><a href="https://nf-co.re/scrnaseq">nf-core/scrnaseq</a></li><li><a href="https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-preprocessing/tutorial.html">Galaxy Training: scRNA-seq preprocessing</a></li><li><a href="https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-seurat-pbmc3k/tutorial.html">Galaxy Training: scRNA-seq with Scanpy/Seurat-style downstream</a></li></ul>
+  </div>
+</section><section class="panel" id="atacseq-differential-accessibility">
+  <h2>ATAC-seq peak calling and differential accessibility</h2>
+  <p class="muted">Grounding: official-source · Agent fit: High</p>
+  <div class="split">
+    <div class="tile">
+      <strong>Canonical Stages</strong>
+      <div class="chip-row"><span class="chip">input-and-reference-check</span><span class="chip">trim-and-align</span><span class="chip">filtering-and-qc</span><span class="chip">peak-calling-and-consensus</span><span class="chip">differential-accessibility-and-report</span></div>
+    </div>
+    <div class="tile">
+      <strong>Typical Outputs</strong>
+      <ul class="list"><li>filtered BAMs</li><li>bigWig</li><li>peak set</li><li>consensus peak matrix</li><li>DA results</li></ul>
+    </div>
+  </div>
+  <div class="tile" style="margin-top:16px;">
+    <strong>Official Sources</strong>
+    <ul class="list"><li><a href="https://nf-co.re/atacseq">nf-core/atacseq</a></li></ul>
+  </div>
+</section><section class="panel" id="germline-short-variant-discovery">
+  <h2>Germline SNP/Indel discovery for WGS/WES</h2>
+  <p class="muted">Grounding: official-source · Agent fit: High</p>
+  <div class="split">
+    <div class="tile">
+      <strong>Canonical Stages</strong>
+      <div class="chip-row"><span class="chip">input-and-reference-check</span><span class="chip">align-and-bqsr</span><span class="chip">gvcf-calling</span><span class="chip">joint-genotyping</span><span class="chip">filtering-and-review</span></div>
+    </div>
+    <div class="tile">
+      <strong>Typical Outputs</strong>
+      <ul class="list"><li>analysis-ready BAM</li><li>gVCF</li><li>joint VCF</li><li>filtered VCF</li><li>QC summary</li></ul>
+    </div>
+  </div>
+  <div class="tile" style="margin-top:16px;">
+    <strong>Official Sources</strong>
+    <ul class="list"><li><a href="https://gatk.broadinstitute.org/hc/en-us/articles/360035535932-Germline-short-variant-discovery-SNPs-Indels">GATK Germline short variant discovery</a></li><li><a href="https://gatk.broadinstitute.org/hc/en-us/articles/360035890471-Hard-filtering-germline-short-variants">GATK Hard-filtering germline short variants</a></li><li><a href="https://nf-co.re/sarek">nf-core/sarek</a></li></ul>
+  </div>
+</section>
+
+        <section class="panel" id="sources">
+          <h2>官方来源</h2>
+          <table>
+            <thead><tr><th>Workflow</th><th>Source</th><th>URL</th></tr></thead>
+            <tbody>
+              <tr><td>Bulk RNA-seq differential expression</td><td>nf-core/rnaseq</td><td><a href="https://nf-co.re/rnaseq">https://nf-co.re/rnaseq</a></td></tr><tr><td>Bulk RNA-seq differential expression</td><td>Galaxy Training: RNA-seq analysis and visualization</td><td><a href="https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-analysis-clustering-viz/tutorial.html">https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-analysis-clustering-viz/tutorial.html</a></td></tr><tr><td>Single-cell RNA-seq preprocessing and clustering-ready matrix generation</td><td>nf-core/scrnaseq</td><td><a href="https://nf-co.re/scrnaseq">https://nf-co.re/scrnaseq</a></td></tr><tr><td>Single-cell RNA-seq preprocessing and clustering-ready matrix generation</td><td>Galaxy Training: scRNA-seq preprocessing</td><td><a href="https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-preprocessing/tutorial.html">https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-preprocessing/tutorial.html</a></td></tr><tr><td>Single-cell RNA-seq preprocessing and clustering-ready matrix generation</td><td>Galaxy Training: scRNA-seq with Scanpy/Seurat-style downstream</td><td><a href="https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-seurat-pbmc3k/tutorial.html">https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-seurat-pbmc3k/tutorial.html</a></td></tr><tr><td>ATAC-seq peak calling and differential accessibility</td><td>nf-core/atacseq</td><td><a href="https://nf-co.re/atacseq">https://nf-co.re/atacseq</a></td></tr><tr><td>Germline SNP/Indel discovery for WGS/WES</td><td>GATK Germline short variant discovery</td><td><a href="https://gatk.broadinstitute.org/hc/en-us/articles/360035535932-Germline-short-variant-discovery-SNPs-Indels">https://gatk.broadinstitute.org/hc/en-us/articles/360035535932-Germline-short-variant-discovery-SNPs-Indels</a></td></tr><tr><td>Germline SNP/Indel discovery for WGS/WES</td><td>GATK Hard-filtering germline short variants</td><td><a href="https://gatk.broadinstitute.org/hc/en-us/articles/360035890471-Hard-filtering-germline-short-variants">https://gatk.broadinstitute.org/hc/en-us/articles/360035890471-Hard-filtering-germline-short-variants</a></td></tr><tr><td>Germline SNP/Indel discovery for WGS/WES</td><td>nf-core/sarek</td><td><a href="https://nf-co.re/sarek">https://nf-co.re/sarek</a></td></tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

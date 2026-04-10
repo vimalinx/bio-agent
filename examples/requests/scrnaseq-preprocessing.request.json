@@ -1,0 +1,21 @@
+{
+  "request_id": "req_scrnaseq_pre_001",
+  "user_goal": "Generate a clustering-ready count matrix from 10x single-cell RNA-seq FASTQ files.",
+  "request_text": "I have 10x single-cell RNA-seq FASTQ files and want a preprocessing workflow that ends in a filtered matrix and clustering-ready object.",
+  "request_tags": [
+    "scrnaseq",
+    "single-cell",
+    "10x",
+    "umi"
+  ],
+  "inputs": [],
+  "constraints": [
+    "Prefer an explicit checkpoint before heavy matrix generation"
+  ],
+  "preferred_outputs": [
+    "raw_count_matrix",
+    "filtered_matrix",
+    "embedding_clusters"
+  ],
+  "context_notes": []
+}
