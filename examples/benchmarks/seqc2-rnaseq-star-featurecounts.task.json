@@ -1,0 +1,34 @@
+{
+  "benchmark_id": "seqc2-bulk-rnaseq",
+  "task_id": "seqc2-rnaseq-star-featurecounts",
+  "title": "Bulk RNA-seq differential expression with alignment-first quantification",
+  "request_text": "I have bulk RNA-seq FASTQ files for treated and control samples and need a differential expression result bundle with explicit QC and alignment review.",
+  "goal": "Generate a staged bulk RNA-seq differential expression workflow suitable for benchmark-style reproducibility checks.",
+  "extra_tags": [
+    "rnaseq",
+    "differential-expression",
+    "bulk-transcriptomics",
+    "strategy-star-featurecounts"
+  ],
+  "expected_workflow_id": "rnaseq-differential-expression",
+  "accepted_strategy_profiles": [
+    "star-featurecounts"
+  ],
+  "required_expected_outputs": [
+    "qc_report",
+    "aligned_bams",
+    "counts_matrix",
+    "de_results",
+    "analysis_summary"
+  ],
+  "required_confirmation_stage_ids": [
+    "s2"
+  ],
+  "required_delivery_bundle_items": [
+    "aligned BAM inventory",
+    "MultiQC report",
+    "gene count matrix",
+    "differential expression result table",
+    "analysis summary"
+  ]
+}

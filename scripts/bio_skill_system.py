@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import shlex
 import sys
 from pathlib import Path
 
@@ -12,6 +13,14 @@ sys.path.insert(0, str(REPO_ROOT))
 from lib.bio_skill_system import (
     advance_run_stage,
     advance_session_run,
+    benchmark_report,
+    export_benchmark_repro_bundle,
+    export_session_as_skill,
+    session_skill_crystallization_candidate,
+    benchmark_suite,
+    evaluate_benchmark_run,
+    benchmark_task_definition,
+    evaluate_benchmark_task,
     approve_plan,
     approve_session_plan,
     build_execution_draft,
@@ -269,6 +278,114 @@ def cmd_session_serve_console(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_benchmark_report(args: argparse.Namespace) -> int:
+    payload = benchmark_report(args.benchmark_id)
+    text = save_json(payload, Path(args.output) if args.output else None)
+    if not args.output:
+        sys.stdout.write(text)
+    return 0
+
+
+def cmd_benchmark_evaluate(args: argparse.Namespace) -> int:
+    if bool(args.task_file) == bool(args.benchmark_id and args.task_id):
+        raise ValueError("Provide either `--task-file` or both `--benchmark-id` and `--task-id`.")
+
+    if args.task_file:
+        from lib.bio_skill_system import resolve_benchmark_task_payload
+        task_payload = resolve_benchmark_task_payload(load_structured_file(Path(args.task_file)))
+    else:
+        benchmark, task = benchmark_task_definition(args.benchmark_id, args.task_id)
+        task_payload = {
+            "benchmark_id": benchmark.get("id"),
+            **task,
+        }
+
+    payload = evaluate_benchmark_task(task_payload)
+    text = save_json(payload, Path(args.output) if args.output else None)
+    if not args.output:
+        sys.stdout.write(text)
+    return 0
+
+
+def cmd_benchmark_run(args: argparse.Namespace) -> int:
+    if bool(args.task_file) == bool(args.benchmark_id and args.task_id):
+        raise ValueError("Provide either `--task-file` or both `--benchmark-id` and `--task-id`.")
+
+    if args.task_file:
+        from lib.bio_skill_system import resolve_benchmark_task_payload
+        task_payload = resolve_benchmark_task_payload(load_structured_file(Path(args.task_file)))
+    else:
+        benchmark, task = benchmark_task_definition(args.benchmark_id, args.task_id)
+        task_payload = {
+            "benchmark_id": benchmark.get("id"),
+            **task,
+        }
+
+    evidence_payload = load_structured_file(Path(args.evidence_file)) if args.evidence_file else None
+    metrics: dict[str, str] = {}
+    for item in args.metric:
+        if "=" not in item:
+            raise ValueError(f"Invalid metric assignment: {item}")
+        key, value = item.split("=", 1)
+        metrics[key] = value
+
+    payload = evaluate_benchmark_run(
+        task_payload,
+        session_dir=Path(args.session_dir) if args.session_dir else None,
+        evidence_payload=evidence_payload,
+        delivery_items=args.delivery_item,
+        truth_artifacts=args.truth_artifact,
+        metrics=metrics,
+    )
+    if args.export_repro_bundle:
+        repro_dir = Path(args.repro_dir) if args.repro_dir else (Path(args.session_dir) / "repro" if args.session_dir else None)
+        if repro_dir is None:
+            raise ValueError("Provide --repro-dir when exporting a repro bundle without --session-dir.")
+        payload["repro_bundle"] = export_benchmark_repro_bundle(
+            payload,
+            repro_dir,
+            invoked_command=" ".join(shlex.quote(item) for item in [sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]]),
+        )
+    text = save_json(payload, Path(args.output) if args.output else None)
+    if not args.output:
+        sys.stdout.write(text)
+    return 0
+
+
+def cmd_benchmark_suite(args: argparse.Namespace) -> int:
+    payload = benchmark_suite(
+        args.benchmark_id,
+        mode=args.mode,
+        evidence_root=Path(args.evidence_root) if args.evidence_root else None,
+    )
+    text = save_json(payload, Path(args.output) if args.output else None)
+    if not args.output:
+        sys.stdout.write(text)
+    return 0
+
+
+def cmd_session_skill_candidate(args: argparse.Namespace) -> int:
+    payload = session_skill_crystallization_candidate(Path(args.session_dir))
+    text = save_json(payload, Path(args.output) if args.output else None)
+    if not args.output:
+        sys.stdout.write(text)
+    return 0
+
+
+def cmd_session_export_skill(args: argparse.Namespace) -> int:
+    payload = export_session_as_skill(
+        session_dir=Path(args.session_dir),
+        skill_root=Path(args.skill_root),
+        skill_name=args.skill_name,
+        overwrite=bool(args.overwrite),
+        force=bool(args.force),
+    )
+    text = save_json(payload, Path(args.output) if args.output else None)
+    if not args.output:
+        sys.stdout.write(text)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Bio Skill System plan-first orchestration CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -493,6 +610,76 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allowed browser Origin for the local control API. Defaults include localhost and the published project docs.",
     )
     session_serve_parser.set_defaults(func=cmd_session_serve_console)
+
+    benchmark_report_parser = subparsers.add_parser(
+        "benchmark-report",
+        help="Summarize the real benchmark registry or one benchmark family",
+    )
+    benchmark_report_parser.add_argument("--benchmark-id", help="Optional benchmark id to inspect")
+    benchmark_report_parser.add_argument("--output", help="Optional JSON output file")
+    benchmark_report_parser.set_defaults(func=cmd_benchmark_report)
+
+    benchmark_evaluate_parser = subparsers.add_parser(
+        "benchmark-evaluate",
+        help="Evaluate one benchmark task against the current workflow routing and analysis-flow model",
+    )
+    benchmark_evaluate_parser.add_argument("--benchmark-id", help="Benchmark id from registry/benchmarks.yaml")
+    benchmark_evaluate_parser.add_argument("--task-id", help="Task id within the selected benchmark")
+    benchmark_evaluate_parser.add_argument("--task-file", help="Structured task file in JSON or YAML")
+    benchmark_evaluate_parser.add_argument("--output", help="Optional JSON output file")
+    benchmark_evaluate_parser.set_defaults(func=cmd_benchmark_evaluate)
+
+    benchmark_run_parser = subparsers.add_parser(
+        "benchmark-run",
+        help="Score a benchmark task against session evidence or explicit benchmark evidence inputs",
+    )
+    benchmark_run_parser.add_argument("--benchmark-id", help="Benchmark id from registry/benchmarks.yaml")
+    benchmark_run_parser.add_argument("--task-id", help="Task id within the selected benchmark")
+    benchmark_run_parser.add_argument("--task-file", help="Structured task file in JSON or YAML")
+    benchmark_run_parser.add_argument("--session-dir", help="Optional session directory to derive runtime evidence from")
+    benchmark_run_parser.add_argument("--evidence-file", help="Optional structured evidence file in JSON or YAML")
+    benchmark_run_parser.add_argument("--delivery-item", action="append", default=[], help="Explicit delivered artifact label")
+    benchmark_run_parser.add_argument("--truth-artifact", action="append", default=[], help="Explicit truth artifact label")
+    benchmark_run_parser.add_argument("--metric", action="append", default=[], help="Metric assignment, e.g. precision=0.992")
+    benchmark_run_parser.add_argument("--output", help="Optional JSON output file")
+    benchmark_run_parser.add_argument("--export-repro-bundle", action="store_true", help="Export a reproducibility bundle for this benchmark run")
+    benchmark_run_parser.add_argument("--repro-dir", help="Optional output directory for the reproducibility bundle")
+    benchmark_run_parser.set_defaults(func=cmd_benchmark_run)
+
+    benchmark_suite_parser = subparsers.add_parser(
+        "benchmark-suite",
+        help="Run a batch benchmark suite and emit an aggregated score report",
+    )
+    benchmark_suite_parser.add_argument("--benchmark-id", help="Optional benchmark id to filter the suite")
+    benchmark_suite_parser.add_argument(
+        "--mode",
+        choices=("contract", "evidence"),
+        default="contract",
+        help="Contract mode scores route/plan/dataflow fit; evidence mode also looks for <task_id>.evidence.json files in evidence-root.",
+    )
+    benchmark_suite_parser.add_argument("--evidence-root", help="Directory containing <task_id>.evidence.json files for evidence mode")
+    benchmark_suite_parser.add_argument("--output", help="Optional JSON output file")
+    benchmark_suite_parser.set_defaults(func=cmd_benchmark_suite)
+
+    session_skill_candidate_parser = subparsers.add_parser(
+        "session-skill-candidate",
+        help="Check whether a completed session is eligible for automatic skill crystallization",
+    )
+    session_skill_candidate_parser.add_argument("--session-dir", required=True, help="Session directory to inspect")
+    session_skill_candidate_parser.add_argument("--output", help="Optional JSON output file")
+    session_skill_candidate_parser.set_defaults(func=cmd_session_skill_candidate)
+
+    session_export_skill_parser = subparsers.add_parser(
+        "session-export-skill",
+        help="Summarize a completed session into a persistent workflow skill draft",
+    )
+    session_export_skill_parser.add_argument("--session-dir", required=True, help="Completed session directory")
+    session_export_skill_parser.add_argument("--skill-root", default=str(REPO_ROOT / ".claude" / "skills"), help="Skill root where the generated workflow skill should be written")
+    session_export_skill_parser.add_argument("--skill-name", help="Optional explicit skill slug")
+    session_export_skill_parser.add_argument("--overwrite", action="store_true", help="Overwrite an existing generated skill directory")
+    session_export_skill_parser.add_argument("--force", action="store_true", help="Export even when the session is not eligible for automatic crystallization")
+    session_export_skill_parser.add_argument("--output", help="Optional JSON output file")
+    session_export_skill_parser.set_defaults(func=cmd_session_export_skill)
 
     return parser
 

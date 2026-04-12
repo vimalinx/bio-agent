@@ -1,0 +1,42 @@
+version: 1
+description: Policies that determine which completed workflow sessions are eligible
+  to be crystallized into persistent workflow skills.
+policies:
+- workflow_id: rnaseq-differential-expression
+  allowed_strategy_profiles:
+  - star-featurecounts
+  require_completed_run: true
+  allowed_run_verdicts:
+  - ready_to_deliver
+  require_no_unresolved_skills: true
+  require_no_unavailable_runtime_tools: true
+  require_no_unmapped_execution_bridges: true
+  require_passing_benchmark: true
+  require_repro_scorecard: true
+  require_comparator_backed_score: true
+- workflow_id: atacseq-differential-accessibility
+  allowed_strategy_profiles:
+  - bowtie2-macs3
+  - bwa-macs3
+  require_completed_run: true
+  allowed_run_verdicts:
+  - ready_to_deliver
+  require_no_unresolved_skills: true
+  require_no_unavailable_runtime_tools: true
+  require_no_unmapped_execution_bridges: true
+  require_passing_benchmark: true
+  require_repro_scorecard: true
+  require_comparator_backed_score: true
+- workflow_id: germline-short-variant-discovery
+  allowed_strategy_profiles:
+  - bwa-gatk-hardfilter
+  - bwa-gatk-vqsr
+  require_completed_run: true
+  allowed_run_verdicts:
+  - ready_to_deliver
+  require_no_unresolved_skills: true
+  require_no_unavailable_runtime_tools: true
+  require_no_unmapped_execution_bridges: true
+  require_passing_benchmark: true
+  require_repro_scorecard: true
+  require_comparator_backed_score: true

@@ -106,6 +106,382 @@ def test_propose_generates_multiple_plans_for_rnaseq_request(tmp_path: Path) -> 
     assert any(plan["source_workflow_id"] == "rnaseq-differential-expression" for plan in payload["plans"])
 
 
+def test_benchmark_report_lists_grounded_benchmarks() -> None:
+    payload = json.loads(run_cli("benchmark-report").stdout)
+
+    benchmark_ids = {item["id"] for item in payload["benchmarks"]}
+    assert payload["benchmark_count"] >= 4
+    assert {
+        "seqc2-bulk-rnaseq",
+        "giab-precisionfda-small-variant",
+        "openproblems-single-cell",
+        "encode-atac-conformance",
+    }.issubset(benchmark_ids)
+
+
+def test_benchmark_evaluate_giab_task_passes() -> None:
+    payload = json.loads(
+        run_cli(
+            "benchmark-evaluate",
+            "--benchmark-id",
+            "giab-precisionfda-small-variant",
+            "--task-id",
+            "giab-wes-bwa-gatk-hardfilter",
+        ).stdout
+    )
+
+    assert payload["verdict"] == "pass"
+    assert payload["workflow_match"] is True
+    assert payload["strategy_match"] is True
+    assert payload["recommended_workflow_id"] == "germline-short-variant-discovery"
+    assert payload["outputs_coverage"]["complete"] is True
+    assert payload["confirmation_coverage"]["complete"] is True
+    assert payload["delivery_coverage"]["complete"] is True
+
+
+def test_benchmark_run_giab_with_explicit_evidence_passes() -> None:
+    payload = json.loads(
+        run_cli(
+            "benchmark-run",
+            "--task-file",
+            str(ROOT / "examples" / "benchmarks" / "giab-wes-bwa-gatk-hardfilter.task.json"),
+            "--evidence-file",
+            str(ROOT / "examples" / "benchmarks" / "giab-wes-bwa-gatk-hardfilter.evidence.json"),
+        ).stdout
+    )
+
+    assert payload["verdict"] == "pass"
+    assert payload["control_evaluation"]["verdict"] == "pass"
+    assert payload["artifact_evaluation"]["delivery_artifact_coverage"]["complete"] is True
+    assert payload["artifact_evaluation"]["truth_artifact_coverage"]["complete"] is True
+    assert payload["artifact_evaluation"]["metric_key_coverage"]["complete"] is True
+    assert payload["artifact_evaluation"]["metric_value_evaluation"]["complete"] is True
+    assert payload["scorecard"]["passed_count"] == payload["scorecard"]["total_checks"]
+
+
+def test_benchmark_run_giab_from_happy_summary_artifact_passes() -> None:
+    payload = json.loads(
+        run_cli(
+            "benchmark-run",
+            "--task-file",
+            str(ROOT / "examples" / "benchmarks" / "giab-wes-bwa-gatk-hardfilter.task.json"),
+            "--evidence-file",
+            str(ROOT / "examples" / "benchmarks" / "giab-wes-bwa-gatk-hardfilter.happy.evidence.json"),
+        ).stdout
+    )
+
+    assert payload["verdict"] == "pass"
+    assert payload["artifact_evaluation"]["metric_value_evaluation"]["complete"] is True
+    assert payload["evidence"]["metrics"]["precision"] == "0.992"
+    assert payload["evidence"]["metrics"]["recall"] == "0.985"
+    assert "F1" in payload["evidence"]["metrics"]
+
+
+def test_benchmark_run_giab_infers_f1_when_missing() -> None:
+    evidence_payload = {
+        "delivery_items": [
+            "analysis-ready BAM inventory",
+            "recalibration metrics",
+            "gVCF manifest",
+            "joint VCF manifest",
+            "filtered VCF manifest",
+            "cohort QC summary",
+        ],
+        "truth_artifacts": [
+            "benchmark VCF",
+            "confident regions BED",
+        ],
+        "metrics": {
+            "precision": "0.99",
+            "recall": "0.98",
+        },
+    }
+    evidence_path = ROOT / "examples" / "benchmarks" / "_tmp_giab_infer_f1.evidence.json"
+    evidence_path.write_text(json.dumps(evidence_payload, indent=2), encoding="utf-8")
+    try:
+        payload = json.loads(
+            run_cli(
+                "benchmark-run",
+                "--task-file",
+                str(ROOT / "examples" / "benchmarks" / "giab-wes-bwa-gatk-hardfilter.task.json"),
+                "--evidence-file",
+                str(evidence_path),
+            ).stdout
+        )
+    finally:
+        evidence_path.unlink(missing_ok=True)
+
+    assert payload["verdict"] == "pass"
+    assert payload["artifact_evaluation"]["metric_value_evaluation"]["complete"] is True
+    assert payload["artifact_evaluation"]["metric_value_evaluation"]["missing_metrics"] == []
+    assert "F1" in payload["artifact_evaluation"]["metric_value_evaluation"]["parsed_metrics"]
+
+
+def test_benchmark_run_giab_flags_inconsistent_f1() -> None:
+    evidence_payload = {
+        "delivery_items": [
+            "analysis-ready BAM inventory",
+            "recalibration metrics",
+            "gVCF manifest",
+            "joint VCF manifest",
+            "filtered VCF manifest",
+            "cohort QC summary",
+        ],
+        "truth_artifacts": [
+            "benchmark VCF",
+            "confident regions BED",
+        ],
+        "metrics": {
+            "precision": "0.99",
+            "recall": "0.98",
+            "F1": "0.50",
+        },
+    }
+    evidence_path = ROOT / "examples" / "benchmarks" / "_tmp_giab_bad_f1.evidence.json"
+    evidence_path.write_text(json.dumps(evidence_payload, indent=2), encoding="utf-8")
+    try:
+        payload = json.loads(
+            run_cli(
+                "benchmark-run",
+                "--task-file",
+                str(ROOT / "examples" / "benchmarks" / "giab-wes-bwa-gatk-hardfilter.task.json"),
+                "--evidence-file",
+                str(evidence_path),
+            ).stdout
+        )
+    finally:
+        evidence_path.unlink(missing_ok=True)
+
+    assert payload["verdict"] == "partial"
+    assert payload["artifact_evaluation"]["metric_value_evaluation"]["complete"] is False
+    assert payload["artifact_evaluation"]["metric_value_evaluation"]["consistency_checks"][0]["consistent"] is False
+    assert "metric_values_complete" in payload["scorecard"]["failed_checks"]
+
+
+def test_benchmark_run_giab_from_session_requires_truth_artifacts(tmp_path: Path) -> None:
+    session_dir = tmp_path / "session"
+    run_cli(
+        "session-start",
+        "--session-dir",
+        str(session_dir),
+        "--workflow-family",
+        "germline-short-variant-discovery",
+        "--strategy-profile",
+        "bwa-gatk-hardfilter",
+    )
+    review = json.loads((session_dir / "review.json").read_text(encoding="utf-8"))
+    run_cli(
+        "session-approve",
+        "--session-dir",
+        str(session_dir),
+        "--plan-id",
+        review["recommended_plan_id"],
+    )
+
+    bam_inventory = session_dir / "analysis_ready_bams.tsv"
+    recalibration = session_dir / "recalibration_metrics.tsv"
+    gvcf_manifest = session_dir / "gvcf_bundle.tsv"
+    joint_vcf = session_dir / "joint_vcf.tsv"
+    filtered_vcf = session_dir / "filtered_vcf.tsv"
+    qc_summary = session_dir / "qc_summary.txt"
+    bam_inventory.write_text("sample\tbam\nS1\tbam/S1.bam\n", encoding="utf-8")
+    recalibration.write_text("sample\tmetric\nS1\tok\n", encoding="utf-8")
+    gvcf_manifest.write_text("sample\tgvcf\nS1\tgvcf/S1.g.vcf.gz\n", encoding="utf-8")
+    joint_vcf.write_text("joint_vcf\ncohort/joint.vcf.gz\n", encoding="utf-8")
+    filtered_vcf.write_text("filtered_vcf\ncohort/filtered.vcf.gz\n", encoding="utf-8")
+    qc_summary.write_text("qc: pass\n", encoding="utf-8")
+
+    run_cli(
+        "session-next-stage",
+        "--session-dir",
+        str(session_dir),
+        "--validation",
+        "input_paths_exist=passed",
+        "--validation",
+        "reference_bundle_available=passed",
+    )
+    run_cli(
+        "session-next-stage",
+        "--session-dir",
+        str(session_dir),
+        "--confirm",
+        "--validation",
+        "analysis_ready_bams_exist=passed",
+        "--validation",
+        "recalibration_metrics_exist=passed",
+        "--artifact",
+        f"{bam_inventory}:tsv:Analysis-ready BAM inventory",
+        "--artifact",
+        f"{recalibration}:tsv:BQSR metrics summary",
+    )
+    run_cli(
+        "session-next-stage",
+        "--session-dir",
+        str(session_dir),
+        "--allow-missing-tools",
+        "--validation",
+        "gvcf_bundle_exists=passed",
+        "--artifact",
+        f"{gvcf_manifest}:tsv:Per-sample gVCF bundle manifest",
+    )
+    run_cli(
+        "session-next-stage",
+        "--session-dir",
+        str(session_dir),
+        "--allow-missing-tools",
+        "--validation",
+        "joint_vcf_exists=passed",
+        "--artifact",
+        f"{joint_vcf}:tsv:Cohort joint VCF manifest",
+    )
+    run_cli(
+        "session-next-stage",
+        "--session-dir",
+        str(session_dir),
+        "--validation",
+        "filtered_vcf_exists=passed",
+        "--validation",
+        "summary_exists=passed",
+        "--artifact",
+        f"{filtered_vcf}:tsv:Filtered cohort VCF manifest",
+        "--artifact",
+        f"{qc_summary}:txt:Run summary and cohort QC summary",
+    )
+
+    payload = json.loads(
+        run_cli(
+            "benchmark-run",
+            "--benchmark-id",
+            "giab-precisionfda-small-variant",
+            "--task-id",
+            "giab-wes-bwa-gatk-hardfilter",
+            "--session-dir",
+            str(session_dir),
+        ).stdout
+    )
+
+    assert payload["verdict"] == "partial"
+    assert payload["control_evaluation"]["verdict"] == "pass"
+    assert payload["artifact_evaluation"]["delivery_artifact_coverage"]["complete"] is True
+    assert payload["artifact_evaluation"]["truth_artifact_coverage"]["complete"] is False
+    assert "benchmark VCF" in payload["artifact_evaluation"]["truth_artifact_coverage"]["missing"]
+
+
+def test_benchmark_suite_contract_reports_passes() -> None:
+    payload = json.loads(run_cli("benchmark-suite", "--mode", "contract").stdout)
+
+    assert payload["mode"] == "contract"
+    assert payload["summary"]["task_count"] >= 4
+    assert payload["summary"]["verdict_counts"]["pass"] >= 4
+    assert payload["summary"]["workflow_match_rate"] == 1.0
+
+
+def test_benchmark_suite_evidence_for_giab_passes_with_example_evidence() -> None:
+    payload = json.loads(
+        run_cli(
+            "benchmark-suite",
+            "--benchmark-id",
+            "giab-precisionfda-small-variant",
+            "--mode",
+            "evidence",
+            "--evidence-root",
+            str(ROOT / "examples" / "benchmarks"),
+        ).stdout
+    )
+
+    assert payload["mode"] == "evidence"
+    assert payload["summary"]["task_count"] == 1
+    assert payload["summary"]["verdict_counts"]["pass"] == 1
+    assert payload["summary"]["truth_artifacts_complete_rate"] == 1.0
+    assert payload["summary"]["metric_values_complete_rate"] == 1.0
+    assert payload["results"][0]["task_id"] == "giab-wes-bwa-gatk-hardfilter"
+    assert payload["results"][0]["verdict"] == "pass"
+
+def test_benchmark_run_can_export_repro_bundle(tmp_path: Path) -> None:
+    repro_dir = tmp_path / "repro"
+    payload = json.loads(
+        run_cli(
+            "benchmark-run",
+            "--task-file",
+            str(ROOT / "examples" / "benchmarks" / "giab-wes-bwa-gatk-hardfilter.task.json"),
+            "--evidence-file",
+            str(ROOT / "examples" / "benchmarks" / "giab-wes-bwa-gatk-hardfilter.evidence.json"),
+            "--export-repro-bundle",
+            "--repro-dir",
+            str(repro_dir),
+        ).stdout
+    )
+
+    assert payload["repro_bundle"]["path"] == str(repro_dir.resolve())
+    assert (repro_dir / "commands.sh").exists()
+    assert (repro_dir / "environment.json").exists()
+    assert (repro_dir / "artifacts.json").exists()
+    assert (repro_dir / "scorecard.json").exists()
+
+
+def test_session_export_skill_requires_eligible_session_or_force(tmp_path: Path) -> None:
+    session_dir = tmp_path / "session"
+    skill_root = tmp_path / "skills"
+    run_cli(
+        "session-start",
+        "--session-dir",
+        str(session_dir),
+        "--workflow-family",
+        "germline-short-variant-discovery",
+        "--strategy-profile",
+        "bwa-gatk-hardfilter",
+    )
+    review = json.loads((session_dir / "review.json").read_text(encoding="utf-8"))
+    run_cli(
+        "session-approve",
+        "--session-dir",
+        str(session_dir),
+        "--plan-id",
+        review["recommended_plan_id"],
+    )
+
+    run_cli("session-next-stage", "--session-dir", str(session_dir), "--validation", "input_paths_exist=passed", "--validation", "reference_bundle_available=passed")
+    run_cli("session-next-stage", "--session-dir", str(session_dir), "--confirm", "--validation", "analysis_ready_bams_exist=passed", "--validation", "recalibration_metrics_exist=passed")
+    run_cli("session-next-stage", "--session-dir", str(session_dir), "--allow-missing-tools", "--validation", "gvcf_bundle_exists=passed")
+    run_cli("session-next-stage", "--session-dir", str(session_dir), "--allow-missing-tools", "--validation", "joint_vcf_exists=passed")
+    run_cli("session-next-stage", "--session-dir", str(session_dir), "--validation", "filtered_vcf_exists=passed", "--validation", "summary_exists=passed")
+
+    candidate = json.loads(run_cli("session-skill-candidate", "--session-dir", str(session_dir)).stdout)
+    assert candidate["eligible"] is False
+    assert any("run verdict" in reason or "unavailable runtime tools" in reason for reason in candidate["reasons"])
+
+    failed = subprocess.run(
+        [sys.executable, str(CLI_SCRIPT), "session-export-skill", "--session-dir", str(session_dir), "--skill-root", str(skill_root)],
+        capture_output=True,
+        text=True,
+    )
+    assert failed.returncode != 0
+    assert "not eligible for automatic skill crystallization" in (failed.stderr + failed.stdout)
+
+    payload = json.loads(
+        run_cli(
+            "session-export-skill",
+            "--session-dir",
+            str(session_dir),
+            "--skill-root",
+            str(skill_root),
+            "--force",
+        ).stdout
+    )
+
+    skill_dir = Path(payload["skill_dir"])
+    skill_md = skill_dir / "SKILL.md"
+    summary_json = skill_dir / "references" / "session-summary.json"
+    environment_json = skill_dir / "references" / "environment.json"
+    assert payload["eligibility"]["eligible"] is False
+    assert skill_md.exists()
+    assert summary_json.exists()
+    assert environment_json.exists()
+    skill_text = skill_md.read_text(encoding="utf-8")
+    assert "Generated workflow skill" in skill_text
+    assert "Benchmark Fit" in skill_text
+    assert "Analysis Flow" in skill_text
+
 def test_propose_routes_scrnaseq_request_to_scrnaseq_workflow(tmp_path: Path) -> None:
     output_path = tmp_path / "scrnaseq-plans.json"
 
@@ -215,6 +591,9 @@ def test_approve_and_draft_create_execution_mapping(tmp_path: Path) -> None:
         any(skill["id"] in {"fastqc", "star", "feature-counts"} for skill in stage["candidate_skill_refs"])
         for stage in draft["stages"]
     )
+    stage_s2 = next(stage for stage in draft["stages"] if stage["stage_id"] == "s2")
+    assert stage_s2["execution_bridge"]["contract_defined"] is True
+    assert stage_s2["execution_bridge"]["bridge_id"] in {"generic-rnaseq-alignment-qc", "star-alignment-qc"}
 
 
 def test_germline_draft_tracks_missing_local_gatk_tools_without_marking_them_unresolved(tmp_path: Path) -> None:
@@ -482,6 +861,7 @@ def test_session_approve_creates_run_bundle_from_recommended_plan(tmp_path: Path
     assert manifest["approved_plan_id"] == review["recommended_plan_id"]
     assert run_status["current_stage"] == "s1"
     assert run_review["verdict"] == "ready_to_continue"
+    assert run_review["current_stage_review"]["execution_bridge"]["contract_defined"] is True
     assert manifest["history_event_count"] == 2
     assert manifest["latest_event_type"] == "plan_approved"
     assert history["events"][-1]["type"] == "plan_approved"
@@ -570,6 +950,9 @@ def test_session_export_console_emits_web_bundle_shape(tmp_path: Path) -> None:
     assert isinstance(payload["candidate_plans"], list)
     assert payload["analysis_flow"]["workflow_id"] == "rnaseq-differential-expression"
     assert payload["analysis_flow"]["stage_flows"][0]["stage_id"] == "s1"
+    assert payload["execution_bridge_summary"]["unmapped_stage_ids"] == []
+    assert isinstance(payload["benchmark_matches"], list)
+    assert payload["benchmark_matches"][0]["benchmark_id"] == "seqc2-bulk-rnaseq"
     assert payload["candidate_plans"][0]["selected_strategy_profile"] == "star-featurecounts"
     assert payload["candidate_plans"][0]["selected_strategy_label"] == "STAR + featureCounts"
     assert payload["history"]["events"][-1]["type"] == "plan_approved"

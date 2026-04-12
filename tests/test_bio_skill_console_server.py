@@ -202,6 +202,50 @@ def test_console_server_action_endpoint_approves_and_advances_session(tmp_path: 
         server.server_close()
 
 
+def test_console_server_can_force_export_skill_from_completed_session(tmp_path: Path) -> None:
+    session_dir = tmp_path / "session"
+    start_session(
+        session_dir=session_dir,
+        request_text="I have paired-end WES FASTQ files and need germline SNP and indel discovery.",
+        goal="Generate a germline short variant discovery workflow.",
+        workflow_family="germline-short-variant-discovery",
+        strategy_profile="bwa-gatk-hardfilter",
+    )
+
+    from lib.bio_skill_system import approve_session_plan, advance_session_run
+    review = json.loads((session_dir / "review.json").read_text(encoding="utf-8"))
+    approve_session_plan(session_dir=session_dir, plan_id=review["recommended_plan_id"])
+    advance_session_run(session_dir=session_dir, validation_updates=["input_paths_exist=passed", "reference_bundle_available=passed"])
+    advance_session_run(session_dir=session_dir, confirm=True, validation_updates=["analysis_ready_bams_exist=passed", "recalibration_metrics_exist=passed"])
+    advance_session_run(session_dir=session_dir, allow_missing_tools=True, validation_updates=["gvcf_bundle_exists=passed"])
+    advance_session_run(session_dir=session_dir, allow_missing_tools=True, validation_updates=["joint_vcf_exists=passed"])
+    advance_session_run(session_dir=session_dir, validation_updates=["filtered_vcf_exists=passed", "summary_exists=passed"])
+
+    server, thread = _start_server(session_dir)
+    try:
+        base_url = f"http://127.0.0.1:{server.server_address[1]}"
+        result = _http_json(
+            f"{base_url}/api/session/action",
+            method="POST",
+            payload={
+                "action": "export_skill",
+                "payload": {
+                    "skill_root": str((tmp_path / "skills").resolve()),
+                    "force": True,
+                },
+            },
+        )
+
+        assert result["skill_export"]["files"]["skill_markdown"].endswith("SKILL.md")
+        assert Path(result["skill_export"]["files"]["skill_markdown"]).exists()
+        assert result["skill_export"]["eligibility"]["eligible"] is False
+        assert result["bundle"]["skill_crystallization_candidate"]["eligible"] is False
+    finally:
+        server.shutdown()
+        thread.join(timeout=5)
+        server.server_close()
+
+
 def test_console_server_can_round_trip_plan_markdown_edits(tmp_path: Path) -> None:
     session_dir = tmp_path / "session"
     start_session(

@@ -1,0 +1,35 @@
+{
+  "benchmark_id": "encode-atac-conformance",
+  "task_id": "encode-atac-bowtie2-macs3",
+  "title": "ATAC-seq peak calling and differential accessibility with standards-aware outputs",
+  "request_text": "I need an ATAC-seq workflow from FASTQ to filtered BAMs, signal tracks, peak calling, consensus peak matrix, and differential accessibility summary with ENCODE-style QC checkpoints.",
+  "goal": "Generate a staged ATAC-seq workflow suitable for ENCODE data-standards style conformance checks.",
+  "extra_tags": [
+    "atacseq",
+    "chromatin-accessibility",
+    "peaks",
+    "strategy-bowtie2-macs3"
+  ],
+  "expected_workflow_id": "atacseq-differential-accessibility",
+  "accepted_strategy_profiles": [
+    "bowtie2-macs3"
+  ],
+  "required_expected_outputs": [
+    "filtered_bams",
+    "bigwig_tracks",
+    "peak_set",
+    "consensus_matrix",
+    "da_results"
+  ],
+  "required_confirmation_stage_ids": [
+    "s2"
+  ],
+  "required_delivery_bundle_items": [
+    "filtered BAM inventory",
+    "accessibility QC summary",
+    "bigWig track inventory",
+    "consensus peak matrix",
+    "differential accessibility result table",
+    "analysis summary"
+  ]
+}

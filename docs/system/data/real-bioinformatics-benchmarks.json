@@ -1,0 +1,279 @@
+{
+  "version": 1,
+  "description": "Real bioinformatics benchmark registry for evaluating workflow routing, plan structure, and analysis-flow coverage in bio-agent.",
+  "benchmarks": [
+    {
+      "id": "seqc2-bulk-rnaseq",
+      "title": "SEQC2 / MAQC-style bulk RNA-seq workflow benchmark",
+      "benchmark_type": "consortium-reference",
+      "target_workflow_ids": [
+        "rnaseq-differential-expression"
+      ],
+      "official_sources": [
+        {
+          "label": "FDA MAQC/SEQC program",
+          "url": "https://www.fda.gov/science-research/bioinformatics-tools/microarraysequencing-quality-control-maqcseqc"
+        }
+      ],
+      "key_metrics": [
+        "differential expression reproducibility",
+        "count matrix consistency",
+        "QC completeness"
+      ],
+      "tasks": [
+        {
+          "task_id": "seqc2-rnaseq-star-featurecounts",
+          "title": "Bulk RNA-seq differential expression with alignment-first quantification",
+          "request_text": "I have bulk RNA-seq FASTQ files for treated and control samples and need a differential expression result bundle with explicit QC and alignment review.",
+          "goal": "Generate a staged bulk RNA-seq differential expression workflow suitable for benchmark-style reproducibility checks.",
+          "extra_tags": [
+            "rnaseq",
+            "differential-expression",
+            "bulk-transcriptomics",
+            "strategy-star-featurecounts"
+          ],
+          "expected_workflow_id": "rnaseq-differential-expression",
+          "accepted_strategy_profiles": [
+            "star-featurecounts"
+          ],
+          "required_expected_outputs": [
+            "qc_report",
+            "aligned_bams",
+            "counts_matrix",
+            "de_results",
+            "analysis_summary"
+          ],
+          "required_confirmation_stage_ids": [
+            "s2"
+          ],
+          "required_delivery_bundle_items": [
+            "aligned BAM inventory",
+            "MultiQC report",
+            "gene count matrix",
+            "differential expression result table",
+            "analysis summary"
+          ],
+          "benchmark_requirements": {
+            "metrics": [
+              "differential expression reproducibility",
+              "count matrix consistency"
+            ],
+            "notes": [
+              "Validate that the workflow preserves explicit QC and alignment evidence before DE testing."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "giab-precisionfda-small-variant",
+      "title": "GIAB / precisionFDA Truth Challenge small variant benchmark",
+      "benchmark_type": "challenge",
+      "target_workflow_ids": [
+        "germline-short-variant-discovery"
+      ],
+      "official_sources": [
+        {
+          "label": "precisionFDA Truth Challenge",
+          "url": "https://precision.fda.gov/challenges/truth"
+        },
+        {
+          "label": "FDA Science Forum on precisionFDA Truth Challenge V2",
+          "url": "https://www.fda.gov/science-research/fda-science-forum/precisionfda-truth-challenge-v2-using-crowdsourcing-benchmark-variant-calling-innovation"
+        }
+      ],
+      "key_metrics": [
+        "precision",
+        "recall",
+        "F1"
+      ],
+      "tasks": [
+        {
+          "task_id": "giab-wes-bwa-gatk-hardfilter",
+          "title": "WES germline variant discovery with truth-set comparison readiness",
+          "request_text": "I have paired-end WES FASTQ files and need germline SNP and indel discovery with gVCFs, joint genotyping, filtered cohort VCF output, and a final truth-set comparison package.",
+          "goal": "Generate a germline short variant discovery workflow suitable for GIAB and precisionFDA-style benchmarking.",
+          "extra_tags": [
+            "germline-variant",
+            "variant-calling",
+            "wes",
+            "gvcf",
+            "strategy-bwa-gatk-hardfilter"
+          ],
+          "expected_workflow_id": "germline-short-variant-discovery",
+          "accepted_strategy_profiles": [
+            "bwa-gatk-hardfilter"
+          ],
+          "required_expected_outputs": [
+            "analysis_ready_bams",
+            "gvcf_bundle",
+            "joint_vcf",
+            "filtered_vcf",
+            "qc_summary"
+          ],
+          "required_confirmation_stage_ids": [
+            "s2"
+          ],
+          "required_delivery_bundle_items": [
+            "analysis-ready BAM inventory",
+            "recalibration metrics",
+            "gVCF manifest",
+            "joint VCF manifest",
+            "filtered VCF manifest",
+            "cohort QC summary"
+          ],
+          "benchmark_requirements": {
+            "metrics": [
+              "precision",
+              "recall",
+              "F1"
+            ],
+            "truth_artifacts": [
+              "benchmark VCF",
+              "confident regions BED"
+            ],
+            "notes": [
+              "The workflow should preserve explicit reference and known-sites validation before calling variants."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "openproblems-single-cell",
+      "title": "Open Problems in single-cell analysis task-preparation benchmark",
+      "benchmark_type": "living-benchmark",
+      "target_workflow_ids": [
+        "scrnaseq-preprocessing"
+      ],
+      "official_sources": [
+        {
+          "label": "Open Problems in Single-Cell Analysis",
+          "url": "https://openproblems.bio/"
+        },
+        {
+          "label": "Open Problems documentation",
+          "url": "https://openproblems.bio/documentation/"
+        }
+      ],
+      "key_metrics": [
+        "preprocessing completeness",
+        "clustering-ready matrix handoff",
+        "metadata readiness"
+      ],
+      "tasks": [
+        {
+          "task_id": "openproblems-scrna-starsolo-prep",
+          "title": "scRNA-seq preprocessing to a benchmark-ready matrix and clustering package",
+          "request_text": "I have 10x single-cell RNA-seq FASTQ files and need a clustering-ready filtered matrix, QC metrics, embeddings, and marker-review package for downstream Open Problems style evaluation.",
+          "goal": "Generate a staged single-cell preprocessing workflow that prepares a benchmark-ready dataset package.",
+          "extra_tags": [
+            "scrnaseq",
+            "single-cell",
+            "10x",
+            "strategy-starsolo"
+          ],
+          "expected_workflow_id": "scrnaseq-preprocessing",
+          "accepted_strategy_profiles": [
+            "starsolo"
+          ],
+          "required_expected_outputs": [
+            "raw_count_matrix",
+            "filtered_matrix",
+            "qc_metrics",
+            "embedding_clusters",
+            "marker_table"
+          ],
+          "required_confirmation_stage_ids": [
+            "s2"
+          ],
+          "required_delivery_bundle_items": [
+            "filtered matrix",
+            "QC metrics table",
+            "embeddings and cluster assignments",
+            "marker table",
+            "marker review summary"
+          ],
+          "benchmark_requirements": {
+            "metrics": [
+              "preprocessing completeness",
+              "metadata readiness"
+            ],
+            "notes": [
+              "The workflow should reach a clustering-ready handoff rather than stopping at raw matrix generation."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "encode-atac-conformance",
+      "title": "ENCODE ATAC-seq data-standards conformance benchmark",
+      "benchmark_type": "standards-conformance",
+      "target_workflow_ids": [
+        "atacseq-differential-accessibility"
+      ],
+      "official_sources": [
+        {
+          "label": "ENCODE ATAC-seq data standards",
+          "url": "https://www.encodeproject.org/data-standards/atac-seq/"
+        },
+        {
+          "label": "ENCODE4 ATAC-seq pipeline",
+          "url": "https://www.encodeproject.org/data-standards/atac-seq/atac-encode4/"
+        }
+      ],
+      "key_metrics": [
+        "QC completeness",
+        "peak set readiness",
+        "signal track readiness"
+      ],
+      "tasks": [
+        {
+          "task_id": "encode-atac-bowtie2-macs3",
+          "title": "ATAC-seq peak calling and differential accessibility with standards-aware outputs",
+          "request_text": "I need an ATAC-seq workflow from FASTQ to filtered BAMs, signal tracks, peak calling, consensus peak matrix, and differential accessibility summary with ENCODE-style QC checkpoints.",
+          "goal": "Generate a staged ATAC-seq workflow suitable for ENCODE data-standards style conformance checks.",
+          "extra_tags": [
+            "atacseq",
+            "chromatin-accessibility",
+            "peaks",
+            "strategy-bowtie2-macs3"
+          ],
+          "expected_workflow_id": "atacseq-differential-accessibility",
+          "accepted_strategy_profiles": [
+            "bowtie2-macs3"
+          ],
+          "required_expected_outputs": [
+            "filtered_bams",
+            "bigwig_tracks",
+            "peak_set",
+            "consensus_matrix",
+            "da_results"
+          ],
+          "required_confirmation_stage_ids": [
+            "s2"
+          ],
+          "required_delivery_bundle_items": [
+            "filtered BAM inventory",
+            "accessibility QC summary",
+            "bigWig track inventory",
+            "consensus peak matrix",
+            "differential accessibility result table",
+            "analysis summary"
+          ],
+          "benchmark_requirements": {
+            "metrics": [
+              "QC completeness",
+              "peak set readiness",
+              "signal track readiness"
+            ],
+            "notes": [
+              "The workflow should preserve explicit filtered BAM and signal-track outputs before differential testing."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

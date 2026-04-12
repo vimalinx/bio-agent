@@ -1,0 +1,17 @@
+{
+  "artifact_paths": [
+    "examples/benchmarks/giab-wes-bwa-gatk-hardfilter.happy.summary.csv"
+  ],
+  "delivery_items": [
+    "analysis-ready BAM inventory",
+    "recalibration metrics",
+    "gVCF manifest",
+    "joint VCF manifest",
+    "filtered VCF manifest",
+    "cohort QC summary"
+  ],
+  "truth_artifacts": [
+    "benchmark VCF",
+    "confident regions BED"
+  ]
+}

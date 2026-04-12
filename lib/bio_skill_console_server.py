@@ -14,6 +14,7 @@ from urllib.parse import parse_qs, urlparse
 from lib.bio_skill_system import (
     advance_session_run,
     approve_session_plan,
+    export_session_as_skill,
     export_session_console_bundle,
     pause_session_run,
     prepare_session_start_inputs,
@@ -260,6 +261,16 @@ def execute_console_action(
                 reason=payload.get("reason"),
             )
         result["session"] = manifest
+    elif action == "export_skill":
+        raw_skill_root = str(payload.get("skill_root") or "").strip()
+        skill_root = Path(raw_skill_root).resolve() if raw_skill_root else (session_dir.parent.parent / ".claude" / "skills").resolve()
+        result["skill_export"] = export_session_as_skill(
+            session_dir=session_dir,
+            skill_root=skill_root,
+            skill_name=str(payload.get("skill_name") or "").strip() or None,
+            overwrite=bool(payload.get("overwrite")),
+            force=bool(payload.get("force")),
+        )
     else:
         raise ValueError(f"Unsupported console action: {action}")
 

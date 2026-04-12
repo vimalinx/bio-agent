@@ -9,6 +9,7 @@
 - `lib/` 与 `scripts/`：控制面原型与 CLI
 - `registry/`：skills / workflows / routing rules 注册表
 - `registry/analysis_flows.yaml`：真实分析信息流注册表
+- `registry/benchmarks.yaml`：真实 benchmark 注册表
 - `schemas/`：request / plan / run 的结构约束
 - `docs/system/`：系统页面与审计页面
 - `reference/COMPARATIVE_ANALYSIS_REPORT.md`：仓库对比原始报告
@@ -42,8 +43,71 @@
 
 - `registry/workflow_knowledge.yaml`
 - `registry/analysis_flows.yaml`
+- `registry/benchmarks.yaml`
 - `docs/system/data/real-bioinformatics-workflows.json`
 - `docs/system/data/real-analysis-information-flows.json`
+- `docs/system/data/real-bioinformatics-benchmarks.json`
+
+## Benchmark Layer
+
+仓库现在还补了一层“做题用”的 benchmark registry，用来拿真实 benchmark task 检查当前控制面质量。
+
+当前纳入的 benchmark 组有：
+
+- `seqc2-bulk-rnaseq`
+- `giab-precisionfda-small-variant`
+- `openproblems-single-cell`
+- `encode-atac-conformance`
+
+当前 benchmark 评估的是：
+
+- workflow route 是否正确
+- strategy profile 是否落在可接受范围
+- `expected_outputs` 覆盖是否完整
+- confirmation gate 是否落在要求的 stage 上
+- `analysis_flow.delivery_bundle` 覆盖是否完整
+
+当前 benchmark 不直接给出真实算法数值分数；它主要检验的是控制面和分析流建模是否对题。
+
+不过 `benchmark-run` 已经开始接第一条真正的数值骨架：对于 GIAB 这类题，它会解析
+`precision / recall / F1`，做数值范围检查，并校验 `F1` 是否和 `precision/recall`
+一致。现在也支持从 `hap.py summary.csv` 这类常见 benchmark artifact 里直接抽取这些指标。
+
+可以这样用：
+
+```bash
+python3 scripts/bio_skill_system.py benchmark-report
+
+python3 scripts/bio_skill_system.py benchmark-evaluate \
+  --benchmark-id giab-precisionfda-small-variant \
+  --task-id giab-wes-bwa-gatk-hardfilter
+
+python3 scripts/bio_skill_system.py benchmark-run \
+  --benchmark-id giab-precisionfda-small-variant \
+  --task-id giab-wes-bwa-gatk-hardfilter \
+  --evidence-file examples/benchmarks/giab-wes-bwa-gatk-hardfilter.evidence.json
+
+python3 scripts/bio_skill_system.py benchmark-run \
+  --benchmark-id giab-precisionfda-small-variant \
+  --task-id giab-wes-bwa-gatk-hardfilter \
+  --evidence-file examples/benchmarks/giab-wes-bwa-gatk-hardfilter.happy.evidence.json
+
+python3 scripts/bio_skill_system.py benchmark-suite \
+  --mode contract
+
+python3 scripts/bio_skill_system.py benchmark-suite \
+  --benchmark-id giab-precisionfda-small-variant \
+  --mode evidence \
+  --evidence-root examples/benchmarks
+
+
+python3 scripts/bio_skill_system.py benchmark-run \
+  --benchmark-id giab-precisionfda-small-variant \
+  --task-id giab-wes-bwa-gatk-hardfilter \
+  --evidence-file examples/benchmarks/giab-wes-bwa-gatk-hardfilter.happy.evidence.json \
+  --export-repro-bundle \
+  --repro-dir /tmp/bio-agent-repro-demo
+```
 
 ## Session Workflow
 
@@ -199,6 +263,23 @@ python3 scripts/bio_skill_system.py session-status \
 
 注意：当前实现里，重新批准一个编辑后的 plan 会重新初始化 run 工件，因此执行阶段会从 `s1` 重新开始。
 
+## Session To Skill
+
+现在已完成的 session 也可以固化成持久化 workflow skill 草案：
+
+```bash
+python3 scripts/bio_skill_system.py session-export-skill \
+  --session-dir /tmp/bio-agent-skill-session \
+  --skill-root /tmp/bio-agent-generated-skills
+```
+
+默认会写出：
+
+- `workflow/<slug>/SKILL.md`
+- `workflow/<slug>/references/session-summary.json`
+
+这个功能适合把“已经跑通并验证过的流程”沉淀成后续可复用的本地 skill。
+
 本地控制服务当前提供这些端点：
 
 - `GET /api/health`
@@ -228,6 +309,7 @@ bash scripts/ci/run_stable_tests.sh
 - 控制台页：`docs/system/bio-skill-console.html`
 - 真实流程地图页：`docs/system/real-bioinformatics-workflow-map.html`
 - 真实分析信息流页：`docs/system/real-analysis-information-flows.html`
+- 真实 benchmark 页：`docs/system/real-bioinformatics-benchmarks.html`
 - 四仓代码真实性审计页：`docs/system/biomed-repo-code-audit.html`
 
 公开仓库：

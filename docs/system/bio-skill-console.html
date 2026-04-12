@@ -1439,6 +1439,22 @@
 
               <article class="panel">
                 <div class="panel-head">
+                  <h3>Benchmark Fit</h3>
+                  <span id="benchmark-pill" class="soft-chip">Bench</span>
+                </div>
+                <div id="benchmark-panel" class="panel-body issue-list"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
+                  <h3>Skill Crystallization</h3>
+                  <span id="skill-crystallization-pill" class="soft-chip">Skill</span>
+                </div>
+                <div id="skill-crystallization-panel" class="panel-body"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-head">
                   <h3>Run Review</h3>
                   <span id="review-pill" class="status-chip warning">Review</span>
                 </div>
@@ -1558,7 +1574,8 @@
         control: {
           enabled: false,
           base: null,
-          health: null
+          health: null,
+          lastSkillExport: null
         },
         sessionUi: {
           query: "",
@@ -1581,6 +1598,8 @@
       const jsonTabs = [
         ["request", "Request"],
         ["analysis_flow", "Analysis Flow"],
+        ["benchmark_matches", "Benchmarks"],
+        ["skill_crystallization_candidate", "Skill Candidate"],
         ["candidate_plans", "Plans"],
         ["session", "Session"],
         ["review", "Review"],
@@ -2306,7 +2325,8 @@
         appState.control = {
           enabled: false,
           base,
-          health: null
+          health: null,
+          lastSkillExport: null
         };
 
         if (!base) {
@@ -2325,13 +2345,15 @@
           appState.control = {
             enabled: true,
             base,
-            health
+            health,
+            lastSkillExport: appState.control?.lastSkillExport || null
           };
         } catch (error) {
           appState.control = {
             enabled: false,
             base,
-            health: null
+            health: null,
+            lastSkillExport: null
           };
           appState.sessions = mergeCurrentSessionIntoList([]);
         }
@@ -2957,6 +2979,98 @@
         `;
       }
 
+      function renderBenchmarkMatches(data) {
+        const root = document.getElementById("benchmark-panel");
+        const pill = document.getElementById("benchmark-pill");
+        if (!root || !pill) return;
+
+        const matches = data.benchmark_matches || [];
+        pill.textContent = matches.length ? `${matches.length} tasks` : "No Bench";
+
+        root.innerHTML = matches.length
+          ? matches
+              .map(
+                (item) => `
+                  <article class="issue-item">
+                    <div class="issue-header">
+                      <div class="issue-copy">
+                        <strong>${escapeHtml(item.benchmark_id)} · ${escapeHtml(item.task_id)}</strong>
+                        <div class="muted-text">${escapeHtml(item.title)}</div>
+                      </div>
+                      <span class="status-chip ${toneClass(item.verdict)}">${escapeHtml(item.verdict)}</span>
+                    </div>
+                    <div class="issue-meta">
+                      <span class="soft-chip">workflow ${item.workflow_match ? "ok" : "miss"}</span>
+                      <span class="soft-chip">strategy ${item.strategy_match ? "ok" : "miss"}</span>
+                      <span class="soft-chip">outputs ${item.outputs_complete ? "ok" : "gap"}</span>
+                      <span class="soft-chip">confirm ${item.confirmation_complete ? "ok" : "gap"}</span>
+                      <span class="soft-chip">delivery ${item.delivery_complete ? "ok" : "gap"}</span>
+                    </div>
+                    ${
+                      item.missing_outputs?.length
+                        ? `<div class="muted-text tone-danger">Missing outputs: ${escapeHtml(item.missing_outputs.join(", "))}</div>`
+                        : ""
+                    }
+                    ${
+                      item.missing_confirmation_stage_ids?.length
+                        ? `<div class="muted-text tone-danger">Missing confirmation stages: ${escapeHtml(item.missing_confirmation_stage_ids.join(", "))}</div>`
+                        : ""
+                    }
+                    ${
+                      item.missing_delivery_items?.length
+                        ? `<div class="muted-text tone-danger">Missing delivery items: ${escapeHtml(item.missing_delivery_items.join(", "))}</div>`
+                        : ""
+                    }
+                  </article>
+                `
+              )
+              .join("")
+          : `<div class="empty-box">No benchmark task is attached to this workflow family yet.</div>`;
+      }
+
+      function renderSkillCrystallization(data) {
+        const root = document.getElementById("skill-crystallization-panel");
+        const pill = document.getElementById("skill-crystallization-pill");
+        if (!root || !pill) return;
+
+        const candidate = data.skill_crystallization_candidate || null;
+        if (!candidate) {
+          pill.textContent = "No Data";
+          root.innerHTML = `<div class="empty-box">No skill crystallization analysis is attached to this bundle yet.</div>`;
+          return;
+        }
+
+        pill.textContent = candidate.eligible ? "Eligible" : "Blocked";
+        pill.className = candidate.eligible ? "status-chip accent" : "status-chip warning";
+
+        const sessionDir = data.session?.session_dir || "<session-dir>";
+        const sessionArg = shellQuote(sessionDir);
+        const skillRoot = shellQuote('.claude/skills');
+        const exportCommand = `python3 scripts/bio_skill_system.py session-export-skill --session-dir ${sessionArg} --skill-root ${skillRoot}`;
+        const forceCommand = `${exportCommand} --force`;
+
+        root.innerHTML = `
+          <div class="detail-list">
+            <div class="detail-row"><strong>Eligible</strong><span>${escapeHtml(candidate.eligible ? 'yes' : 'no')}</span></div>
+            <div class="detail-row"><strong>Workflow</strong><span>${escapeHtml(candidate.workflow_id || 'n/a')}</span></div>
+            <div class="detail-row"><strong>Strategy</strong><span>${escapeHtml(candidate.selected_strategy_profile || 'n/a')}</span></div>
+          </div>
+          ${candidate.reasons?.length ? `<div class="issue-list" style="margin-top: 14px;">${candidate.reasons.map((reason) => `<div class="issue-item"><div class="issue-copy"><strong>Reason</strong><div class="muted-text">${escapeHtml(reason)}</div></div></div>`).join('')}</div>` : `<div class="empty-box" style="margin-top: 14px;">This completed session is eligible to be crystallized into a persistent workflow skill.</div>`}
+          <div class="issue-meta" style="margin-top: 14px;">
+            <span class="soft-chip">bench ${(candidate.benchmark_matches || []).length}</span>
+            <span class="soft-chip">bridges ${escapeHtml((candidate.environment?.stage_bridges || []).length)}</span>
+            <span class="soft-chip">score ${candidate.repro_scorecard?.scientific_score_ready ? 'ready' : 'missing'}</span>
+          </div>
+          ${candidate.repro_scorecard ? `<div class="muted-text" style="margin-top: 10px;">Comparator-backed scorecard is attached to this session.</div>` : `<div class="muted-text" style="margin-top: 10px;">No comparator-backed scorecard is attached to this session yet.</div>`}
+          <div style="margin-top: 14px;">
+            <div class="section-note">Suggested Command</div>
+            <pre class="command-block">${escapeHtml(candidate.eligible ? exportCommand : forceCommand)}</pre>
+          </div>
+          ${appState.control.lastSkillExport ? `<div style="margin-top: 14px;" class="detail-list"><div class="detail-row"><strong>Last Export</strong><span>${escapeHtml(appState.control.lastSkillExport.skill_dir || appState.control.lastSkillExport.files?.skill_markdown || 'n/a')}</span></div></div>` : ''}
+        `;
+      }
+
+
       function buildOperatorActions(data) {
         const session = data.session || fallbackSession(data);
         const runStatus = data.run_status || {};
@@ -3048,6 +3162,44 @@
           });
         }
 
+        const skillCandidate = data.skill_crystallization_candidate || null;
+        if (skillCandidate) {
+          const skillRoot = shellQuote('.claude/skills');
+          const exportSkillCommand = `${cliPrefix} session-export-skill --session-dir ${sessionArg} --skill-root ${skillRoot}`;
+          items.push({
+            label: skillCandidate.eligible ? 'Export Skill' : 'Force Export Skill',
+            detail: skillCandidate.eligible
+              ? 'Crystallize this completed session into a persistent workflow skill draft.'
+              : 'This session is not automatically eligible; export only with explicit force and review the reasons first.',
+            command: skillCandidate.eligible ? exportSkillCommand : `${exportSkillCommand} --force`,
+            actionId: 'export_skill',
+            payload: {
+              skill_root: '.claude/skills',
+              force: !skillCandidate.eligible
+            },
+            runnable: true
+          });
+        }
+
+        const skillCandidate = data.skill_crystallization_candidate || null;
+        if (skillCandidate) {
+          const skillRoot = shellQuote('.claude/skills');
+          const exportSkillCommand = `${cliPrefix} session-export-skill --session-dir ${sessionArg} --skill-root ${skillRoot}`;
+          items.push({
+            label: skillCandidate.eligible ? 'Export Skill' : 'Force Export Skill',
+            detail: skillCandidate.eligible
+              ? 'Crystallize this completed session into a persistent workflow skill draft.'
+              : 'This session is not automatically eligible; export only with explicit force and review the reasons first.',
+            command: skillCandidate.eligible ? exportSkillCommand : `${exportSkillCommand} --force`,
+            actionId: 'export_skill',
+            payload: {
+              skill_root: '.claude/skills',
+              force: !skillCandidate.eligible
+            },
+            runnable: true
+          });
+        }
+
         items.push({
           label: "Export Console Bundle",
           detail: "Write a fresh bundle JSON into the active session directory.",
@@ -3128,6 +3280,7 @@
               runButton.disabled = true;
               runButton.textContent = "Running";
               const result = await runControlAction(actionId, payload);
+              appState.control.lastSkillExport = result.skill_export || null;
               setBundleError("");
               renderApp(result.bundle, liveBundleMeta());
             } catch (error) {
@@ -3423,6 +3576,7 @@
             if (primaryAction.mode === "run_action" && primaryAction.action) {
               nextActionButton.textContent = "Running";
               const result = await runControlAction(primaryAction.action.actionId, primaryAction.action.payload);
+              appState.control.lastSkillExport = result.skill_export || null;
               setBundleError("");
               renderApp(result.bundle, liveBundleMeta());
             }
@@ -3711,6 +3865,8 @@
         renderWorkflowFamilies();
         renderStrategyPanel(data);
         renderAnalysisFlow(data);
+        renderBenchmarkMatches(data);
+        renderSkillCrystallization(data);
         renderReview(data);
         renderOperatorActions(data);
         renderHistory(data);

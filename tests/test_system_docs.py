@@ -22,6 +22,10 @@ def test_console_page_exists_and_references_demo_bundle() -> None:
     assert "Operator Actions" in html
     assert "Plan Editor" in html
     assert "Analysis Flow" in html
+    assert "Benchmark Fit" in html
+    assert "Skill Crystallization" in html
+    assert "Export Skill" in html or "Force Export Skill" in html
+    assert "Last Export" in html
     assert "Workflow Families" in html
     assert "Strategy" in html
     assert "Use Family" in html
@@ -51,6 +55,9 @@ def test_console_page_exists_and_references_demo_bundle() -> None:
     assert "Delivery Bundle" in html
     assert "Metadata Inputs" in html
     assert 'id="analysis-flow-panel"' in html
+    assert 'id="benchmark-panel"' in html
+    assert 'id="skill-crystallization-panel"' in html
+    assert 'id="benchmark-panel"' in html
     assert 'id="delivery-list"' in html
     assert "session-export-console" in html
     assert "session-serve-console" in html or "/api/session/action" in html
@@ -72,6 +79,8 @@ def test_console_demo_bundle_contains_expected_runtime_shape() -> None:
     assert "pydeseq2" in payload["execution_draft"]["unresolved_skill_ids"]
     assert payload["analysis_flow"]["workflow_id"] == "rnaseq-differential-expression"
     assert payload["analysis_flow"]["stage_flows"][0]["stage_id"] == "s1"
+    assert isinstance(payload["benchmark_matches"], list)
+    assert payload["benchmark_matches"][0]["benchmark_id"] == "seqc2-bulk-rnaseq"
     assert payload["session"]["status"] == "awaiting_confirmation"
     assert payload["session"]["latest_approval_reason"]
     assert payload["history"]["events"][-1]["type"] == "run_advanced"
@@ -121,6 +130,44 @@ def test_real_analysis_flow_page_and_catalog_exist() -> None:
     assert "delivery_bundle:" in registry_text
 
 
+def test_real_benchmark_page_and_catalog_exist() -> None:
+    benchmark_page = ROOT / "docs" / "system" / "real-bioinformatics-benchmarks.html"
+    benchmark_catalog_path = ROOT / "docs" / "system" / "data" / "real-bioinformatics-benchmarks.json"
+    benchmark_registry_path = ROOT / "registry" / "benchmarks.yaml"
+
+    html = benchmark_page.read_text(encoding="utf-8")
+    payload = json.loads(benchmark_catalog_path.read_text(encoding="utf-8"))
+    registry_text = benchmark_registry_path.read_text(encoding="utf-8")
+
+    assert "Real Bioinformatics Benchmarks" in html
+    assert "GIAB / precisionFDA" in html
+    assert "Open Problems" in html
+    assert "ENCODE ATAC-seq" in html
+    assert "SEQC2" in html
+    assert "benchmark-run" in html
+    assert "benchmark-suite" in html
+    benchmark_ids = {item["id"] for item in payload["benchmarks"]}
+    assert {
+        "seqc2-bulk-rnaseq",
+        "giab-precisionfda-small-variant",
+        "openproblems-single-cell",
+        "encode-atac-conformance",
+    }.issubset(benchmark_ids)
+    assert "benchmark_type:" in registry_text
+
+
+def test_architecture_comparison_roadmap_page_exists() -> None:
+    roadmap_page = ROOT / "docs" / "system" / "architecture-comparison-roadmap.html"
+    html = roadmap_page.read_text(encoding="utf-8")
+
+    assert "Architecture Comparison and Roadmap" in html
+    assert "bio-agent" in html
+    assert "ClawBio" in html
+    assert "LabClaw" in html
+    assert "目标架构" in html
+    assert "Phase 1" in html
+
+
 def test_architecture_and_index_link_to_real_workflow_map_and_analysis_flows() -> None:
     architecture_page = ROOT / "docs" / "system" / "bio-skill-system.html"
     index_page = ROOT / "docs" / "index.html"
@@ -135,16 +182,24 @@ def test_architecture_and_index_link_to_real_workflow_map_and_analysis_flows() -
     assert "real-analysis-information-flows.html" in architecture_html
     assert "real-analysis-information-flows.html" in index_html
     assert "real-analysis-information-flows.html" in workflow_map_html
+    assert "real-bioinformatics-benchmarks.html" in architecture_html
+    assert "real-bioinformatics-benchmarks.html" in index_html
+    assert "architecture-comparison-roadmap.html" in architecture_html
+    assert "architecture-comparison-roadmap.html" in index_html
 
 
 def test_workflow_knowledge_base_files_exist() -> None:
     knowledge_md = ROOT / "docs" / "context" / "WORKFLOW_KNOWLEDGE_BASE.md"
     knowledge_yaml = ROOT / "registry" / "workflow_knowledge.yaml"
     analysis_flow_yaml = ROOT / "registry" / "analysis_flows.yaml"
+    execution_bridge_yaml = ROOT / "registry" / "execution_bridges.yaml"
+    benchmark_run_schema = ROOT / "schemas" / "benchmark_run.schema.json"
 
     md_text = knowledge_md.read_text(encoding="utf-8")
     yaml_text = knowledge_yaml.read_text(encoding="utf-8")
     flow_text = analysis_flow_yaml.read_text(encoding="utf-8")
+    bridge_text = execution_bridge_yaml.read_text(encoding="utf-8")
+    benchmark_run_schema_text = benchmark_run_schema.read_text(encoding="utf-8")
 
     assert "WORKFLOW_KNOWLEDGE_BASE" in md_text
     assert "bulk-rnaseq" in md_text
@@ -154,3 +209,6 @@ def test_workflow_knowledge_base_files_exist() -> None:
     assert "family_templates:" in yaml_text
     assert "flows:" in flow_text
     assert "rnaseq-differential-expression" in flow_text
+    assert "bridge_id:" in bridge_text
+    assert "germline-short-variant-discovery" in bridge_text
+    assert "Bio Agent Benchmark Run Result" in benchmark_run_schema_text

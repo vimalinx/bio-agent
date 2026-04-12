@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Architecture Comparison and Roadmap</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #faf8f5;
+        --surface: #ffffff;
+        --surface-alt: #f4eee8;
+        --line: #dfd4c8;
+        --text: #451a03;
+        --muted: #7c5a46;
+        --primary: #b45309;
+        --accent: #0f766e;
+        --radius: 10px;
+        --shadow: 0 2px 8px rgba(69, 26, 3, 0.08);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", sans-serif; line-height: 1.58; }
+      a { color: var(--primary); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .shell { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 24px; padding: 24px; }
+      .sidebar, .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+      .sidebar { position: sticky; top: 16px; align-self: start; padding: 20px 18px; }
+      .nav { display: grid; gap: 8px; }
+      .nav a { display: block; padding: 8px 10px; border-radius: 8px; color: var(--text); }
+      .nav a:hover { background: var(--surface-alt); text-decoration: none; }
+      .meta { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: .92rem; }
+      .content { display: grid; gap: 20px; }
+      .panel { padding: 24px 26px; }
+      h1,h2,h3 { margin: 0 0 12px; line-height: 1.2; }
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.34rem; }
+      h3 { font-size: 1.02rem; }
+      p { margin: 0 0 12px; }
+      .callout { border-left: 4px solid var(--accent); padding-left: 12px; }
+      .muted { color: var(--muted); }
+      .split { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+      .triple { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+      .tile { border: 1px solid var(--line); background: var(--surface-alt); border-radius: 8px; padding: 16px; }
+      .tile strong { display: block; margin-bottom: 8px; }
+      .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+      .chip { display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: #fffdf9; font-size: .9rem; }
+      table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+      th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+      th { font-weight: 600; }
+      pre, code { font-family: "IBM Plex Mono", monospace; }
+      .roadmap-step { border: 1px solid var(--line); border-radius: 8px; padding: 14px; background: #fffdf9; }
+      .roadmap-step strong { display: block; margin-bottom: 8px; }
+      @media (max-width: 1100px) { .split, .triple { grid-template-columns: 1fr; } .shell { grid-template-columns: 1fr; } .sidebar { position: static; } }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <h2>Architecture Roadmap</h2>
+        <nav class="nav">
+          <a href="#summary">结论</a>
+          <a href="bio-skill-system.html">系统架构页</a>
+          <a href="real-bioinformatics-workflow-map.html">真实流程地图</a>
+          <a href="real-analysis-information-flows.html">真实分析信息流</a>
+          <a href="real-bioinformatics-benchmarks.html">真实 Benchmark</a>
+          <a href="#comparison">三者对比</a>
+          <a href="#strengths">当前优劣</a>
+          <a href="#target">目标架构</a>
+          <a href="#phases">演进阶段</a>
+        </nav>
+        <div class="meta">
+          <div>对象: bio-agent vs ClawBio vs LabClaw</div>
+          <div>目的: 回答“哪种更好”以及“你这套该怎么演进”</div>
+        </div>
+      </aside>
+      <main class="content">
+        <section class="panel" id="summary">
+          <h1>Architecture Comparison and Roadmap</h1>
+          <p>这一页不只是比较三套系统谁强谁弱，而是把它们拆成不同层：控制平面、执行平面、能力库存、实验室桥接、评测平面。这样才能回答“哪种更好”。</p>
+          <p class="callout">最准确的结论是：`bio-agent` 的上层架构更先进，`ClawBio` 的本地执行平面更成熟，`LabClaw` 的技能覆盖和实验室生态更广。最优路线不是变成其中任何一个，而是把三者的强项拼起来。</p>
+        </section>
+
+        <section class="panel" id="comparison">
+          <h2>三者对比</h2>
+          <table>
+            <thead>
+              <tr><th>维度</th><th>bio-agent</th><th>ClawBio</th><th>LabClaw</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>核心中心</td><td>plan / session / analysis_flow / benchmark</td><td>skills + local execution + repro bundle</td><td>massive skill catalog + lab ecosystem</td></tr>
+              <tr><td>控制平面</td><td>最强</td><td>中</td><td>弱</td></tr>
+              <tr><td>执行平面</td><td>中</td><td>最强</td><td>弱</td></tr>
+              <tr><td>实验室与平台桥接</td><td>弱</td><td>中</td><td>最强</td></tr>
+              <tr><td>benchmark / score layer</td><td>最强</td><td>弱</td><td>弱</td></tr>
+              <tr><td>能力覆盖</td><td>高</td><td>中</td><td>最高</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="panel" id="strengths">
+          <h2>当前优劣</h2>
+          <div class="triple">
+            <div class="tile">
+              <strong>bio-agent 强项</strong>
+              <div class="chip-row">
+                <span class="chip">plan-first lifecycle</span>
+                <span class="chip">session state</span>
+                <span class="chip">analysis flow layer</span>
+                <span class="chip">runtime gating</span>
+                <span class="chip">benchmark / scorecard</span>
+              </div>
+            </div>
+            <div class="tile">
+              <strong>ClawBio 强项</strong>
+              <div class="chip-row">
+                <span class="chip">local-first execution</span>
+                <span class="chip">repro bundle</span>
+                <span class="chip">standalone skills</span>
+                <span class="chip">production-style workflow discipline</span>
+              </div>
+            </div>
+            <div class="tile">
+              <strong>LabClaw 强项</strong>
+              <div class="chip-row">
+                <span class="chip">skill coverage</span>
+                <span class="chip">ToolUniverse ecosystem</span>
+                <span class="chip">wet-lab / labos bridge</span>
+                <span class="chip">domain breadth</span>
+              </div>
+            </div>
+          </div>
+          <div class="split" style="margin-top:16px;">
+            <div class="tile">
+              <strong>bio-agent 当前短板</strong>
+              真正的 execution bridge 还不够强，本地 reproducibility discipline 也还不如 ClawBio。
+            </div>
+            <div class="tile">
+              <strong>真正的问题不在架构思想</strong>
+              你这套不是输在“不会设计”，而是输在“执行平面成熟度还没跟上控制平面”。
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="target">
+          <h2>目标架构</h2>
+          <pre>bio-agent target architecture
+
+user request
+  -> control plane
+     -> request normalization
+     -> candidate plans
+     -> approval + session state
+     -> analysis flow contract
+     -> benchmark fit / scorecard
+  -> execution plane
+     -> local tool bridge
+     -> reproducibility bundle
+     -> artifact validator
+     -> comparator bridge (hap.py / future evaluators)
+  -> capability plane
+     -> bio skill inventory
+     -> workflow templates
+     -> lab / cloud / LIMS adapters
+</pre>
+          <p>这不是抄 ClawBio 或 LabClaw，而是把三者的强项放进不同层：你的控制平面，ClawBio 的执行纪律，LabClaw 的能力面和 lab bridge。</p>
+        </section>
+
+        <section class="panel" id="phases">
+          <h2>演进阶段</h2>
+          <div class="triple">
+            <div class="roadmap-step">
+              <strong>Phase 1: 补执行平面</strong>
+              学 ClawBio：加 reproducibility bundle、commands export、environment snapshot、artifact validator。目标是让 `bio-agent` 真正能“跑出来并可复现”。
+            </div>
+            <div class="roadmap-step">
+              <strong>Phase 2: 补 comparator bridge</strong>
+              从现在的 benchmark score skeleton 进入 artifact-backed score computation。GIAB 先做穿，随后扩 RNA / scRNA / ATAC。
+            </div>
+            <div class="roadmap-step">
+              <strong>Phase 3: 扩能力面和 lab bridge</strong>
+              学 LabClaw：把你已有 control plane 接到更大的 domain surface、LIMS/ELN/robotics/cloud connectors 上，但仍保持你的 session/benchmark 主线。
+            </div>
+          </div>
+          <div class="split" style="margin-top:16px;">
+            <div class="tile">
+              <strong>短期最该做</strong>
+              不再扩 registry 名词层，优先补执行桥、repro bundle、comparator bridge。
+            </div>
+            <div class="tile">
+              <strong>长期最该避免</strong>
+              不要把自己做成第二个 LabClaw 式“技能堆场”，也不要退化成只会本地跑工具的 ClawBio-lite。你真正的优势是可治理、可评测、可恢复的控制平面。
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

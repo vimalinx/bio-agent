@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import copy
+import csv
 import json
+import os
+import platform
 import re
 import shlex
 import shutil
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -630,6 +634,93 @@ def load_analysis_flows() -> dict[str, Any]:
     return _load_yaml(REGISTRY_DIR / "analysis_flows.yaml")
 
 
+def load_benchmark_registry() -> dict[str, Any]:
+    return _load_yaml(REGISTRY_DIR / "benchmarks.yaml")
+
+
+def load_execution_bridge_registry() -> dict[str, Any]:
+    return _load_yaml(REGISTRY_DIR / "execution_bridges.yaml")
+
+
+def load_skill_crystallization_registry() -> dict[str, Any]:
+    return _load_yaml(REGISTRY_DIR / "skill_crystallization.yaml")
+
+
+def _execution_bridge_contract(workflow_id: str | None, strategy_profile: str | None, stage_id: str) -> dict[str, Any]:
+    if not workflow_id:
+        return {"stage_id": stage_id, "contract_defined": False}
+
+    workflow_record = next(
+        (item for item in load_execution_bridge_registry().get("workflows", []) if str(item.get("workflow_id")) == str(workflow_id)),
+        None,
+    )
+    if not isinstance(workflow_record, dict):
+        return {
+            "workflow_id": workflow_id,
+            "selected_strategy_profile": strategy_profile,
+            "stage_id": stage_id,
+            "contract_defined": False,
+        }
+
+    merged: dict[str, Any] = {}
+    default_stage = dict(workflow_record.get("default_stages", {}).get(stage_id, {}))
+    if default_stage:
+        merged.update(default_stage)
+    if strategy_profile:
+        strategy_stage = dict(workflow_record.get("strategies", {}).get(str(strategy_profile), {}).get(stage_id, {}))
+        if strategy_stage:
+            merged.update(strategy_stage)
+
+    if not merged:
+        return {
+            "workflow_id": workflow_id,
+            "selected_strategy_profile": strategy_profile,
+            "stage_id": stage_id,
+            "contract_defined": False,
+        }
+
+    return {
+        "workflow_id": workflow_id,
+        "selected_strategy_profile": strategy_profile,
+        "stage_id": stage_id,
+        "contract_defined": True,
+        "bridge_id": merged.get("bridge_id"),
+        "bridge_type": merged.get("bridge_type"),
+        "execution_mode": merged.get("execution_mode"),
+        "required_tools": list(merged.get("required_tools", [])),
+        "comparator_supported": bool(merged.get("comparator_supported", False)),
+        "reproducibility_support": merged.get("reproducibility_support"),
+    }
+
+
+def _materialize_execution_bridge(
+    workflow_id: str | None,
+    strategy_profile: str | None,
+    stage_id: str,
+    skill_map: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    contract = _execution_bridge_contract(workflow_id, strategy_profile, stage_id)
+    required_tool_refs: list[dict[str, Any]] = []
+    unresolved_required_tools: list[str] = []
+    missing_local_tools: list[str] = []
+
+    for tool_id in contract.get("required_tools", []):
+        ref = _resolve_skill_ref(str(tool_id), skill_map)
+        required_tool_refs.append(ref)
+        if not ref.get("resolved", False):
+            unresolved_required_tools.append(str(tool_id))
+        elif ref.get("runtime_kind") == "tool" and not ref.get("runtime_available", False):
+            missing_local_tools.append(str(tool_id))
+
+    return {
+        **contract,
+        "required_tool_refs": required_tool_refs,
+        "unresolved_required_tools": sorted(set(unresolved_required_tools)),
+        "missing_local_tools": sorted(set(missing_local_tools)),
+        "ready_on_this_machine": bool(contract.get("contract_defined")) and not unresolved_required_tools and not missing_local_tools,
+    }
+
+
 def analysis_flow_for_workflow(workflow_id: str | None) -> dict[str, Any] | None:
     if not workflow_id:
         return None
@@ -637,6 +728,921 @@ def analysis_flow_for_workflow(workflow_id: str | None) -> dict[str, Any] | None
         if str(flow.get("workflow_id")) == str(workflow_id):
             return copy.deepcopy(flow)
     return None
+
+
+def benchmark_definition(benchmark_id: str) -> dict[str, Any]:
+    for benchmark in load_benchmark_registry().get("benchmarks", []):
+        if str(benchmark.get("id")) == str(benchmark_id):
+            return copy.deepcopy(benchmark)
+    raise KeyError(f"Unknown benchmark_id: {benchmark_id}")
+
+
+def benchmark_task_definition(benchmark_id: str, task_id: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    benchmark = benchmark_definition(benchmark_id)
+    for task in benchmark.get("tasks", []):
+        if str(task.get("task_id")) == str(task_id):
+            return benchmark, copy.deepcopy(task)
+    raise KeyError(f"Unknown task_id `{task_id}` for benchmark `{benchmark_id}`")
+
+
+def resolve_benchmark_task_payload(task_payload: dict[str, Any]) -> dict[str, Any]:
+    benchmark_id = str(task_payload.get("benchmark_id") or "").strip()
+    task_id = str(task_payload.get("task_id") or "").strip()
+    if benchmark_id and task_id:
+        benchmark, task = benchmark_task_definition(benchmark_id, task_id)
+        return {
+            "benchmark_id": benchmark.get("id"),
+            **task,
+            **copy.deepcopy(task_payload),
+        }
+    return copy.deepcopy(task_payload)
+
+
+def benchmark_task_records(benchmark_id: str | None = None) -> list[dict[str, Any]]:
+    benchmarks = load_benchmark_registry().get("benchmarks", [])
+    records: list[dict[str, Any]] = []
+    for benchmark in benchmarks:
+        if benchmark_id and str(benchmark.get("id")) != str(benchmark_id):
+            continue
+        for task in benchmark.get("tasks", []):
+            records.append(
+                {
+                    "benchmark_id": benchmark.get("id"),
+                    "benchmark_title": benchmark.get("title"),
+                    "benchmark_type": benchmark.get("benchmark_type"),
+                    "benchmark_metrics": list(benchmark.get("key_metrics", [])),
+                    **copy.deepcopy(task),
+                }
+            )
+    return records
+
+
+def benchmark_report(benchmark_id: str | None = None) -> dict[str, Any]:
+    registry = load_benchmark_registry()
+    benchmarks = list(registry.get("benchmarks", []))
+    if benchmark_id:
+        benchmarks = [benchmark_definition(benchmark_id)]
+
+    return {
+        "version": registry.get("version"),
+        "description": registry.get("description"),
+        "benchmark_count": len(benchmarks),
+        "benchmarks": [
+            {
+                "id": benchmark.get("id"),
+                "title": benchmark.get("title"),
+                "benchmark_type": benchmark.get("benchmark_type"),
+                "target_workflow_ids": list(benchmark.get("target_workflow_ids", [])),
+                "task_count": len(benchmark.get("tasks", [])),
+                "key_metrics": list(benchmark.get("key_metrics", [])),
+                "official_sources": list(benchmark.get("official_sources", [])),
+            }
+            for benchmark in benchmarks
+        ],
+    }
+
+
+def benchmark_tasks_for_workflow(workflow_id: str | None) -> list[dict[str, Any]]:
+    if not workflow_id:
+        return []
+    tasks: list[dict[str, Any]] = []
+    for task in benchmark_task_records():
+        benchmark = benchmark_definition(str(task.get("benchmark_id")))
+        if str(workflow_id) in {str(item) for item in benchmark.get("target_workflow_ids", [])}:
+            tasks.append(task)
+    return tasks
+
+
+def _coverage(required_items: list[str], actual_items: list[str]) -> dict[str, Any]:
+    required = [str(item) for item in required_items]
+    actual_set = {str(item) for item in actual_items}
+    present = [item for item in required if item in actual_set]
+    missing = [item for item in required if item not in actual_set]
+    return {
+        "required": required,
+        "present": present,
+        "missing": missing,
+        "complete": not missing,
+    }
+
+
+def _normalize_tokens(value: str) -> set[str]:
+    text = str(value).strip().lower()
+    replacements = {
+        "bqsr": "recalibration",
+        "bigwig": "bigwig",
+        "g.vcf": "gvcf",
+        "g-vcf": "gvcf",
+        "vcf.gz": "vcf",
+        "bams": "bam",
+    }
+    for before, after in replacements.items():
+        text = text.replace(before, after)
+    tokens = re.findall(r"[a-z0-9]+", text)
+    return {token for token in tokens if token not in {"and", "or", "the", "a", "an", "with", "for", "final"}}
+
+
+def _semantic_coverage(required_items: list[str], actual_items: list[str]) -> dict[str, Any]:
+    required = [str(item) for item in required_items]
+    actual = [str(item) for item in actual_items]
+    present: list[str] = []
+    missing: list[str] = []
+
+    actual_token_sets = [(_normalize_tokens(item), item) for item in actual]
+    for item in required:
+        required_tokens = _normalize_tokens(item)
+        matched = False
+        for actual_tokens, _actual_item in actual_token_sets:
+            if required_tokens and required_tokens.issubset(actual_tokens):
+                matched = True
+                break
+        if matched:
+            present.append(item)
+        else:
+            missing.append(item)
+
+    return {
+        "required": required,
+        "present": present,
+        "missing": missing,
+        "complete": not missing,
+    }
+
+
+def _plan_confirmation_stage_ids(plan: dict[str, Any]) -> list[str]:
+    return [
+        str(stage.get("stage_id"))
+        for stage in plan.get("stages", [])
+        if isinstance(stage, dict) and stage.get("requires_user_confirmation", False)
+    ]
+
+
+def evaluate_plan_contract_against_benchmark(
+    plan: dict[str, Any],
+    analysis_flow: dict[str, Any] | None,
+    task_payload: dict[str, Any],
+) -> dict[str, Any]:
+    required_outputs = list(task_payload.get("required_expected_outputs", []))
+    required_confirmation_stage_ids = list(task_payload.get("required_confirmation_stage_ids", []))
+    required_delivery_bundle_items = list(task_payload.get("required_delivery_bundle_items", []))
+    accepted_strategy_profiles = list(task_payload.get("accepted_strategy_profiles", []))
+
+    outputs_coverage = _coverage(required_outputs, list(plan.get("expected_outputs", [])))
+    confirmation_coverage = _coverage(required_confirmation_stage_ids, _plan_confirmation_stage_ids(plan))
+    delivery_coverage = _coverage(
+        required_delivery_bundle_items,
+        list((analysis_flow or {}).get("delivery_bundle", [])),
+    )
+
+    expected_workflow_id = task_payload.get("expected_workflow_id")
+    recommended_workflow_id = plan.get("source_workflow_id")
+    workflow_match = recommended_workflow_id == expected_workflow_id
+    selected_strategy_profile = plan.get("selected_strategy_profile")
+    strategy_match = True
+    if accepted_strategy_profiles:
+        strategy_match = selected_strategy_profile in accepted_strategy_profiles
+
+    if workflow_match and outputs_coverage["complete"] and confirmation_coverage["complete"] and delivery_coverage["complete"] and strategy_match:
+        verdict = "pass"
+    elif workflow_match:
+        verdict = "partial"
+    else:
+        verdict = "fail"
+
+    return {
+        "benchmark_id": task_payload.get("benchmark_id"),
+        "task_id": task_payload.get("task_id"),
+        "title": task_payload.get("title"),
+        "verdict": verdict,
+        "recommended_workflow_id": recommended_workflow_id,
+        "expected_workflow_id": expected_workflow_id,
+        "workflow_match": workflow_match,
+        "selected_strategy_profile": selected_strategy_profile,
+        "accepted_strategy_profiles": accepted_strategy_profiles,
+        "strategy_match": strategy_match,
+        "outputs_coverage": outputs_coverage,
+        "confirmation_coverage": confirmation_coverage,
+        "delivery_coverage": delivery_coverage,
+        "analysis_flow": analysis_flow,
+        "unevaluated_requirements": copy.deepcopy(task_payload.get("benchmark_requirements", {})),
+    }
+
+
+def _environment_snapshot(session_dir: Path | None = None) -> dict[str, Any]:
+    bridge_snapshot = _execution_bridge_tool_snapshot(session_dir)
+    return {
+        "generated_at": _now_iso(),
+        "python_executable": sys.executable,
+        "python_version": sys.version,
+        "platform": platform.platform(),
+        "cwd": str(ROOT),
+        "path": os.environ.get("PATH", ""),
+        "stage_bridges": bridge_snapshot["stage_bridges"],
+        "tool_resolution": bridge_snapshot["tool_resolution"],
+    }
+
+
+def _session_repro_scorecard(session_dir: Path) -> dict[str, Any] | None:
+    scorecard_path = session_dir / "repro" / "scorecard.json"
+    if not scorecard_path.exists() or not scorecard_path.is_file():
+        return None
+    try:
+        return _load_json(scorecard_path)
+    except Exception:
+        return None
+
+
+def session_skill_crystallization_candidate(session_dir: Path) -> dict[str, Any]:
+    session_dir = _ensure_session_directory(session_dir, must_exist=True)
+    bundle = _sync_session_bundle(session_dir, _load_session_bundle(session_dir))
+    session = dict(bundle.get("session", {}))
+    approved_plan = dict(bundle.get("approved_plan", {}))
+    execution_draft = dict(bundle.get("execution_draft", {}))
+    benchmark_matches = list(bundle_benchmark_matches(bundle, approved_plan.get("source_workflow_id")))
+    repro_scorecard = _session_repro_scorecard(session_dir)
+
+    workflow_id = str(approved_plan.get("source_workflow_id") or "")
+    strategy_profile = str(approved_plan.get("selected_strategy_profile") or approved_plan.get("strategy_type") or "")
+    policy = next((item for item in load_skill_crystallization_registry().get("policies", []) if str(item.get("workflow_id")) == workflow_id), None)
+
+    reasons: list[str] = []
+    if not policy:
+        reasons.append("workflow is not registered as a crystallizable flow")
+    else:
+        allowed_profiles = [str(item) for item in policy.get("allowed_strategy_profiles", [])]
+        if allowed_profiles and strategy_profile not in allowed_profiles:
+            reasons.append("strategy profile is not allowed for skill crystallization")
+        if policy.get("require_completed_run", False) and str(session.get("run_status") or "") != "completed":
+            reasons.append("session run is not completed")
+        allowed_verdicts = [str(item) for item in policy.get("allowed_run_verdicts", [])]
+        if allowed_verdicts and str(session.get("run_verdict") or "") not in allowed_verdicts:
+            reasons.append("run verdict does not meet crystallization policy")
+        if policy.get("require_no_unresolved_skills", False) and list(execution_draft.get("unresolved_skill_ids", [])):
+            reasons.append("execution draft still contains unresolved skills")
+        if policy.get("require_no_unavailable_runtime_tools", False) and list(execution_draft.get("unavailable_runtime_skill_ids", [])):
+            reasons.append("execution draft still depends on unavailable runtime tools")
+        if policy.get("require_no_unmapped_execution_bridges", False) and list(execution_draft.get("unmapped_stage_ids", [])):
+            reasons.append("some stages do not yet have formal execution bridge contracts")
+        if policy.get("require_passing_benchmark", False) and not any(item.get("verdict") == "pass" for item in benchmark_matches):
+            reasons.append("no passing benchmark match is attached to this completed flow")
+        if policy.get("require_repro_scorecard", False) and not repro_scorecard:
+            reasons.append("no reproducibility scorecard is attached to this completed flow")
+        if policy.get("require_comparator_backed_score", False):
+            if not repro_scorecard or not repro_scorecard.get("scientific_score_ready", False):
+                reasons.append("no comparator-backed scientific score is attached to this completed flow")
+
+    return {
+        "eligible": not reasons,
+        "workflow_id": workflow_id or None,
+        "selected_strategy_profile": strategy_profile or None,
+        "policy": policy,
+        "reasons": reasons,
+        "benchmark_matches": benchmark_matches,
+        "repro_scorecard": repro_scorecard,
+        "environment": _environment_snapshot(session_dir),
+    }
+
+
+def _execution_bridge_tool_snapshot(session_dir: Path | None) -> dict[str, Any]:
+    if session_dir is None:
+        return {"stage_bridges": [], "tool_resolution": {}}
+
+    try:
+        bundle = _load_session_bundle(_ensure_session_directory(session_dir, must_exist=True))
+    except FileNotFoundError:
+        return {"stage_bridges": [], "tool_resolution": {}}
+
+    execution_draft = dict(bundle.get("execution_draft", {}))
+    stage_bridges: list[dict[str, Any]] = []
+    required_tools: set[str] = set()
+    for stage in execution_draft.get("stages", []):
+        if not isinstance(stage, dict):
+            continue
+        bridge = dict(stage.get("execution_bridge", {}))
+        if not bridge:
+            continue
+        tools = [str(item) for item in bridge.get("required_tools", [])]
+        required_tools.update(tools)
+        stage_bridges.append(
+            {
+                "stage_id": str(stage.get("stage_id")),
+                "bridge_id": bridge.get("bridge_id"),
+                "bridge_type": bridge.get("bridge_type"),
+                "execution_mode": bridge.get("execution_mode"),
+                "required_tools": tools,
+                "contract_defined": bool(bridge.get("contract_defined", False)),
+                "ready_on_this_machine": bool(bridge.get("ready_on_this_machine", False)),
+            }
+        )
+
+    return {
+        "stage_bridges": stage_bridges,
+        "tool_resolution": {tool: shutil.which(tool) for tool in sorted(required_tools)},
+    }
+
+
+def export_benchmark_repro_bundle(
+    result_payload: dict[str, Any],
+    output_dir: Path,
+    *,
+    invoked_command: str | None = None,
+) -> dict[str, Any]:
+    output_dir = output_dir.expanduser().resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    evidence = dict(result_payload.get("evidence", {}))
+    session_dir_raw = evidence.get("session_dir")
+    session_dir = Path(session_dir_raw).resolve() if session_dir_raw else None
+    bridge_snapshot = _execution_bridge_tool_snapshot(session_dir)
+
+    commands_path = output_dir / 'commands.sh'
+    environment_path = output_dir / 'environment.json'
+    artifacts_path = output_dir / 'artifacts.json'
+    scorecard_path = output_dir / 'scorecard.json'
+
+    command_lines = [
+        '#!/usr/bin/env bash',
+        'set -euo pipefail',
+        '',
+        f'# benchmark_id: {result_payload.get("benchmark_id")}',
+        f'# task_id: {result_payload.get("task_id")}',
+        f'# verdict: {result_payload.get("verdict")}',
+    ]
+    if invoked_command:
+        command_lines.extend(['', '# benchmark-run invocation', invoked_command])
+    if bridge_snapshot['stage_bridges']:
+        command_lines.append('')
+        command_lines.append('# stage bridge summary')
+        for stage in bridge_snapshot['stage_bridges']:
+            command_lines.append(
+                '# stage {stage_id} bridge={bridge_id} mode={execution_mode} tools={tools}'.format(
+                    stage_id=stage.get('stage_id'),
+                    bridge_id=stage.get('bridge_id'),
+                    execution_mode=stage.get('execution_mode'),
+                    tools=','.join(stage.get('required_tools', [])) or '-',
+                )
+            )
+    commands_path.write_text("\n".join(command_lines) + "\n", encoding="utf-8")
+    try:
+        os.chmod(commands_path, 0o755)
+    except OSError:
+        pass
+
+    environment_payload = {
+        'generated_at': _now_iso(),
+        'python_executable': sys.executable,
+        'python_version': sys.version,
+        'platform': platform.platform(),
+        'cwd': str(ROOT),
+        'path': os.environ.get('PATH', ''),
+        'stage_bridges': bridge_snapshot['stage_bridges'],
+        'tool_resolution': bridge_snapshot['tool_resolution'],
+    }
+    save_json(environment_payload, environment_path)
+
+    artifact_payload = {
+        'benchmark_id': result_payload.get('benchmark_id'),
+        'task_id': result_payload.get('task_id'),
+        'evidence': evidence,
+        'artifact_evaluation': dict(result_payload.get('artifact_evaluation', {})),
+    }
+    save_json(artifact_payload, artifacts_path)
+
+    artifact_evaluation = dict(result_payload.get('artifact_evaluation', {}))
+    scorecard_payload = {
+        'benchmark_id': result_payload.get('benchmark_id'),
+        'task_id': result_payload.get('task_id'),
+        'title': result_payload.get('title'),
+        'verdict': result_payload.get('verdict'),
+        'scorecard': dict(result_payload.get('scorecard', {})),
+        'control_evaluation': dict(result_payload.get('control_evaluation', {})),
+        'artifact_evaluation': artifact_evaluation,
+        'scientific_score_ready': bool(artifact_evaluation.get('truth_artifact_coverage', {}).get('complete')) and bool(artifact_evaluation.get('metric_value_evaluation', {}).get('complete')),
+    }
+    save_json(scorecard_payload, scorecard_path)
+
+    return {
+        'path': str(output_dir),
+        'files': {
+            'commands': str(commands_path),
+            'environment': str(environment_path),
+            'artifacts': str(artifacts_path),
+            'scorecard': str(scorecard_path),
+        },
+    }
+
+
+def benchmark_evidence_from_session(session_dir: Path) -> dict[str, Any]:
+    bundle = _load_session_bundle(_ensure_session_directory(session_dir, must_exist=True))
+    run_state = dict(bundle.get("run", {}))
+    run_status = dict(bundle.get("run_status", {}))
+    run_review = dict(bundle.get("run_review", {}))
+    artifacts = [
+        dict(item)
+        for item in run_state.get("artifacts", [])
+        if isinstance(item, dict)
+    ]
+    delivery_items = [
+        str(item.get("description") or item.get("path") or "").strip()
+        for item in artifacts
+        if str(item.get("description") or item.get("path") or "").strip()
+    ]
+    return {
+        "session_dir": str(session_dir.resolve()),
+        "run_status": run_status.get("status"),
+        "run_verdict": run_review.get("verdict"),
+        "artifact_paths": [str(item.get("path")) for item in artifacts if item.get("path")],
+        "delivery_items": delivery_items,
+        "truth_artifacts": [],
+        "metrics": {},
+    }
+
+
+def merge_benchmark_evidence(
+    *,
+    session_dir: Path | None = None,
+    evidence_payload: dict[str, Any] | None = None,
+    delivery_items: list[str] | None = None,
+    truth_artifacts: list[str] | None = None,
+    metrics: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    merged = {
+        "session_dir": None,
+        "run_status": None,
+        "run_verdict": None,
+        "artifact_paths": [],
+        "delivery_items": [],
+        "truth_artifacts": [],
+        "metrics": {},
+        "extracted_metrics": {},
+    }
+
+    if session_dir is not None:
+        merged.update(benchmark_evidence_from_session(session_dir))
+
+    if isinstance(evidence_payload, dict):
+        if evidence_payload.get("session_dir"):
+            merged["session_dir"] = str(evidence_payload.get("session_dir"))
+        if evidence_payload.get("run_status"):
+            merged["run_status"] = str(evidence_payload.get("run_status"))
+        if evidence_payload.get("run_verdict"):
+            merged["run_verdict"] = str(evidence_payload.get("run_verdict"))
+        merged["artifact_paths"] = [
+            *merged["artifact_paths"],
+            *[str(item) for item in evidence_payload.get("artifact_paths", []) if str(item).strip()],
+        ]
+        merged["delivery_items"] = [
+            *merged["delivery_items"],
+            *[str(item) for item in evidence_payload.get("delivery_items", []) if str(item).strip()],
+        ]
+        merged["truth_artifacts"] = [
+            *merged["truth_artifacts"],
+            *[str(item) for item in evidence_payload.get("truth_artifacts", []) if str(item).strip()],
+        ]
+        if isinstance(evidence_payload.get("metrics"), dict):
+            merged["metrics"] = {
+                **merged["metrics"],
+                **{str(key): str(value) for key, value in evidence_payload["metrics"].items()},
+            }
+
+    if delivery_items:
+        merged["delivery_items"].extend(str(item) for item in delivery_items if str(item).strip())
+    if truth_artifacts:
+        merged["truth_artifacts"].extend(str(item) for item in truth_artifacts if str(item).strip())
+    if metrics:
+        merged["metrics"] = {
+            **merged["metrics"],
+            **{str(key): str(value) for key, value in metrics.items()},
+        }
+
+    for field in ("artifact_paths", "delivery_items", "truth_artifacts"):
+        seen: set[str] = set()
+        ordered: list[str] = []
+        for item in merged[field]:
+            value = str(item).strip()
+            if not value or value in seen:
+                continue
+            seen.add(value)
+            ordered.append(value)
+        merged[field] = ordered
+
+    extracted_metrics = extract_metrics_from_artifacts(merged["artifact_paths"])
+    merged["extracted_metrics"] = extracted_metrics
+    for key, value in extracted_metrics.items():
+        merged["metrics"].setdefault(str(key), str(value))
+
+    return merged
+
+
+def _read_csv_rows(path: Path) -> list[dict[str, str]]:
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        return [
+            {str(key): str(value) for key, value in row.items() if key is not None}
+            for row in reader
+            if isinstance(row, dict)
+        ]
+
+
+def _extract_happy_summary_metrics(path: Path) -> dict[str, str]:
+    rows = _read_csv_rows(path)
+    if not rows:
+        return {}
+
+    def score(row: dict[str, str]) -> tuple[int, int]:
+        row_type = str(row.get("Type", "")).strip().upper()
+        row_filter = str(row.get("Filter", "")).strip().upper()
+        return (
+            1 if row_type == "ALL" else 0,
+            1 if row_filter == "ALL" else 0,
+        )
+
+    ranked_rows = sorted(rows, key=score, reverse=True)
+    row = ranked_rows[0]
+    precision = row.get("METRIC.Precision") or row.get("Precision") or ""
+    recall = row.get("METRIC.Recall") or row.get("Recall") or ""
+    metrics: dict[str, str] = {}
+    if precision:
+        metrics["precision"] = str(precision)
+    if recall:
+        metrics["recall"] = str(recall)
+
+    precision_value = _parse_float_metric(precision)
+    recall_value = _parse_float_metric(recall)
+    if precision_value is not None and recall_value is not None and precision_value + recall_value > 0:
+        metrics["F1"] = str((2 * precision_value * recall_value) / (precision_value + recall_value))
+    return metrics
+
+
+def extract_metrics_from_artifacts(artifact_paths: list[str]) -> dict[str, str]:
+    metrics: dict[str, str] = {}
+    for raw_path in artifact_paths:
+        path = Path(str(raw_path)).expanduser()
+        if not path.exists() or not path.is_file():
+            continue
+        if path.name.endswith(".summary.csv"):
+            metrics.update(_extract_happy_summary_metrics(path))
+    return metrics
+
+
+def _metric_key_coverage(required_metrics: list[str], actual_metrics: dict[str, str]) -> dict[str, Any]:
+    required = [str(item) for item in required_metrics]
+    actual_keys = {str(key) for key in actual_metrics}
+    present = [item for item in required if item in actual_keys]
+    missing = [item for item in required if item not in actual_keys]
+    return {
+        "required": required,
+        "present": present,
+        "missing": missing,
+        "complete": not missing,
+    }
+
+
+def _parse_float_metric(raw_value: str) -> float | None:
+    text = str(raw_value).strip()
+    if not text:
+        return None
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def _evaluate_metric_values(required_metrics: list[str], actual_metrics: dict[str, str]) -> dict[str, Any]:
+    required = [str(item) for item in required_metrics]
+    parsed: dict[str, float] = {}
+    invalid: list[str] = []
+    out_of_range: list[str] = []
+
+    for key, raw_value in actual_metrics.items():
+        parsed_value = _parse_float_metric(raw_value)
+        if parsed_value is None:
+            invalid.append(str(key))
+            continue
+        parsed[str(key)] = parsed_value
+        if str(key) in {"precision", "recall", "F1"} and not (0.0 <= parsed_value <= 1.0):
+            out_of_range.append(str(key))
+
+    missing = [item for item in required if item not in parsed]
+    inferred: dict[str, float] = {}
+    consistency_checks: list[dict[str, Any]] = []
+
+    if "precision" in parsed and "recall" in parsed:
+        precision = parsed["precision"]
+        recall = parsed["recall"]
+        if precision + recall > 0:
+            inferred_f1 = (2 * precision * recall) / (precision + recall)
+            inferred["F1"] = inferred_f1
+            if "F1" in parsed:
+                delta = abs(parsed["F1"] - inferred_f1)
+                consistency_checks.append(
+                    {
+                        "metric": "F1",
+                        "reported": parsed["F1"],
+                        "expected_from_precision_recall": inferred_f1,
+                        "delta": delta,
+                        "consistent": delta <= 0.01,
+                    }
+                )
+            elif "F1" in missing:
+                missing = [item for item in missing if item != "F1"]
+                parsed["F1"] = inferred_f1
+
+    complete = not missing and not invalid and not out_of_range and all(
+        item.get("consistent", True) for item in consistency_checks
+    )
+
+    return {
+        "required": required,
+        "parsed_metrics": parsed,
+        "invalid_metrics": sorted(invalid),
+        "out_of_range_metrics": sorted(out_of_range),
+        "missing_metrics": sorted(missing),
+        "inferred_metrics": inferred,
+        "consistency_checks": consistency_checks,
+        "complete": complete,
+    }
+
+
+def evaluate_benchmark_run(
+    task_payload: dict[str, Any],
+    *,
+    session_dir: Path | None = None,
+    evidence_payload: dict[str, Any] | None = None,
+    delivery_items: list[str] | None = None,
+    truth_artifacts: list[str] | None = None,
+    metrics: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    control = evaluate_benchmark_task(task_payload)
+    evidence = merge_benchmark_evidence(
+        session_dir=session_dir,
+        evidence_payload=evidence_payload,
+        delivery_items=delivery_items,
+        truth_artifacts=truth_artifacts,
+        metrics=metrics,
+    )
+    benchmark_requirements = dict(task_payload.get("benchmark_requirements", {}))
+    delivery_artifact_coverage = _semantic_coverage(
+        list(task_payload.get("required_delivery_bundle_items", [])),
+        list(evidence.get("delivery_items", [])),
+    )
+    truth_artifact_coverage = _semantic_coverage(
+        list(benchmark_requirements.get("truth_artifacts", [])),
+        list(evidence.get("truth_artifacts", [])),
+    )
+    metric_key_coverage = _metric_key_coverage(
+        list(benchmark_requirements.get("metrics", [])),
+        dict(evidence.get("metrics", {})),
+    )
+    metric_value_evaluation = _evaluate_metric_values(
+        list(benchmark_requirements.get("metrics", [])),
+        dict(evidence.get("metrics", {})),
+    )
+    metric_key_coverage["complete"] = metric_key_coverage["complete"] or not metric_value_evaluation["missing_metrics"]
+    metric_key_coverage["missing"] = [
+        item for item in metric_key_coverage["missing"] if item in metric_value_evaluation["missing_metrics"]
+    ]
+
+    checks = [
+        ("workflow_match", bool(control.get("workflow_match"))),
+        ("strategy_match", bool(control.get("strategy_match"))),
+        ("outputs_complete", bool(control["outputs_coverage"]["complete"])),
+        ("confirmation_complete", bool(control["confirmation_coverage"]["complete"])),
+        ("delivery_contract_complete", bool(control["delivery_coverage"]["complete"])),
+        ("delivery_artifacts_complete", bool(delivery_artifact_coverage["complete"])),
+        ("truth_artifacts_complete", bool(truth_artifact_coverage["complete"])),
+        ("metric_keys_complete", bool(metric_key_coverage["complete"])),
+        ("metric_values_complete", bool(metric_value_evaluation["complete"])),
+    ]
+    passed = [name for name, ok in checks if ok]
+    failed = [name for name, ok in checks if not ok]
+
+    if control["verdict"] == "fail":
+        verdict = "fail"
+    elif not metric_value_evaluation["complete"]:
+        verdict = "partial"
+    elif not delivery_artifact_coverage["complete"] and not truth_artifact_coverage["complete"]:
+        verdict = "partial"
+    elif metric_key_coverage["complete"] and truth_artifact_coverage["complete"] and delivery_artifact_coverage["complete"] and control["verdict"] == "pass":
+        verdict = "pass"
+    else:
+        verdict = "partial"
+
+    return {
+        "benchmark_id": task_payload.get("benchmark_id"),
+        "task_id": task_payload.get("task_id"),
+        "title": task_payload.get("title"),
+        "verdict": verdict,
+        "control_evaluation": control,
+        "evidence": evidence,
+        "artifact_evaluation": {
+            "delivery_artifact_coverage": delivery_artifact_coverage,
+            "truth_artifact_coverage": truth_artifact_coverage,
+            "metric_key_coverage": metric_key_coverage,
+            "metric_value_evaluation": metric_value_evaluation,
+        },
+        "scorecard": {
+            "passed_checks": passed,
+            "failed_checks": failed,
+            "passed_count": len(passed),
+            "total_checks": len(checks),
+        },
+    }
+
+
+def benchmark_suite(
+    benchmark_id: str | None = None,
+    *,
+    mode: str = "contract",
+    evidence_root: Path | None = None,
+) -> dict[str, Any]:
+    suite_mode = str(mode).strip().lower()
+    if suite_mode not in {"contract", "evidence"}:
+        raise ValueError(f"Unsupported benchmark suite mode: {mode}")
+
+    tasks = benchmark_task_records(benchmark_id)
+    results: list[dict[str, Any]] = []
+    verdict_counts = {"pass": 0, "partial": 0, "fail": 0}
+    workflow_match_passes = 0
+    outputs_complete_passes = 0
+    confirmation_complete_passes = 0
+    delivery_contract_complete_passes = 0
+    evidence_delivery_complete_passes = 0
+    truth_artifact_complete_passes = 0
+    metric_key_complete_passes = 0
+    metric_value_complete_passes = 0
+
+    for task in tasks:
+        if suite_mode == "contract":
+            result = evaluate_benchmark_task(task)
+            summary_row = {
+                "benchmark_id": result["benchmark_id"],
+                "task_id": result["task_id"],
+                "title": result["title"],
+                "verdict": result["verdict"],
+                "mode": suite_mode,
+                "workflow_match": result["workflow_match"],
+                "strategy_match": result["strategy_match"],
+                "outputs_complete": result["outputs_coverage"]["complete"],
+                "confirmation_complete": result["confirmation_coverage"]["complete"],
+                "delivery_contract_complete": result["delivery_coverage"]["complete"],
+            }
+            workflow_match_passes += int(result["workflow_match"])
+            outputs_complete_passes += int(result["outputs_coverage"]["complete"])
+            confirmation_complete_passes += int(result["confirmation_coverage"]["complete"])
+            delivery_contract_complete_passes += int(result["delivery_coverage"]["complete"])
+        else:
+            evidence_payload = None
+            evidence_path = None
+            if evidence_root is not None:
+                candidate = evidence_root / f"{task['task_id']}.evidence.json"
+                if candidate.exists():
+                    evidence_path = candidate
+                    evidence_payload = load_structured_file(candidate)
+            result = evaluate_benchmark_run(
+                task,
+                evidence_payload=evidence_payload,
+            )
+            summary_row = {
+                "benchmark_id": result["benchmark_id"],
+                "task_id": result["task_id"],
+                "title": result["title"],
+                "verdict": result["verdict"],
+                "mode": suite_mode,
+                "workflow_match": result["control_evaluation"]["workflow_match"],
+                "strategy_match": result["control_evaluation"]["strategy_match"],
+                "outputs_complete": result["control_evaluation"]["outputs_coverage"]["complete"],
+                "confirmation_complete": result["control_evaluation"]["confirmation_coverage"]["complete"],
+                "delivery_contract_complete": result["control_evaluation"]["delivery_coverage"]["complete"],
+                "delivery_artifacts_complete": result["artifact_evaluation"]["delivery_artifact_coverage"]["complete"],
+                "truth_artifacts_complete": result["artifact_evaluation"]["truth_artifact_coverage"]["complete"],
+                "metric_keys_complete": result["artifact_evaluation"]["metric_key_coverage"]["complete"],
+                "metric_values_complete": result["artifact_evaluation"]["metric_value_evaluation"]["complete"],
+                "evidence_file": str(evidence_path) if evidence_path else None,
+            }
+            workflow_match_passes += int(result["control_evaluation"]["workflow_match"])
+            outputs_complete_passes += int(result["control_evaluation"]["outputs_coverage"]["complete"])
+            confirmation_complete_passes += int(result["control_evaluation"]["confirmation_coverage"]["complete"])
+            delivery_contract_complete_passes += int(result["control_evaluation"]["delivery_coverage"]["complete"])
+            evidence_delivery_complete_passes += int(result["artifact_evaluation"]["delivery_artifact_coverage"]["complete"])
+            truth_artifact_complete_passes += int(result["artifact_evaluation"]["truth_artifact_coverage"]["complete"])
+            metric_key_complete_passes += int(result["artifact_evaluation"]["metric_key_coverage"]["complete"])
+            metric_value_complete_passes += int(result["artifact_evaluation"]["metric_value_evaluation"]["complete"])
+
+        verdict_counts[result["verdict"]] = verdict_counts.get(result["verdict"], 0) + 1
+        results.append(summary_row)
+
+    total_tasks = len(results)
+    benchmark_ids = sorted({str(item["benchmark_id"]) for item in results})
+
+    summary = {
+        "mode": suite_mode,
+        "benchmark_count": len(benchmark_ids),
+        "task_count": total_tasks,
+        "verdict_counts": verdict_counts,
+        "workflow_match_rate": workflow_match_passes / total_tasks if total_tasks else 0.0,
+        "outputs_complete_rate": outputs_complete_passes / total_tasks if total_tasks else 0.0,
+        "confirmation_complete_rate": confirmation_complete_passes / total_tasks if total_tasks else 0.0,
+        "delivery_contract_complete_rate": delivery_contract_complete_passes / total_tasks if total_tasks else 0.0,
+    }
+    if suite_mode == "evidence":
+        summary.update(
+            {
+                "delivery_artifacts_complete_rate": evidence_delivery_complete_passes / total_tasks if total_tasks else 0.0,
+                "truth_artifacts_complete_rate": truth_artifact_complete_passes / total_tasks if total_tasks else 0.0,
+                "metric_keys_complete_rate": metric_key_complete_passes / total_tasks if total_tasks else 0.0,
+                "metric_values_complete_rate": metric_value_complete_passes / total_tasks if total_tasks else 0.0,
+            }
+        )
+
+    return {
+        "generated_at": _now_iso(),
+        "mode": suite_mode,
+        "benchmark_ids": benchmark_ids,
+        "summary": summary,
+        "results": results,
+    }
+
+
+def evaluate_benchmark_task(task_payload: dict[str, Any]) -> dict[str, Any]:
+    request_text = str(task_payload.get("request_text") or "").strip()
+    goal = str(task_payload.get("goal") or "").strip() or None
+    extra_tags = [str(item).strip() for item in task_payload.get("extra_tags", []) if str(item).strip()]
+
+    request = build_request(
+        request_text=request_text,
+        goal=goal,
+        extra_tags=extra_tags,
+    )
+    plans = generate_candidate_plans(request)
+    proposals = {
+        "request": request,
+        "plans": plans,
+    }
+    review = review_plans(proposals)
+    recommended_plan = next(
+        (copy.deepcopy(plan) for plan in plans if plan.get("plan_id") == review.get("recommended_plan_id")),
+        copy.deepcopy(plans[0]) if plans else {},
+    )
+    recommended_workflow_id = recommended_plan.get("source_workflow_id")
+    analysis_flow = analysis_flow_for_workflow(recommended_workflow_id)
+    contract_evaluation = evaluate_plan_contract_against_benchmark(
+        recommended_plan,
+        analysis_flow,
+        task_payload,
+    )
+
+    return {
+        "benchmark_id": task_payload.get("benchmark_id"),
+        "task_id": task_payload.get("task_id"),
+        "title": task_payload.get("title"),
+        "verdict": contract_evaluation["verdict"],
+        "request": request,
+        "review": review,
+        "recommended_plan_id": recommended_plan.get("plan_id"),
+        **contract_evaluation,
+    }
+
+
+def bundle_benchmark_matches(bundle: dict[str, Any], workflow_id: str | None) -> list[dict[str, Any]]:
+    if not workflow_id:
+        return []
+    approved_plan = bundle.get("approved_plan")
+    plan: dict[str, Any] | None = None
+    if isinstance(approved_plan, dict) and approved_plan.get("source_workflow_id") == workflow_id:
+        plan = copy.deepcopy(approved_plan)
+    else:
+        for candidate in dict(bundle.get("plans", {})).get("plans", []):
+            if isinstance(candidate, dict) and candidate.get("source_workflow_id") == workflow_id:
+                plan = copy.deepcopy(candidate)
+                break
+    if not isinstance(plan, dict):
+        return []
+
+    analysis_flow = analysis_flow_for_workflow(workflow_id)
+    matches: list[dict[str, Any]] = []
+    for task in benchmark_tasks_for_workflow(workflow_id):
+        evaluation = evaluate_plan_contract_against_benchmark(plan, analysis_flow, task)
+        matches.append(
+            {
+                "benchmark_id": task.get("benchmark_id"),
+                "benchmark_title": task.get("benchmark_title"),
+                "benchmark_type": task.get("benchmark_type"),
+                "benchmark_metrics": list(task.get("benchmark_metrics", [])),
+                "task_id": task.get("task_id"),
+                "title": task.get("title"),
+                "verdict": evaluation["verdict"],
+                "workflow_match": evaluation["workflow_match"],
+                "strategy_match": evaluation["strategy_match"],
+                "outputs_complete": evaluation["outputs_coverage"]["complete"],
+                "confirmation_complete": evaluation["confirmation_coverage"]["complete"],
+                "delivery_complete": evaluation["delivery_coverage"]["complete"],
+                "missing_outputs": list(evaluation["outputs_coverage"]["missing"]),
+                "missing_confirmation_stage_ids": list(evaluation["confirmation_coverage"]["missing"]),
+                "missing_delivery_items": list(evaluation["delivery_coverage"]["missing"]),
+            }
+        )
+    return matches
 
 
 def infer_request_tags(request_text: str, goal: str | None, extra_tags: list[str], workflows: list[dict[str, Any]]) -> list[str]:
@@ -1189,6 +2195,7 @@ def build_execution_draft(plan: dict[str, Any]) -> dict[str, Any]:
     stages: list[dict[str, Any]] = []
     unresolved: set[str] = set()
     unavailable_runtime: set[str] = set()
+    unmapped_stage_ids: list[str] = []
 
     for stage in plan.get("stages", []):
         refs = []
@@ -1199,6 +2206,18 @@ def build_execution_draft(plan: dict[str, Any]) -> dict[str, Any]:
                 unresolved.add(str(skill_id))
             elif ref["runtime_kind"] == "tool" and not ref["runtime_available"]:
                 unavailable_runtime.add(str(skill_id))
+        execution_bridge = _materialize_execution_bridge(
+            plan.get("source_workflow_id"),
+            plan.get("selected_strategy_profile"),
+            str(stage["stage_id"]),
+            skill_map,
+        )
+        if not execution_bridge.get("contract_defined", False):
+            unmapped_stage_ids.append(str(stage["stage_id"]))
+        for tool_id in execution_bridge.get("unresolved_required_tools", []):
+            unresolved.add(str(tool_id))
+        for tool_id in execution_bridge.get("missing_local_tools", []):
+            unavailable_runtime.add(str(tool_id))
         stages.append(
             {
                 "stage_id": stage["stage_id"],
@@ -1206,6 +2225,7 @@ def build_execution_draft(plan: dict[str, Any]) -> dict[str, Any]:
                 "goal": stage["goal"],
                 "requires_user_confirmation": bool(stage.get("requires_user_confirmation", False)),
                 "candidate_skill_refs": refs,
+                "execution_bridge": execution_bridge,
                 "validation": list(stage.get("validation", [])),
                 "outputs": list(stage.get("outputs", [])),
             }
@@ -1219,6 +2239,7 @@ def build_execution_draft(plan: dict[str, Any]) -> dict[str, Any]:
         "stages": stages,
         "unresolved_skill_ids": sorted(unresolved),
         "unavailable_runtime_skill_ids": sorted(unavailable_runtime),
+        "unmapped_stage_ids": sorted(set(unmapped_stage_ids)),
     }
 
 
@@ -1454,15 +2475,24 @@ def review_run(
 
     current_draft = dict(draft_stage_map.get(current_stage, {}))
     current_skill_refs = list(current_draft.get("candidate_skill_refs", []))
+    current_execution_bridge = dict(current_draft.get("execution_bridge", {}))
     current_unresolved_skills = sorted(
-        str(item["id"]) for item in current_skill_refs if not item.get("resolved", False)
+        {
+            *(str(item["id"]) for item in current_skill_refs if not item.get("resolved", False)),
+            *(str(item) for item in current_execution_bridge.get("unresolved_required_tools", [])),
+        }
     )
     current_missing_local_tools = sorted(
-        str(item["id"])
-        for item in current_skill_refs
-        if item.get("resolved", False)
-        and item.get("runtime_kind") == "tool"
-        and not item.get("runtime_available", False)
+        {
+            *(
+                str(item["id"])
+                for item in current_skill_refs
+                if item.get("resolved", False)
+                and item.get("runtime_kind") == "tool"
+                and not item.get("runtime_available", False)
+            ),
+            *(str(item) for item in current_execution_bridge.get("missing_local_tools", [])),
+        }
     )
 
     pending_or_running_stage_ids = [
@@ -1474,22 +2504,38 @@ def review_run(
 
     future_unresolved_skills = sorted(
         {
-            str(item["id"])
-            for stage_id in pending_or_running_stage_ids
-            if stage_id != current_stage
-            for item in list(dict(draft_stage_map.get(stage_id, {})).get("candidate_skill_refs", []))
-            if not item.get("resolved", False)
+            *(
+                str(item["id"])
+                for stage_id in pending_or_running_stage_ids
+                if stage_id != current_stage
+                for item in list(dict(draft_stage_map.get(stage_id, {})).get("candidate_skill_refs", []))
+                if not item.get("resolved", False)
+            ),
+            *(
+                str(item)
+                for stage_id in pending_or_running_stage_ids
+                if stage_id != current_stage
+                for item in list(dict(draft_stage_map.get(stage_id, {})).get("execution_bridge", {}).get("unresolved_required_tools", []))
+            ),
         }
     )
     future_missing_local_tools = sorted(
         {
-            str(item["id"])
-            for stage_id in pending_or_running_stage_ids
-            if stage_id != current_stage
-            for item in list(dict(draft_stage_map.get(stage_id, {})).get("candidate_skill_refs", []))
-            if item.get("resolved", False)
-            and item.get("runtime_kind") == "tool"
-            and not item.get("runtime_available", False)
+            *(
+                str(item["id"])
+                for stage_id in pending_or_running_stage_ids
+                if stage_id != current_stage
+                for item in list(dict(draft_stage_map.get(stage_id, {})).get("candidate_skill_refs", []))
+                if item.get("resolved", False)
+                and item.get("runtime_kind") == "tool"
+                and not item.get("runtime_available", False)
+            ),
+            *(
+                str(item)
+                for stage_id in pending_or_running_stage_ids
+                if stage_id != current_stage
+                for item in list(dict(draft_stage_map.get(stage_id, {})).get("execution_bridge", {}).get("missing_local_tools", []))
+            ),
         }
     )
     completed_missing_local_tools = sorted(
@@ -1501,6 +2547,12 @@ def review_run(
             and item.get("runtime_kind") == "tool"
             and not item.get("runtime_available", False)
         }
+    )
+    missing_execution_bridge_contracts = sorted(
+        str(stage_id)
+        for stage_id in pending_or_running_stage_ids
+        if stage_id != current_stage
+        and not dict(draft_stage_map.get(stage_id, {})).get("execution_bridge", {}).get("contract_defined", False)
     )
 
     completed_stage_reviews: list[dict[str, Any]] = []
@@ -1581,6 +2633,14 @@ def review_run(
                 "skills": future_missing_local_tools,
             }
         )
+    if missing_execution_bridge_contracts:
+        future_issues.append(
+            {
+                "type": "future_missing_execution_bridge_contracts",
+                "message": "Later pending stages do not yet have formal execution bridge contracts.",
+                "stage_ids": missing_execution_bridge_contracts,
+            }
+        )
     for stage_id, context in stage_context.items():
         if stage_id == current_stage or stage_status.get(stage_id) != "pending":
             continue
@@ -1644,6 +2704,7 @@ def review_run(
             "status": stage_status.get(current_stage, "pending"),
             "confirmation_required": bool(current_context.get("requires_user_confirmation", False)),
             "candidate_skills": list(current_context.get("candidate_skills", [])),
+            "execution_bridge": current_execution_bridge,
             "unresolved_skills": current_unresolved_skills,
             "missing_local_tools": current_missing_local_tools,
             "validation_rules": list(current_context.get("validation", [])),
@@ -1910,6 +2971,7 @@ def session_status(session_dir: Path) -> dict[str, Any]:
         "run_status": bundle.get("run_status"),
         "run_review": bundle.get("run_review"),
         "history": bundle.get("history"),
+        "skill_crystallization_candidate": session_skill_crystallization_candidate(session_dir),
     }
 
 
@@ -1955,6 +3017,162 @@ def _console_candidate_plans(bundle: dict[str, Any]) -> list[dict[str, Any]]:
     return items
 
 
+def _skill_slug(value: str) -> str:
+    slug = _slugify(value).replace('-', '_')
+    return slug or 'generated_workflow_skill'
+
+
+def _copy_session_repro_bundle(session_dir: Path, references_dir: Path) -> dict[str, str]:
+    repro_dir = session_dir / "repro"
+    if not repro_dir.exists() or not repro_dir.is_dir():
+        return {}
+
+    target_dir = references_dir / "repro"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    copied: dict[str, str] = {}
+    for name in ("commands.sh", "environment.json", "artifacts.json", "scorecard.json"):
+        source = repro_dir / name
+        if not source.exists() or not source.is_file():
+            continue
+        destination = target_dir / name
+        shutil.copy2(source, destination)
+        copied[name] = str(destination)
+    return copied
+
+
+def export_session_as_skill(
+    *,
+    session_dir: Path,
+    skill_root: Path,
+    skill_name: str | None = None,
+    overwrite: bool = False,
+    force: bool = False,
+) -> dict[str, Any]:
+    session_dir = _ensure_session_directory(session_dir, must_exist=True)
+    bundle = _sync_session_bundle(session_dir, _load_session_bundle(session_dir))
+    session = dict(bundle.get('session', {}))
+    if str(session.get('run_status') or '') != 'completed':
+        raise ValueError('Only completed sessions can be exported as persistent workflow skills.')
+
+    candidate = session_skill_crystallization_candidate(session_dir)
+    if not candidate.get('eligible', False) and not force:
+        raise ValueError('Session is not eligible for automatic skill crystallization: ' + '; '.join(candidate.get('reasons', [])))
+
+    approved_plan = dict(bundle.get('approved_plan', {}))
+    workflow_id = str(approved_plan.get('source_workflow_id') or session.get('approved_plan_id') or session_dir.name)
+    strategy_profile = str(approved_plan.get('selected_strategy_profile') or approved_plan.get('strategy_type') or 'default')
+    slug = _skill_slug(skill_name or f'{workflow_id}-{strategy_profile}')
+
+    target_dir = skill_root.expanduser().resolve() / 'workflow' / slug
+    references_dir = target_dir / 'references'
+    skill_path = target_dir / 'SKILL.md'
+    summary_path = references_dir / 'session-summary.json'
+    environment_path = references_dir / 'environment.json'
+
+    if target_dir.exists() and not overwrite:
+        raise FileExistsError(f'Generated skill directory already exists: {target_dir}')
+
+    references_dir.mkdir(parents=True, exist_ok=True)
+
+    analysis_flow = analysis_flow_for_workflow(workflow_id)
+    benchmark_matches = bundle_benchmark_matches(bundle, workflow_id)
+    execution_draft = dict(bundle.get('execution_draft', {}))
+    run_state = dict(bundle.get('run', {}))
+    repro_files = _copy_session_repro_bundle(session_dir, references_dir)
+    expected_outputs = list(approved_plan.get('expected_outputs', []))
+    stage_lines = []
+    for stage in approved_plan.get('stages', []):
+        if not isinstance(stage, dict):
+            continue
+        draft_stage = next((item for item in execution_draft.get('stages', []) if str(item.get('stage_id')) == str(stage.get('stage_id'))), {})
+        bridge = dict(draft_stage.get('execution_bridge', {}))
+        bridge_copy = bridge.get('bridge_id') or 'unmapped-bridge'
+        stage_lines.append(
+            f"- `{stage.get('stage_id')}` {stage.get('name')}: {stage.get('goal')} | bridge={bridge_copy} | confirm={'yes' if stage.get('requires_user_confirmation') else 'no'}"
+        )
+
+    benchmark_lines = []
+    for item in benchmark_matches:
+        benchmark_lines.append(
+            f"- `{item.get('benchmark_id')}` / `{item.get('task_id')}`: verdict={item.get('verdict')} outputs={'ok' if item.get('outputs_complete') else 'gap'} delivery={'ok' if item.get('delivery_complete') else 'gap'}"
+        )
+
+    flow_lines = []
+    if analysis_flow:
+        for stage in analysis_flow.get('stage_flows', []):
+            flow_lines.append(
+                f"- `{stage.get('stage_id')}` {stage.get('label')}: consumes {', '.join(stage.get('consumes', []))} -> produces {', '.join(stage.get('produces', []))}"
+            )
+
+    decision_lines = [f'- {item}' for item in run_state.get('decisions', []) if str(item).strip()]
+    repro_lines = [f'- `references/repro/{name}`' for name in sorted(repro_files)]
+
+    skill_lines = [
+        '---',
+        f'name: {slug}',
+        f'description: Generated workflow skill from completed session {session.get("session_id")} for {workflow_id}.',
+        'user-invocable: true',
+        '---',
+        '',
+        f'# {slug}',
+        '',
+        '## Origin',
+        f'- Session ID: `{session.get("session_id")}`',
+        f'- Session Dir: `{session.get("session_dir")}`',
+        f'- Workflow: `{workflow_id}`',
+        f'- Approved Plan: `{approved_plan.get("plan_id")}`',
+        f'- Strategy: `{approved_plan.get("selected_strategy_profile") or approved_plan.get("strategy_type")}`',
+        '',
+        '## When To Use',
+        f'- Use when you need a workflow shaped like `{workflow_id}` with the same staged control semantics captured by this completed session.',
+        '',
+        '## Expected Outputs',
+    ]
+    skill_lines.extend([f'- {item}' for item in expected_outputs] or ['- No explicit expected outputs recorded.'])
+    skill_lines.extend(['', '## Stage Skeleton'])
+    skill_lines.extend(stage_lines or ['- No stage skeleton recorded.'])
+    skill_lines.extend(['', '## Analysis Flow'])
+    skill_lines.extend(flow_lines or ['- No grounded analysis flow attached.'])
+    skill_lines.extend(['', '## Benchmark Fit'])
+    skill_lines.extend(benchmark_lines or ['- No benchmark matches attached.'])
+    skill_lines.extend(['', '## Run Decisions'])
+    skill_lines.extend(decision_lines or ['- No explicit run decisions recorded.'])
+    skill_lines.extend(['', '## Execution Evidence'])
+    skill_lines.extend(repro_lines or ['- No reproducibility bundle was copied from the source session.'])
+    skill_lines.extend(['', '## Persistent References', f'- Session summary JSON: `references/{summary_path.name}`', f'- Environment JSON: `references/{environment_path.name}`'])
+    skill_markdown = "\n".join(skill_lines) + '\n'
+
+    summary_payload = {
+        'session': session,
+        'approved_plan': approved_plan,
+        'analysis_flow': analysis_flow,
+        'benchmark_matches': benchmark_matches,
+        'skill_crystallization_candidate': candidate,
+        'history': dict(bundle.get('history', {})),
+        'run': run_state,
+        'copied_repro_files': repro_files,
+        'execution_bridge_summary': {
+            'unmapped_stage_ids': list(execution_draft.get('unmapped_stage_ids', [])),
+            'unavailable_runtime_skill_ids': list(execution_draft.get('unavailable_runtime_skill_ids', [])),
+        },
+    }
+
+    skill_path.write_text(skill_markdown, encoding='utf-8')
+    save_json(summary_payload, summary_path)
+    save_json(candidate.get('environment', {}), environment_path)
+
+    return {
+        'skill_id': slug,
+        'skill_dir': str(target_dir),
+        'eligibility': candidate,
+        'files': {
+            'skill_markdown': str(skill_path),
+            'session_summary': str(summary_path),
+            'environment': str(environment_path),
+        },
+    }
+
+
 def export_session_console_bundle(
     session_dir: Path,
     *,
@@ -1996,6 +3214,12 @@ def export_session_console_bundle(
         },
         "request": request,
         "analysis_flow": analysis_flow_for_workflow(workflow_id),
+        "skill_crystallization_candidate": session_skill_crystallization_candidate(session_dir),
+        "execution_bridge_summary": {
+            "unmapped_stage_ids": list(dict(bundle.get("execution_draft", {})).get("unmapped_stage_ids", [])),
+            "unavailable_runtime_skill_ids": list(dict(bundle.get("execution_draft", {})).get("unavailable_runtime_skill_ids", [])),
+        },
+        "benchmark_matches": bundle_benchmark_matches(bundle, workflow_id),
         "candidate_plans": _console_candidate_plans(bundle),
         "review": dict(bundle.get("review", {})),
         "session": session,

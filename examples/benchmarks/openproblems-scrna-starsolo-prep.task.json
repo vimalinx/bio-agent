@@ -1,0 +1,34 @@
+{
+  "benchmark_id": "openproblems-single-cell",
+  "task_id": "openproblems-scrna-starsolo-prep",
+  "title": "scRNA-seq preprocessing to a benchmark-ready matrix and clustering package",
+  "request_text": "I have 10x single-cell RNA-seq FASTQ files and need a clustering-ready filtered matrix, QC metrics, embeddings, and marker-review package for downstream Open Problems style evaluation.",
+  "goal": "Generate a staged single-cell preprocessing workflow that prepares a benchmark-ready dataset package.",
+  "extra_tags": [
+    "scrnaseq",
+    "single-cell",
+    "10x",
+    "strategy-starsolo"
+  ],
+  "expected_workflow_id": "scrnaseq-preprocessing",
+  "accepted_strategy_profiles": [
+    "starsolo"
+  ],
+  "required_expected_outputs": [
+    "raw_count_matrix",
+    "filtered_matrix",
+    "qc_metrics",
+    "embedding_clusters",
+    "marker_table"
+  ],
+  "required_confirmation_stage_ids": [
+    "s2"
+  ],
+  "required_delivery_bundle_items": [
+    "filtered matrix",
+    "QC metrics table",
+    "embeddings and cluster assignments",
+    "marker table",
+    "marker review summary"
+  ]
+}

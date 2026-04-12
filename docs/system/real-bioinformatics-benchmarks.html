@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real Bioinformatics Benchmarks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #faf8f5;
+        --surface: #ffffff;
+        --surface-alt: #f4eee8;
+        --line: #dfd4c8;
+        --text: #451a03;
+        --muted: #7c5a46;
+        --primary: #b45309;
+        --accent: #0f766e;
+        --radius: 10px;
+        --shadow: 0 2px 8px rgba(69, 26, 3, 0.08);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", sans-serif; line-height: 1.55; }
+      a { color: var(--primary); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .shell { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 252px minmax(0, 1fr); gap: 24px; padding: 24px; }
+      .sidebar, .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+      .sidebar { position: sticky; top: 16px; align-self: start; padding: 20px 18px; }
+      .nav { display: grid; gap: 8px; }
+      .nav a { display: block; padding: 8px 10px; border-radius: 8px; color: var(--text); }
+      .nav a:hover { background: var(--surface-alt); text-decoration: none; }
+      .meta { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); font-size: .92rem; color: var(--muted); }
+      .content { display: grid; gap: 20px; }
+      .panel { padding: 24px 26px; }
+      h1,h2 { margin: 0 0 12px; line-height: 1.2; }
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.32rem; }
+      p { margin: 0 0 12px; }
+      .callout { border-left: 4px solid var(--accent); padding-left: 12px; }
+      .tile { border: 1px solid var(--line); background: var(--surface-alt); border-radius: 8px; padding: 16px; }
+      .tile strong { display: block; margin-bottom: 8px; }
+      .stack { display: grid; gap: 12px; }
+      .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+      .chip { border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; background: #fffdf9; font-family: "IBM Plex Mono", monospace; font-size: .9rem; }
+      table { width: 100%; border-collapse: collapse; font-size: .96rem; }
+      th, td { border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; padding: 10px 12px; }
+      th { font-weight: 600; }
+      code, pre { font-family: "IBM Plex Mono", monospace; }
+      @media (max-width: 1040px) { .shell { grid-template-columns: 1fr; } .sidebar { position: static; } }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <h2>Benchmarks</h2>
+        <nav class="nav">
+          <a href="#summary">概览</a>
+          <a href="bio-skill-system.html">系统架构页</a>
+          <a href="real-bioinformatics-workflow-map.html">真实流程地图</a>
+          <a href="real-analysis-information-flows.html">真实分析信息流</a>
+          <a href="#catalog">Catalog</a>
+          <a href="#how-to-run">How To Run</a>
+        </nav>
+        <div class="meta">
+          <div>Registry: <code>registry/benchmarks.yaml</code></div>
+          <div>Data: <code>docs/system/data/real-bioinformatics-benchmarks.json</code></div>
+          <div>Examples: <code>examples/benchmarks/</code></div>
+        </div>
+      </aside>
+      <main class="content">
+        <section class="panel" id="summary">
+          <h1>Real Bioinformatics Benchmarks</h1>
+          <p>这一页定义 `bio-agent` 当前用来“做题”的真实 benchmark 面：不是跑 marketing demo，而是拿官方 challenge、consortium benchmark、或标准化 conformance task 来检验 workflow routing、plan 结构和 analysis-flow 覆盖。</p>
+          <p class="callout">当前 benchmark 层先评估 3 件事：route 对不对、plan 的 expected outputs / confirmation gates 对不对、analysis flow 的 delivery bundle 是否覆盖到 benchmark 任务要求。它还不直接评估真实数值指标本身。</p>
+        </section>
+
+        <section class="panel" id="catalog">
+          <h2>Catalog</h2>
+          <table>
+            <thead>
+              <tr><th>Benchmark</th><th>Type</th><th>Target Workflow</th><th>Key Metrics</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>SEQC2 / MAQC-style bulk RNA-seq workflow benchmark</td><td>consortium-reference</td><td>rnaseq-differential-expression</td><td>differential expression reproducibility, count matrix consistency, QC completeness</td></tr>
+              <tr><td>GIAB / precisionFDA Truth Challenge small variant benchmark</td><td>challenge</td><td>germline-short-variant-discovery</td><td>precision, recall, F1</td></tr>
+              <tr><td>Open Problems in single-cell analysis task-preparation benchmark</td><td>living-benchmark</td><td>scrnaseq-preprocessing</td><td>preprocessing completeness, clustering-ready matrix handoff, metadata readiness</td></tr>
+              <tr><td>ENCODE ATAC-seq data-standards conformance benchmark</td><td>standards-conformance</td><td>atacseq-differential-accessibility</td><td>QC completeness, peak set readiness, signal track readiness</td></tr>
+            </tbody>
+          </table>
+          <div class="stack" style="margin-top:16px;">
+            <div class="tile">
+              <strong>GIAB / precisionFDA</strong>
+              真正适合检验 `germline-short-variant-discovery` family 是否知道 truth VCF / confident regions / precision-recall-F1 这套语义。
+            </div>
+            <div class="tile">
+              <strong>Open Problems</strong>
+              用来检验 `scrnaseq-preprocessing` family 是否能把数据送到 clustering-ready / benchmark-ready handoff。
+            </div>
+            <div class="tile">
+              <strong>ENCODE ATAC-seq</strong>
+              更偏 conformance benchmark，重点在输出合同、QC gate 和 signal/peak artifact completeness。
+            </div>
+            <div class="tile">
+              <strong>SEQC2</strong>
+              用来检验 bulk RNA-seq family 是否保留 alignment-first quantification、count matrix 和 reproducibility-aware output contract。
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="how-to-run">
+          <h2>How To Run</h2>
+          <p>当前最小使用方式有两种：</p>
+          <div class="chip-row">
+            <span class="chip">benchmark-report</span>
+            <span class="chip">benchmark-evaluate</span>
+            <span class="chip">benchmark-run</span>
+            <span class="chip">benchmark-suite</span>
+          </div>
+          <pre>python3 scripts/bio_skill_system.py benchmark-report
+
+python3 scripts/bio_skill_system.py benchmark-evaluate \
+  --benchmark-id giab-precisionfda-small-variant \
+  --task-id giab-wes-bwa-gatk-hardfilter
+
+python3 scripts/bio_skill_system.py benchmark-run \
+  --benchmark-id giab-precisionfda-small-variant \
+  --task-id giab-wes-bwa-gatk-hardfilter \
+  --evidence-file examples/benchmarks/giab-wes-bwa-gatk-hardfilter.evidence.json
+
+python3 scripts/bio_skill_system.py benchmark-run \
+  --benchmark-id giab-precisionfda-small-variant \
+  --task-id giab-wes-bwa-gatk-hardfilter \
+  --evidence-file examples/benchmarks/giab-wes-bwa-gatk-hardfilter.happy.evidence.json
+
+python3 scripts/bio_skill_system.py benchmark-suite \
+  --mode contract
+
+python3 scripts/bio_skill_system.py benchmark-suite \
+  --benchmark-id giab-precisionfda-small-variant \
+  --mode evidence \
+  --evidence-root examples/benchmarks
+
+python3 scripts/bio_skill_system.py benchmark-evaluate \
+  --task-file examples/benchmarks/encode-atac-bowtie2-macs3.task.json</pre>
+          <p><code>benchmark-evaluate</code> 评估控制面契约；<code>benchmark-run</code> 在此基础上再结合 session 或 evidence 文件里的真实交付物、truth artifacts、metric keys 生成一份 scorecard；<code>benchmark-suite</code> 会把多道题批量跑完，输出一份聚合 score report。对 GIAB 这类题，当前 scorecard 还会解析 <code>hap.py summary.csv</code> 这类常见 benchmark artifact，提取 <code>precision / recall / F1</code> 数值，检查范围并做 F1 一致性校验。</p>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

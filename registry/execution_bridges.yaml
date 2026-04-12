@@ -1,0 +1,323 @@
+version: 1
+description: Stage-level execution bridge contracts for grounded workflow families.
+workflows:
+- workflow_id: rnaseq-differential-expression
+  default_stages:
+    s1:
+      bridge_id: manifest-validation
+      bridge_type: validation
+      execution_mode: local-python
+      required_tools: []
+      comparator_supported: false
+      reproducibility_support: planned
+    s4:
+      bridge_id: de-statistics
+      bridge_type: statistics
+      execution_mode: local-python
+      required_tools:
+      - pydeseq2
+      comparator_supported: false
+      reproducibility_support: planned
+    s5:
+      bridge_id: evidence-bundle-assembly
+      bridge_type: reporting
+      execution_mode: manual-or-agent
+      required_tools: []
+      comparator_supported: false
+      reproducibility_support: planned
+    s2:
+      bridge_id: generic-rnaseq-alignment-qc
+      bridge_type: alignment
+      execution_mode: local-or-external
+      required_tools:
+      - fastqc
+      - multiqc
+      comparator_supported: false
+      reproducibility_support: planned
+    s3:
+      bridge_id: generic-rnaseq-quantification
+      bridge_type: quantification
+      execution_mode: local-or-external
+      required_tools: []
+      comparator_supported: false
+      reproducibility_support: planned
+  strategies:
+    star-featurecounts:
+      s2:
+        bridge_id: star-alignment-qc
+        bridge_type: alignment
+        execution_mode: local-cli
+        required_tools:
+        - fastqc
+        - multiqc
+        - star
+        comparator_supported: false
+        reproducibility_support: planned
+      s3:
+        bridge_id: featurecounts-quantification
+        bridge_type: quantification
+        execution_mode: local-cli
+        required_tools:
+        - feature-counts
+        comparator_supported: false
+        reproducibility_support: planned
+    salmon-tximport:
+      s2:
+        bridge_id: salmon-quant-qc
+        bridge_type: quantification
+        execution_mode: external-or-manual
+        required_tools:
+        - salmon
+        - fastqc
+        - multiqc
+        comparator_supported: false
+        reproducibility_support: planned
+      s3:
+        bridge_id: tximport-rollup
+        bridge_type: quantification
+        execution_mode: local-python
+        required_tools:
+        - tximport
+        comparator_supported: false
+        reproducibility_support: planned
+- workflow_id: scrnaseq-preprocessing
+  default_stages:
+    s1:
+      bridge_id: chemistry-and-input-validation
+      bridge_type: validation
+      execution_mode: local-python
+      required_tools: []
+      comparator_supported: false
+      reproducibility_support: planned
+    s3:
+      bridge_id: matrix-materialization
+      bridge_type: matrix-build
+      execution_mode: external-or-manual
+      required_tools: []
+      comparator_supported: false
+      reproducibility_support: planned
+    s4:
+      bridge_id: scanpy-clustering
+      bridge_type: downstream-analysis
+      execution_mode: local-python
+      required_tools:
+      - scanpy
+      comparator_supported: false
+      reproducibility_support: planned
+    s5:
+      bridge_id: marker-review-report
+      bridge_type: reporting
+      execution_mode: manual-or-agent
+      required_tools: []
+      comparator_supported: false
+      reproducibility_support: planned
+    s2:
+      bridge_id: generic-scrna-processing
+      bridge_type: alignment-and-umi
+      execution_mode: external-or-manual
+      required_tools: []
+      comparator_supported: false
+      reproducibility_support: planned
+  strategies:
+    starsolo:
+      s2:
+        bridge_id: starsolo-processing
+        bridge_type: alignment-and-umi
+        execution_mode: external-or-manual
+        required_tools:
+        - starsolo
+        - multiqc
+        comparator_supported: false
+        reproducibility_support: planned
+    cellranger:
+      s2:
+        bridge_id: cellranger-processing
+        bridge_type: alignment-and-umi
+        execution_mode: external-or-manual
+        required_tools:
+        - cellranger
+        - multiqc
+        comparator_supported: false
+        reproducibility_support: planned
+- workflow_id: atacseq-differential-accessibility
+  default_stages:
+    s1:
+      bridge_id: atac-input-validation
+      bridge_type: validation
+      execution_mode: local-python
+      required_tools: []
+      comparator_supported: false
+      reproducibility_support: planned
+    s3:
+      bridge_id: atac-filtering-qc
+      bridge_type: qc
+      execution_mode: local-cli
+      required_tools:
+      - multiqc
+      comparator_supported: false
+      reproducibility_support: planned
+    s5:
+      bridge_id: atac-da-report
+      bridge_type: reporting
+      execution_mode: local-python
+      required_tools: []
+      comparator_supported: false
+      reproducibility_support: planned
+    s2:
+      bridge_id: generic-atac-alignment
+      bridge_type: alignment
+      execution_mode: local-or-external
+      required_tools:
+      - fastqc
+      - multiqc
+      comparator_supported: false
+      reproducibility_support: planned
+    s4:
+      bridge_id: generic-atac-peak-calling
+      bridge_type: peak-calling
+      execution_mode: local-or-external
+      required_tools: []
+      comparator_supported: false
+      reproducibility_support: planned
+  strategies:
+    bowtie2-macs3:
+      s2:
+        bridge_id: bowtie2-alignment
+        bridge_type: alignment
+        execution_mode: local-cli
+        required_tools:
+        - bowtie2
+        - fastqc
+        - multiqc
+        comparator_supported: false
+        reproducibility_support: planned
+      s4:
+        bridge_id: macs3-peak-calling
+        bridge_type: peak-calling
+        execution_mode: local-cli
+        required_tools:
+        - macs3
+        comparator_supported: false
+        reproducibility_support: planned
+    bwa-macs3:
+      s2:
+        bridge_id: bwa-alignment
+        bridge_type: alignment
+        execution_mode: local-cli
+        required_tools:
+        - bwa
+        - fastqc
+        - multiqc
+        comparator_supported: false
+        reproducibility_support: planned
+      s4:
+        bridge_id: macs3-peak-calling
+        bridge_type: peak-calling
+        execution_mode: local-cli
+        required_tools:
+        - macs3
+        comparator_supported: false
+        reproducibility_support: planned
+- workflow_id: germline-short-variant-discovery
+  default_stages:
+    s1:
+      bridge_id: germline-input-validation
+      bridge_type: validation
+      execution_mode: local-python
+      required_tools: []
+      comparator_supported: false
+      reproducibility_support: planned
+    s5:
+      bridge_id: cohort-filtering-review
+      bridge_type: filtering-and-report
+      execution_mode: local-cli
+      required_tools:
+      - bcftools
+      comparator_supported: false
+      reproducibility_support: planned
+    s2:
+      bridge_id: generic-germline-alignment
+      bridge_type: alignment
+      execution_mode: local-or-external
+      required_tools:
+      - bwa
+      - samtools
+      comparator_supported: false
+      reproducibility_support: planned
+    s3:
+      bridge_id: generic-germline-calling
+      bridge_type: variant-calling
+      execution_mode: local-or-external
+      required_tools:
+      - gatk-haplotypecaller
+      comparator_supported: false
+      reproducibility_support: planned
+    s4:
+      bridge_id: generic-germline-joint-genotyping
+      bridge_type: joint-genotyping
+      execution_mode: local-or-external
+      required_tools:
+      - gatk-genotypegvcfs
+      comparator_supported: false
+      reproducibility_support: planned
+  strategies:
+    bwa-gatk-hardfilter:
+      s2:
+        bridge_id: bwa-bqsr-prep
+        bridge_type: alignment
+        execution_mode: local-cli
+        required_tools:
+        - bwa
+        - samtools
+        comparator_supported: false
+        reproducibility_support: planned
+      s3:
+        bridge_id: gatk-haplotypecaller
+        bridge_type: variant-calling
+        execution_mode: local-cli
+        required_tools:
+        - gatk-haplotypecaller
+        comparator_supported: false
+        reproducibility_support: planned
+      s4:
+        bridge_id: gatk-genotypegvcfs
+        bridge_type: joint-genotyping
+        execution_mode: local-cli
+        required_tools:
+        - gatk-genotypegvcfs
+        comparator_supported: false
+        reproducibility_support: planned
+    bwa-gatk-vqsr:
+      s2:
+        bridge_id: bwa-bqsr-prep
+        bridge_type: alignment
+        execution_mode: local-cli
+        required_tools:
+        - bwa
+        - samtools
+        comparator_supported: false
+        reproducibility_support: planned
+      s3:
+        bridge_id: gatk-haplotypecaller
+        bridge_type: variant-calling
+        execution_mode: local-cli
+        required_tools:
+        - gatk-haplotypecaller
+        comparator_supported: false
+        reproducibility_support: planned
+      s4:
+        bridge_id: gatk-genotypegvcfs
+        bridge_type: joint-genotyping
+        execution_mode: local-cli
+        required_tools:
+        - gatk-genotypegvcfs
+        comparator_supported: false
+        reproducibility_support: planned
+      s5:
+        bridge_id: gatk-vqsr
+        bridge_type: filtering
+        execution_mode: local-cli
+        required_tools:
+        - variantrecalibrator
+        comparator_supported: false
+        reproducibility_support: planned

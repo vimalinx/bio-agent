@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bio-agent.local/schemas/benchmark_run.schema.json",
+  "title": "Bio Agent Benchmark Run Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "benchmark_id",
+    "task_id",
+    "title",
+    "verdict",
+    "control_evaluation",
+    "evidence",
+    "artifact_evaluation",
+    "scorecard"
+  ],
+  "properties": {
+    "benchmark_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "partial",
+        "fail"
+      ]
+    },
+    "control_evaluation": {
+      "type": "object"
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_paths",
+        "delivery_items",
+        "truth_artifacts",
+        "metrics",
+        "extracted_metrics"
+      ],
+      "properties": {
+        "session_dir": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "run_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "run_verdict": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "artifact_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "delivery_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "truth_artifacts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "extracted_metrics": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "artifact_evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "delivery_artifact_coverage",
+        "truth_artifact_coverage",
+        "metric_key_coverage",
+        "metric_value_evaluation"
+      ],
+      "properties": {
+        "delivery_artifact_coverage": {
+          "type": "object"
+        },
+        "truth_artifact_coverage": {
+          "type": "object"
+        },
+        "metric_key_coverage": {
+          "type": "object"
+        },
+        "metric_value_evaluation": {
+          "type": "object"
+        }
+      }
+    },
+    "scorecard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed_checks",
+        "failed_checks",
+        "passed_count",
+        "total_checks"
+      ],
+      "properties": {
+        "passed_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "failed_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "passed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_checks": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "repro_bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "files"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "files": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

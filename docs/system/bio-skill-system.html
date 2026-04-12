@@ -379,9 +379,12 @@
           <a href="bio-skill-console.html">运行控制台</a>
           <a href="real-bioinformatics-workflow-map.html">真实流程地图</a>
           <a href="real-analysis-information-flows.html">真实分析信息流</a>
+          <a href="real-bioinformatics-benchmarks.html">真实生信 Benchmark</a>
+          <a href="architecture-comparison-roadmap.html">架构对比路线</a>
           <a href="#objects">核心对象</a>
           <a href="#layers">分层架构</a>
           <a href="#information-flows">分析信息流层</a>
+          <a href="#benchmarks">Benchmark 层</a>
           <a href="#lifecycle">请求到执行流程</a>
           <a href="#taxonomy">Skill 分类</a>
           <a href="#contract">Plan 与 Run</a>
@@ -543,6 +546,30 @@
             当前已经给 4 条 grounded family 补了显式 analysis flow：bulk RNA-seq、scRNA-seq、ATAC-seq、
             germline short variant discovery。详情见
             <a href="real-analysis-information-flows.html"><code>real-analysis-information-flows.html</code></a>。
+          </p>
+        </section>
+
+        <section class="panel" id="benchmarks">
+          <h2>Benchmark 层</h2>
+          <p>
+            现在系统已经不只是能表达 grounded workflow family，也开始能拿真实 benchmark task 来“做题”。
+            benchmark 层的目标不是跑出最终算法 leaderboard，而是先验证 routing、plan 结构、confirmation gate、
+            analysis-flow delivery bundle 这些控制面能力是否贴近真实标准。
+          </p>
+          <div class="section-grid">
+            <div class="tile">
+              <strong>当前 benchmark registry</strong>
+              <code>registry/benchmarks.yaml</code> 定义了 SEQC2、GIAB/precisionFDA、Open Problems、
+              ENCODE ATAC 这 4 组 benchmark。
+            </div>
+            <div class="tile">
+              <strong>当前 CLI 面</strong>
+              <code>benchmark-report</code> 用于列 benchmark catalog，
+              <code>benchmark-evaluate</code> 用于对单题做自动评估。
+            </div>
+          </div>
+          <p style="margin-top: 14px;">
+            详情见 <a href="real-bioinformatics-benchmarks.html"><code>real-bioinformatics-benchmarks.html</code></a>。
           </p>
         </section>
 
@@ -937,7 +964,8 @@
             如果你想直接在浏览器里看 request、plan、run-status、run-review 的控制台原型，可以打开
             <a href="bio-skill-console.html"><code>docs/system/bio-skill-console.html</code></a>。如果你要看官方来源驱动的真实生信流程家族，可以再打开
             <a href="real-bioinformatics-workflow-map.html"><code>docs/system/real-bioinformatics-workflow-map.html</code></a>。如果你要看这些 family 的真实分析信息流，可以再打开
-            <a href="real-analysis-information-flows.html"><code>docs/system/real-analysis-information-flows.html</code></a>。
+            <a href="real-analysis-information-flows.html"><code>docs/system/real-analysis-information-flows.html</code></a>。如果你要看真实 benchmark catalog，可以再打开
+            <a href="real-bioinformatics-benchmarks.html"><code>docs/system/real-bioinformatics-benchmarks.html</code></a>。
           </p>
         </section>
       </main>

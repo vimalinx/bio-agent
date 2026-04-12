@@ -557,5 +557,28 @@
       "differential expression result table",
       "analysis summary"
     ]
-  }
+  },
+  "benchmark_matches": [
+    {
+      "benchmark_id": "seqc2-bulk-rnaseq",
+      "benchmark_title": "SEQC2 / MAQC-style bulk RNA-seq workflow benchmark",
+      "benchmark_type": "consortium-reference",
+      "benchmark_metrics": [
+        "differential expression reproducibility",
+        "count matrix consistency",
+        "QC completeness"
+      ],
+      "task_id": "seqc2-rnaseq-star-featurecounts",
+      "title": "Bulk RNA-seq differential expression with alignment-first quantification",
+      "verdict": "fail",
+      "workflow_match": false,
+      "strategy_match": false,
+      "outputs_complete": true,
+      "confirmation_complete": true,
+      "delivery_complete": true,
+      "missing_outputs": [],
+      "missing_confirmation_stage_ids": [],
+      "missing_delivery_items": []
+    }
+  ]
 }

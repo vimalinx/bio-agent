@@ -1,0 +1,36 @@
+{
+  "benchmark_id": "giab-precisionfda-small-variant",
+  "task_id": "giab-wes-bwa-gatk-hardfilter",
+  "title": "WES germline variant discovery with truth-set comparison readiness",
+  "request_text": "I have paired-end WES FASTQ files and need germline SNP and indel discovery with gVCFs, joint genotyping, filtered cohort VCF output, and a final truth-set comparison package.",
+  "goal": "Generate a germline short variant discovery workflow suitable for GIAB and precisionFDA-style benchmarking.",
+  "extra_tags": [
+    "germline-variant",
+    "variant-calling",
+    "wes",
+    "gvcf",
+    "strategy-bwa-gatk-hardfilter"
+  ],
+  "expected_workflow_id": "germline-short-variant-discovery",
+  "accepted_strategy_profiles": [
+    "bwa-gatk-hardfilter"
+  ],
+  "required_expected_outputs": [
+    "analysis_ready_bams",
+    "gvcf_bundle",
+    "joint_vcf",
+    "filtered_vcf",
+    "qc_summary"
+  ],
+  "required_confirmation_stage_ids": [
+    "s2"
+  ],
+  "required_delivery_bundle_items": [
+    "analysis-ready BAM inventory",
+    "recalibration metrics",
+    "gVCF manifest",
+    "joint VCF manifest",
+    "filtered VCF manifest",
+    "cohort QC summary"
+  ]
+}
