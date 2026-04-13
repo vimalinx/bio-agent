@@ -1,5 +1,7 @@
 # Bio-Agent vs ClawBio vs LabClaw 综合对比报告
 
+> 状态说明：本文件保留为 2026-03-30 的原始对比快照；当前产品化决策请以 `docs/plans/2026-04-13-bio-agent-productization-comparison.md` 为准。文中部分技能数量/定位表述属于历史快照，不应视为当前实现契约。
+
 > 生成日期：2026-03-30
 > 分析对象：
 > - **bio-agent** (`~/Projects/bio-agent/`) — 自研项目
