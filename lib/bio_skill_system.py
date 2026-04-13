@@ -2723,13 +2723,11 @@ def review_run(
     latest_issue = issues[-1] if issues else None
 
     draft_stage_map: dict[str, dict[str, Any]] = {}
-    unresolved_skill_ids: list[str] = []
     if execution_draft is not None:
         draft_stage_map = {
             str(stage["stage_id"]): dict(stage)
             for stage in execution_draft.get("stages", [])
         }
-        unresolved_skill_ids = sorted(set(str(item) for item in execution_draft.get("unresolved_skill_ids", [])))
 
     current_draft = dict(draft_stage_map.get(current_stage, {}))
     current_skill_refs = list(current_draft.get("candidate_skill_refs", []))

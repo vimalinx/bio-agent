@@ -10,8 +10,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from lib.bio_product_runner import export_session_repro_bundle, hero_run
-from lib.bio_skill_system import (
+from lib.bio_product_runner import hero_run  # noqa: E402
+from lib.bio_skill_system import (  # noqa: E402
     advance_run_stage,
     advance_session_run,
     benchmark_report,
@@ -33,11 +33,9 @@ from lib.bio_skill_system import (
     initialize_run,
     load_structured_file,
     pause_run,
-    prepare_session_start_inputs,
     resume_run,
     review_plans,
     review_run,
-    run_hero_workflow,
     render_session_plan_markdown,
     resume_session_run,
     save_json,
@@ -46,7 +44,7 @@ from lib.bio_skill_system import (
     summarize_run,
     pause_session_run,
 )
-from lib.bio_skill_console_server import serve_console_control
+from lib.bio_skill_console_server import serve_console_control  # noqa: E402
 
 
 def cmd_propose(args: argparse.Namespace) -> int:
