@@ -269,40 +269,11 @@ def cmd_session_export_console(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_session_export_repro(args: argparse.Namespace) -> int:
+def cmd_session_export_repro_bundle(args: argparse.Namespace) -> int:
     payload = export_session_repro_bundle(
-        Path(args.session_dir),
-        output_dir=Path(args.output_dir) if args.output_dir else None,
-    )
-    text = save_json(payload, Path(args.output) if args.output else None)
-    if not args.output:
-        sys.stdout.write(text)
-    return 0
-
-
-def cmd_hero_run(args: argparse.Namespace) -> int:
-    invoked_command = " ".join(
-        [
-            shlex.quote(sys.executable),
-            shlex.quote(str(Path(__file__).resolve())),
-            *[shlex.quote(str(item)) for item in sys.argv[1:]],
-        ]
-    )
-    payload = run_hero_workflow(
         session_dir=Path(args.session_dir),
-        workflow_family=args.workflow_family,
-        strategy_profile=args.strategy_profile,
-        request_text=args.request_text,
-        goal=args.goal,
-        extra_tags=args.tag,
-        approval_reason=args.reason,
-        advance=bool(args.advance),
-        confirm=bool(args.confirm),
-        validation_updates=args.validation,
-        artifacts=args.artifact,
-        allow_missing_tools=bool(args.allow_missing_tools),
-        repro_dir=Path(args.repro_dir) if args.repro_dir else None,
-        invoked_command=invoked_command,
+        output_dir=Path(args.output_dir) if args.output_dir else (Path(args.session_dir) / "repro"),
+        invoked_command=" ".join(shlex.quote(item) for item in [sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]]),
     )
     text = save_json(payload, Path(args.output) if args.output else None)
     if not args.output:
@@ -423,6 +394,23 @@ def cmd_session_export_skill(args: argparse.Namespace) -> int:
         skill_name=args.skill_name,
         overwrite=bool(args.overwrite),
         force=bool(args.force),
+    )
+    text = save_json(payload, Path(args.output) if args.output else None)
+    if not args.output:
+        sys.stdout.write(text)
+    return 0
+
+
+def cmd_hero_run(args: argparse.Namespace) -> int:
+    payload = hero_run(
+        session_dir=Path(args.session_dir),
+        workflow_family=args.workflow_family,
+        strategy_profile=args.strategy_profile,
+        request_text=args.request_text,
+        goal=args.goal,
+        extra_tags=args.tag,
+        repro_dir=Path(args.repro_dir) if args.repro_dir else None,
+        invoked_command=" ".join(shlex.quote(item) for item in [sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]]),
     )
     text = save_json(payload, Path(args.output) if args.output else None)
     if not args.output:
@@ -631,47 +619,13 @@ def build_parser() -> argparse.ArgumentParser:
     session_export_parser.set_defaults(func=cmd_session_export_console)
 
     session_repro_parser = subparsers.add_parser(
-        "session-export-repro",
-        help="Export a reproducibility bundle for an existing session",
+        "session-export-repro-bundle",
+        help="Export a session-backed reproducibility bundle without creating a second execution truth.",
     )
     session_repro_parser.add_argument("--session-dir", required=True, help="Existing session directory")
-    session_repro_parser.add_argument("--output-dir", help="Optional target reproducibility bundle directory")
+    session_repro_parser.add_argument("--output-dir", help="Target reproducibility bundle directory (default: <session-dir>/repro)")
     session_repro_parser.add_argument("--output", help="Optional JSON output file")
-    session_repro_parser.set_defaults(func=cmd_session_export_repro)
-
-    hero_run_parser = subparsers.add_parser(
-        "hero-run",
-        help="Start a product-facing hero lane while preserving canonical session/run truth",
-    )
-    hero_run_parser.add_argument("--session-dir", required=True, help="Target session directory")
-    hero_run_parser.add_argument("--workflow-family", required=True, help="Hero workflow family id or workflow id")
-    hero_run_parser.add_argument("--strategy-profile", help="Optional strategy profile id for the selected hero workflow")
-    hero_run_parser.add_argument("--request-text", help="Optional natural-language request override")
-    hero_run_parser.add_argument("--goal", help="Optional explicit user goal override")
-    hero_run_parser.add_argument("--tag", action="append", default=[], help="Optional extra request tag")
-    hero_run_parser.add_argument("--reason", help="Optional approval reason recorded in session history")
-    hero_run_parser.add_argument("--advance", action="store_true", help="Advance the run once after auto-approval")
-    hero_run_parser.add_argument("--confirm", action="store_true", help="Confirm execution for confirmation-gated stages when advancing")
-    hero_run_parser.add_argument(
-        "--validation",
-        action="append",
-        default=[],
-        help="Validation result assignment, e.g. input_paths_exist=passed",
-    )
-    hero_run_parser.add_argument(
-        "--artifact",
-        action="append",
-        default=[],
-        help="Artifact spec, e.g. outputs/sample.bam:bam:Aligned BAM",
-    )
-    hero_run_parser.add_argument(
-        "--allow-missing-tools",
-        action="store_true",
-        help="Advance even when the current stage depends on tools not available on this machine.",
-    )
-    hero_run_parser.add_argument("--repro-dir", help="Optional reproducibility bundle output directory")
-    hero_run_parser.add_argument("--output", help="Optional JSON output file")
-    hero_run_parser.set_defaults(func=cmd_hero_run)
+    session_repro_parser.set_defaults(func=cmd_session_export_repro_bundle)
 
     session_serve_parser = subparsers.add_parser(
         "session-serve-console",
@@ -767,6 +721,20 @@ def build_parser() -> argparse.ArgumentParser:
     session_export_skill_parser.add_argument("--force", action="store_true", help="Export even when the session is not eligible for automatic crystallization")
     session_export_skill_parser.add_argument("--output", help="Optional JSON output file")
     session_export_skill_parser.set_defaults(func=cmd_session_export_skill)
+
+    hero_run_parser = subparsers.add_parser(
+        "hero-run",
+        help="Thin product-facing adapter that creates a session, approves the recommended plan, and exports a repro bundle.",
+    )
+    hero_run_parser.add_argument("--session-dir", required=True, help="Target session directory")
+    hero_run_parser.add_argument("--workflow-family", required=True, help="Grounded workflow family id")
+    hero_run_parser.add_argument("--strategy-profile", help="Optional strategy profile id")
+    hero_run_parser.add_argument("--request-text", help="Optional explicit request text override")
+    hero_run_parser.add_argument("--goal", help="Optional explicit goal override")
+    hero_run_parser.add_argument("--tag", action="append", default=[], help="Optional extra request tag")
+    hero_run_parser.add_argument("--repro-dir", help="Optional reproducibility bundle output directory")
+    hero_run_parser.add_argument("--output", help="Optional JSON output file")
+    hero_run_parser.set_defaults(func=cmd_hero_run)
 
     return parser
 
