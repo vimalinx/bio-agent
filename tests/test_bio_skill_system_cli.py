@@ -419,6 +419,103 @@ def test_benchmark_run_can_export_repro_bundle(tmp_path: Path) -> None:
     assert (repro_dir / "scorecard.json").exists()
 
 
+def test_session_export_repro_bundle_contains_required_files_and_truth_pointers(tmp_path: Path) -> None:
+    session_dir = tmp_path / "session"
+    run_cli(
+        "session-start",
+        "--session-dir",
+        str(session_dir),
+        "--workflow-family",
+        "rnaseq-differential-expression",
+        "--strategy-profile",
+        "star-featurecounts",
+    )
+    review = json.loads((session_dir / "review.json").read_text(encoding="utf-8"))
+    run_cli(
+        "session-approve",
+        "--session-dir",
+        str(session_dir),
+        "--plan-id",
+        review["recommended_plan_id"],
+    )
+
+    payload = json.loads(run_cli("session-export-repro", "--session-dir", str(session_dir)).stdout)
+    repro_dir = session_dir / "repro"
+
+    assert payload["path"] == str(repro_dir.resolve())
+    assert (repro_dir / "commands.sh").exists()
+    assert (repro_dir / "environment.json").exists()
+    assert (repro_dir / "provenance.json").exists()
+    assert (repro_dir / "delivery-bundle.json").exists()
+    assert (repro_dir / "checksums.sha256").exists()
+
+    provenance = json.loads((repro_dir / "provenance.json").read_text(encoding="utf-8"))
+    delivery_bundle = json.loads((repro_dir / "delivery-bundle.json").read_text(encoding="utf-8"))
+    checksums = (repro_dir / "checksums.sha256").read_text(encoding="utf-8")
+
+    assert provenance["workflow_id"] == "rnaseq-differential-expression"
+    assert provenance["selected_strategy_profile"] == "star-featurecounts"
+    assert provenance["canonical_records"]["run"].endswith("run.json")
+    assert provenance["canonical_records"]["run_status"].endswith("run-status.json")
+    assert provenance["canonical_records"]["run_review"].endswith("run-review.json")
+    assert "analysis summary" in delivery_bundle["expected_items"]
+    assert "commands.sh" in checksums
+    assert "delivery-bundle.json" in checksums
+
+
+def test_hero_run_advances_rnaseq_lane_and_exports_repro_bundle(tmp_path: Path) -> None:
+    session_dir = tmp_path / "hero-rnaseq"
+    payload = json.loads(
+        run_cli(
+            "hero-run",
+            "--session-dir",
+            str(session_dir),
+            "--workflow-family",
+            "rnaseq-differential-expression",
+            "--strategy-profile",
+            "star-featurecounts",
+            "--advance",
+            "--validation",
+            "input_paths_exist=passed",
+            "--validation",
+            "reference_bundle_available=passed",
+        ).stdout
+    )
+
+    assert payload["hero_lane"] == "rnaseq-differential-expression"
+    assert payload["approved_plan"]["source_workflow_id"] == "rnaseq-differential-expression"
+    assert payload["approved_plan"]["selected_strategy_profile"] == "star-featurecounts"
+    assert payload["run_status"]["current_stage"] == "s2"
+    assert Path(payload["canonical_records"]["run"]).exists()
+    assert Path(payload["canonical_records"]["run_status"]).exists()
+    assert Path(payload["canonical_records"]["run_review"]).exists()
+    assert Path(payload["repro_bundle"]["files"]["provenance"]).exists()
+    assert Path(payload["repro_bundle"]["files"]["delivery_bundle"]).exists()
+
+
+def test_hero_run_supports_germline_lane_without_creating_parallel_run_state(tmp_path: Path) -> None:
+    session_dir = tmp_path / "hero-germline"
+    payload = json.loads(
+        run_cli(
+            "hero-run",
+            "--session-dir",
+            str(session_dir),
+            "--workflow-family",
+            "germline-short-variant-discovery",
+            "--strategy-profile",
+            "bwa-gatk-hardfilter",
+        ).stdout
+    )
+
+    assert payload["hero_lane"] == "germline-short-variant-discovery"
+    assert payload["approved_plan"]["source_workflow_id"] == "germline-short-variant-discovery"
+    assert payload["approved_plan"]["selected_strategy_profile"] == "bwa-gatk-hardfilter"
+    assert Path(payload["canonical_records"]["run"]).name == "run.json"
+    assert Path(payload["canonical_records"]["run_status"]).name == "run-status.json"
+    assert Path(payload["canonical_records"]["run_review"]).name == "run-review.json"
+    assert Path(payload["repro_bundle"]["files"]["checksums"]).exists()
+
+
 def test_session_export_skill_requires_eligible_session_or_force(tmp_path: Path) -> None:
     session_dir = tmp_path / "session"
     skill_root = tmp_path / "skills"
