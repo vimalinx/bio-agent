@@ -112,7 +112,9 @@ def test_ci_workflow_separates_stable_and_smoke_lanes() -> None:
     workflow_path = ROOT / ".github" / "workflows" / "ci.yml"
     workflow_text = workflow_path.read_text(encoding="utf-8")
 
-    assert "stable:" in workflow_text
-    assert "smoke:" in workflow_text
+    assert "stable-regression:" in workflow_text
+    assert "hero-lane-truth-smoke:" in workflow_text
+    assert "optional-evidence-integration:" in workflow_text
     assert "scripts/ci/run_stable_tests.sh" in workflow_text
-    assert "scripts/ci/run_smoke_tests.sh" in workflow_text
+    assert "scripts/ci/run_session_hero_smoke.py" in workflow_text
+    assert "benchmark-suite --mode contract" in workflow_text
