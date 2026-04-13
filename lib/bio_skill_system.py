@@ -3288,7 +3288,15 @@ def _copy_session_repro_bundle(session_dir: Path, references_dir: Path) -> dict[
     target_dir = references_dir / "repro"
     target_dir.mkdir(parents=True, exist_ok=True)
     copied: dict[str, str] = {}
-    for name in ("commands.sh", "environment.json", "artifacts.json", "scorecard.json"):
+    for name in (
+        "commands.sh",
+        "environment.json",
+        "artifacts.json",
+        "scorecard.json",
+        "provenance.json",
+        "delivery-bundle.json",
+        "checksums.sha256",
+    ):
         source = repro_dir / name
         if not source.exists() or not source.is_file():
             continue
