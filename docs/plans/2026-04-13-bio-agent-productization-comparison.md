@@ -1,88 +1,42 @@
-# Bio-Agent Productization Comparison and Roadmap
+# Bio-Agent Productization Comparison — 2026-04-13
 
-_Date: 2026-04-13_
+## Comparative Judgment
 
-This is the canonical comparison-and-roadmap artifact for the current productization push. It replaces `reference/COMPARATIVE_ANALYSIS_REPORT.md` as the decision document that future work should cite.
+- **bio-agent** is strongest today at the **control-plane / truth-model** layer: plan generation, session lifecycle, benchmark-aware routing, and canonical `run.json` / `run-status.json` / `run-review.json` state.
+- **ClawBio** is strongest at **packaged reproducible delivery**: a smaller finished product promise with explicit bundle-style outputs.
+- **LabClaw** is strongest at **breadth and catalog coverage**: many discoverable capabilities, but not a single narrow first-party product surface.
 
-## Decision Summary
+## Recommended Direction
 
-`bio-agent` should be productized as a **control-plane-first hybrid**, not as:
+`bio-agent` should remain a **control-plane-first hybrid**, not a wet-lab/XR pivot and not a raw skill-count race.
 
-- a ClawBio clone,
-- a LabClaw-style skill-library breadth race, or
-- a wet-lab / XR / robotics pivot.
+The productization move is:
 
-The recommended move is to keep the current session / run / benchmark control plane as the source of truth, then layer a small number of exemplar product lanes on top of it.
-
-## Comparative Positioning
-
-| System | Current strength | What to borrow | What not to copy |
-| --- | --- | --- | --- |
-| `bio-agent` | plan-first orchestration, session truth, benchmark-aware control plane | keep as the canonical backbone | do not dilute it with a second orchestrator |
-| ClawBio | packaged local-first delivery and reproducibility bundles | automatic `commands.sh` / environment / checksum style outputs | do not narrow the whole repo to only one-command local execution |
-| LabClaw | breadth and capability browsing | honest capability catalog / connector surfacing | do not pivot toward wet-lab / XR breadth as the primary product story |
-
-## Product Direction
-
-The near-term product story is:
-
-1. **Preserve canonical runtime truth** — `run.json`, `run-status.json`, and `run-review.json` remain the execution source of truth.
-2. **Ship 2 hero workflow families first** — start with:
-   - `rnaseq-differential-expression`
-   - `germline-short-variant-discovery`
-3. **Make reproducibility a default output** for hero runs, not a manual benchmark-only export path.
-4. **Publish an evidence-derived capability catalog** that separates:
+1. Keep the canonical control plane as the execution source of truth.
+2. Productize a small set of **hero workflows** first.
+3. Attach automatic reproducibility bundles to those hero lanes.
+4. Publish an honest capability catalog that distinguishes:
    - `first_party_executable`
    - `bridge_executable`
    - `reference_only`
-5. **Keep crystallization gated to phase 2** until hero lanes, reproducibility, and stable review/status outputs are proven.
 
-## Execution Lanes
+## Hero Lanes
 
-### Lane A — Hero runner surface
-- Add a thin product-facing runner on top of the existing session lifecycle.
-- It must adapt inputs and output locations only.
-- It must not become a second orchestrator or bypass canonical session/run artifacts.
+The first two hero lanes are:
 
-### Lane B — Reproducibility bundle system
-- Emit `commands.sh`, environment snapshot, `checksums.sha256`, `provenance.json`, and `delivery-bundle.json` for hero runs.
-- Bundle generation should be automatic for product-facing runs.
+- `rnaseq-differential-expression`
+- `germline-short-variant-discovery`
 
-### Lane C — Capability catalog from evidence
-- Derive surfaced capability metadata from registries, exports, and proof-bearing artifacts.
-- Every capability should declare execution tier, runtime mode, verification level, reproducibility level, and source kind.
-
-### Lane D — Verification / CI / smoke proof
-- Keep the stable control-plane regression lane green.
-- Add separable hero-runner smoke checks.
-- Keep heavyweight bio-tool integration lanes optional and honest about environment requirements.
-
-### Lane E — Comparison / docs packaging
-- Publish the comparison, roadmap, and guardrails in the docs surface.
-- Make the control-plane-first hybrid story explicit in README, docs index, and architecture comparison pages.
+These lanes are now the benchmark-backed productization targets because they already have grounded workflow metadata, benchmark coverage, and canonical session/run convergence.
 
 ## Guardrails
 
 - No second orchestrator.
-- No marketing claim that collapses `defined`, `bridge-runnable`, and `first-party runnable` into one bucket.
-- No wet-lab / XR repositioning.
-- No crystallization-by-default before hero-runner proof exists.
-- No product runner that diverges from canonical `run.json` / `run-status.json` / `run-review.json` truth.
+- Canonical `run.json`, `run-status.json`, and `run-review.json` stay authoritative.
+- Session-to-skill crystallization remains phase 2 and must stay gated behind hero-runner proof plus reproducibility-bundle completeness.
 
-## Verification Shape
+## Packaging Implications
 
-The roadmap should be considered implemented only when the following are true:
-
-- stable local regression tests stay green,
-- the benchmark contract lane remains green,
-- both hero families have smoke coverage,
-- reproducibility bundle contents are emitted automatically for hero runs,
-- docs explain the capability tiers and product boundaries truthfully.
-
-## Canonical References
-
-- `README.md`
-- `.omx/plans/prd-2026-04-13-bio-agent-productization-roadmap.md`
-- `.omx/plans/test-spec-2026-04-13-bio-agent-productization-roadmap.md`
-- `docs/system/architecture-comparison-roadmap.html`
-- `reference/COMPARATIVE_ANALYSIS_REPORT.md` (historical raw snapshot only)
+- Product-facing hero commands must stay as **thin adapters** over the existing session machinery.
+- Reproducibility is not optional marketing copy; it must emit inspectable artifacts.
+- Capability breadth must never be presented as first-party runnable maturity unless the metadata proves it.

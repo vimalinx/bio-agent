@@ -229,6 +229,42 @@ def test_capability_catalog_page_and_data_exist() -> None:
     assert payload["summary"]["execution_tier_counts"]["reference_only"] >= 1
 
 
+def test_capability_catalog_page_and_data_exist() -> None:
+    page = ROOT / "docs" / "system" / "capability-catalog.html"
+    data_path = ROOT / "docs" / "system" / "data" / "capability-catalog.json"
+    registry_path = ROOT / "registry" / "capability_catalog.yaml"
+    index_page = ROOT / "docs" / "index.html"
+
+    html = page.read_text(encoding="utf-8")
+    payload = json.loads(data_path.read_text(encoding="utf-8"))
+    registry_text = registry_path.read_text(encoding="utf-8")
+    index_html = index_page.read_text(encoding="utf-8")
+
+    assert "Capability Catalog" in html
+    assert "first_party_executable" in html
+    assert "bridge_executable" in html
+    assert "reference_only" in html
+    assert "capability-catalog.json" in html
+    assert "capability-catalog.html" in index_html
+    assert payload["summary"]["group_counts"]["first_party_executable"] >= 2
+    assert payload["summary"]["group_counts"]["bridge_executable"] >= 1
+    assert payload["summary"]["group_counts"]["reference_only"] >= 1
+    assert "hero_workflows:" in registry_text
+    assert "automatic_session_bundle" in registry_text
+
+
+def test_productization_comparison_doc_exists() -> None:
+    comparison_doc = ROOT / "docs" / "plans" / "2026-04-13-bio-agent-productization-comparison.md"
+    text = comparison_doc.read_text(encoding="utf-8")
+
+    assert "bio-agent" in text
+    assert "ClawBio" in text
+    assert "LabClaw" in text
+    assert "control-plane-first hybrid" in text
+    assert "rnaseq-differential-expression" in text
+    assert "germline-short-variant-discovery" in text
+
+
 def test_architecture_and_index_link_to_real_workflow_map_and_analysis_flows() -> None:
     architecture_page = ROOT / "docs" / "system" / "bio-skill-system.html"
     index_page = ROOT / "docs" / "index.html"

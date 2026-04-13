@@ -215,7 +215,7 @@ def _runtime_status(runtime: dict[str, str | None]) -> tuple[str, bool]:
     if command:
         executable = command.split()[0]
         return "local-cli", shutil.which(executable) is not None
-    return "prompt-bridge", True
+    return "prompt-bridge", False
 
 
 def classify_skill(name: str, description: str) -> dict[str, Any]:
@@ -451,26 +451,26 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Collect locally available bioinformatics-related skills.")
     parser.add_argument(
         "--output",
-        default=str(ROOT / "docs" / "skills" / "local-bio-skill-inventory.md"),
         help="Markdown inventory output path.",
     )
     parser.add_argument("--format", choices=("markdown", "json", "capability-json"), default="markdown")
     args = parser.parse_args()
 
     records = collect_local_bio_skills()
-    output_path = Path(args.output).expanduser()
+    output_path = Path(args.output).expanduser() if args.output else None
     if args.format == "json":
         print(json.dumps(records, indent=2, ensure_ascii=False))
         return 0
     if args.format == "capability-json":
         payload = build_capability_catalog(records)
-        if args.output:
+        if output_path is not None:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         else:
             print(json.dumps(payload, indent=2, ensure_ascii=False))
         return 0
 
+    output_path = output_path or (ROOT / "docs" / "skills" / "local-bio-skill-inventory.md")
     write_inventory_doc(output_path, records)
     print(output_path)
     return 0

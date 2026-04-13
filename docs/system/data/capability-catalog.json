@@ -1,665 +1,2699 @@
 {
-  "catalog_policy": {
-    "version": 1,
-    "description": "Capability catalog vocabulary and hero-lane defaults for bio-agent productization.",
-    "execution_tiers": [
-      {
-        "id": "first_party_executable",
-        "description": "Repo-owned control-plane capability that runs through the local bio-agent surface."
-      },
-      {
-        "id": "bridge_executable",
-        "description": "Workflow or surface that routes through canonical session/run truth but depends on bridged runtime/tool availability."
-      },
-      {
-        "id": "reference_only",
-        "description": "Cited external reference used for grounding or comparison, not surfaced as a first-party runnable promise."
-      }
-    ],
-    "runtime_modes": [
-      {
-        "id": "local-agent-control-plane",
-        "description": "Local repo-owned orchestration or control-plane execution."
-      },
-      {
-        "id": "session-bridged-hybrid",
-        "description": "Canonical session/run orchestration with one or more local/external bridge stages."
-      },
-      {
-        "id": "session-bridged-local",
-        "description": "Canonical session/run orchestration where stage bridges are local-only."
-      },
-      {
-        "id": "external-reference",
-        "description": "External source material or reference stack."
-      }
-    ],
-    "verification_levels": [
-      {
-        "id": "registry_backed",
-        "description": "Backed by repo registries and checked for path/provenance presence."
-      },
-      {
-        "id": "benchmark_contract",
-        "description": "Backed by registry metadata plus benchmark/task contract coverage."
-      },
-      {
-        "id": "cited_reference",
-        "description": "Backed by cited official-source references only."
-      }
-    ],
-    "reproducibility_levels": [
-      {
-        "id": "canonical_session_truth",
-        "description": "Capability grounds into canonical request/plan/run/run-status/run-review artifacts."
-      },
-      {
-        "id": "delivery_bundle_defined",
-        "description": "Capability declares delivery-bundle outputs and reproducibility-facing metadata but may still depend on bridged tools."
-      },
-      {
-        "id": "external_project_contract",
-        "description": "Reproducibility promise belongs to an external project, not bio-agent itself."
-      }
-    ],
-    "source_kinds": [
-      {
-        "id": "seed_skill_registry",
-        "description": "Seeded repo skill registry entry."
-      },
-      {
-        "id": "analysis_flow_registry",
-        "description": "Repo analysis-flow registry entry combined with workflow, bridge, and benchmark metadata."
-      },
-      {
-        "id": "official_reference",
-        "description": "Official external source cited by workflow or benchmark registries."
-      }
-    ],
-    "hero_workflow_ids": [
-      "rnaseq-differential-expression",
-      "germline-short-variant-discovery"
-    ]
+  "generated_at": "2026-04-13T15:27:12+08:00",
+  "catalog_version": 1,
+  "vocabulary": {
+    "execution_tier": {
+      "first_party_executable": "Productized hero workflow surfaced through the canonical bio-agent session/run control plane.",
+      "bridge_executable": "Runnable capability exposed through discovered tool/skill bridges, but not yet packaged as a first-party hero lane.",
+      "reference_only": "Grounded workflow or knowledge surface kept for planning/reference honesty rather than direct first-party execution claims."
+    },
+    "runtime_mode": {
+      "session-hero-runner": "Thin adapter over canonical session/run truth.",
+      "local-cli": "Depends on a locally available tool bridge.",
+      "prompt-bridge": "Skill/prompt surface without a verified local executable contract.",
+      "planning-reference": "Registry/documentation-only capability used for planning and comparison."
+    },
+    "verification_level": {
+      "benchmark_contract": "Backed by benchmark contract checks and smoke coverage.",
+      "machine_detected": "Local executable or command bridge detected on this machine.",
+      "declared_only": "Declared by metadata but not currently verified as locally available.",
+      "registry_modeled": "Grounded in workflow/benchmark registries only."
+    },
+    "reproducibility_level": {
+      "automatic_session_bundle": "Hero runner emits a reproducibility bundle automatically.",
+      "manual_bridge": "Reproducibility depends on operator-managed bridge/tool usage.",
+      "not_packaged": "No first-party reproducibility bundle is promised yet."
+    }
   },
   "summary": {
-    "total_capabilities": 21,
-    "execution_tier_counts": {
-      "bridge_executable": 4,
-      "first_party_executable": 8,
-      "reference_only": 9
-    },
-    "capability_kind_counts": {
-      "control_plane_skill": 8,
-      "official_reference": 9,
-      "workflow_family": 4
-    },
-    "hero_workflow_ids": [
-      "germline-short-variant-discovery",
-      "rnaseq-differential-expression"
-    ],
-    "project_skill_count": 417
+    "capability_count": 140,
+    "group_counts": {
+      "first_party_executable": 2,
+      "reference_only": 2,
+      "bridge_executable": 136
+    }
   },
   "capabilities": [
     {
-      "id": "atacseq-differential-accessibility",
-      "title": "ATAC-seq peak calling and differential accessibility",
-      "capability_kind": "workflow_family",
+      "id": "archive-nlmnlp",
+      "name": "archive-nlmnlp",
+      "capability_group": "bridge_executable",
       "execution_tier": "bridge_executable",
-      "runtime_mode": "session-bridged-local",
-      "verification_level": "benchmark_contract",
-      "reproducibility_level": "delivery_bundle_defined",
-      "source_kind": "analysis_flow_registry",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when maintaining a local NLM NLP concept archive over PubMed for offline chemical, disease, gene, or GeneRIF lookups.",
       "runnable": true,
-      "hero_lane": false,
-      "summary": "Move from raw ATAC-seq reads to filtered alignments, peak sets, consensus accessibility matrices, and differential accessibility results.",
-      "stage_count": 5,
-      "delivery_bundle_items": [
-        "filtered BAM inventory",
-        "accessibility QC summary",
-        "bigWig track inventory",
-        "consensus peak matrix",
-        "differential accessibility result table",
-        "analysis summary"
-      ],
-      "request_tags": [
-        "atacseq",
-        "atac-seq",
-        "chromatin-accessibility",
-        "peaks",
-        "differential-accessibility"
-      ],
-      "benchmark_ids": [
-        "encode-atac-conformance"
-      ],
-      "bridge_execution_modes": [
-        "local-cli",
-        "local-or-external",
-        "local-python"
-      ],
-      "required_tools": [
-        "bowtie2",
-        "bwa",
-        "fastqc",
-        "macs3",
-        "multiqc"
-      ],
-      "reproducibility_support": [
-        "planned"
-      ],
-      "strategy_ids": [
-        "bowtie2-macs3",
-        "bwa-macs3"
-      ],
+      "category": "bio-databases-and-literature",
       "provenance": {
-        "analysis_flow_registry": "registry/analysis_flows.yaml",
-        "workflow_registry": "registry/workflows.yaml",
-        "execution_bridges": "registry/execution_bridges.yaml",
-        "benchmarks": "registry/benchmarks.yaml"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/archive-nlmnlp/SKILL.md",
+        "command": "archive-nlmnlp [daily|-index]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/archive-nlmnlp"
       }
     },
     {
-      "id": "germline-short-variant-discovery",
-      "title": "Germline SNP/Indel discovery for WGS/WES",
-      "capability_kind": "workflow_family",
+      "id": "between-two-genes",
+      "name": "between-two-genes",
+      "capability_group": "bridge_executable",
       "execution_tier": "bridge_executable",
-      "runtime_mode": "session-bridged-local",
-      "verification_level": "benchmark_contract",
-      "reproducibility_level": "delivery_bundle_defined",
-      "source_kind": "analysis_flow_registry",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when extracting the inclusive tabular block between two gene-name rows from a first-column gene list or interval table.",
       "runnable": true,
-      "hero_lane": true,
-      "summary": "Move from raw WES/WGS reads to analysis-ready BAMs, gVCFs, a joint cohort VCF, filtered variants, and final cohort review artifacts.",
-      "stage_count": 5,
-      "delivery_bundle_items": [
-        "analysis-ready BAM inventory",
-        "recalibration metrics",
-        "gVCF manifest",
-        "joint VCF manifest",
-        "filtered VCF manifest",
-        "cohort QC summary"
-      ],
-      "request_tags": [
-        "germline-variant",
-        "variant-calling",
-        "wes",
-        "wgs",
-        "gvcf",
-        "snp-indel"
-      ],
-      "benchmark_ids": [
-        "giab-precisionfda-small-variant"
-      ],
-      "bridge_execution_modes": [
-        "local-cli",
-        "local-or-external",
-        "local-python"
-      ],
-      "required_tools": [
-        "bcftools",
-        "bwa",
-        "gatk-genotypegvcfs",
-        "gatk-haplotypecaller",
-        "samtools",
-        "variantrecalibrator"
-      ],
-      "reproducibility_support": [
-        "planned"
-      ],
-      "strategy_ids": [
-        "bwa-gatk-hardfilter",
-        "bwa-gatk-vqsr"
-      ],
+      "category": "bio-databases-and-literature",
       "provenance": {
-        "analysis_flow_registry": "registry/analysis_flows.yaml",
-        "workflow_registry": "registry/workflows.yaml",
-        "execution_bridges": "registry/execution_bridges.yaml",
-        "benchmarks": "registry/benchmarks.yaml"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/between-two-genes/SKILL.md",
+        "command": "printf 'geneA\\t1\\ngeneB\\t2\\ngeneC\\t3\\ngeneD\\t4\\n' | /home/vimalinx/miniforge3/envs/bio/bin/between-two-genes geneB geneC",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/between-two-genes"
       }
     },
     {
-      "id": "rnaseq-differential-expression",
-      "title": "Bulk RNA-seq differential expression",
-      "capability_kind": "workflow_family",
+      "id": "biomni",
+      "name": "biomni",
+      "capability_group": "bridge_executable",
       "execution_tier": "bridge_executable",
-      "runtime_mode": "session-bridged-hybrid",
-      "verification_level": "benchmark_contract",
-      "reproducibility_level": "delivery_bundle_defined",
-      "source_kind": "analysis_flow_registry",
-      "runnable": true,
-      "hero_lane": true,
-      "summary": "Move from raw paired-end FASTQ reads to a counts matrix and differential expression result bundle with explicit QC and review boundaries.",
-      "stage_count": 5,
-      "delivery_bundle_items": [
-        "aligned BAM inventory",
-        "MultiQC report",
-        "gene count matrix",
-        "differential expression result table",
-        "analysis summary"
-      ],
-      "request_tags": [
-        "rnaseq",
-        "differential-expression",
-        "bulk-transcriptomics",
-        "fastq",
-        "counts-matrix"
-      ],
-      "benchmark_ids": [
-        "seqc2-bulk-rnaseq"
-      ],
-      "bridge_execution_modes": [
-        "external-or-manual",
-        "local-cli",
-        "local-or-external",
-        "local-python",
-        "manual-or-agent"
-      ],
-      "required_tools": [
-        "fastqc",
-        "feature-counts",
-        "multiqc",
-        "pydeseq2",
-        "salmon",
-        "star",
-        "tximport"
-      ],
-      "reproducibility_support": [
-        "planned"
-      ],
-      "strategy_ids": [
-        "salmon-tximport",
-        "star-featurecounts"
-      ],
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when working from the local Biomni repository to run agent-style biomedical tasks or inspect Biomni's biomedical tool modules and examples.",
+      "runnable": false,
+      "category": "bio-databases-and-literature",
       "provenance": {
-        "analysis_flow_registry": "registry/analysis_flows.yaml",
-        "workflow_registry": "registry/workflows.yaml",
-        "execution_bridges": "registry/execution_bridges.yaml",
-        "benchmarks": "registry/benchmarks.yaml"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/biomni/SKILL.md",
+        "command": null,
+        "local_executable": null
       }
     },
     {
-      "id": "scrnaseq-preprocessing",
-      "title": "Single-cell RNA-seq preprocessing and clustering-ready matrix generation",
-      "capability_kind": "workflow_family",
+      "id": "blst2gm",
+      "name": "blst2gm",
+      "capability_group": "bridge_executable",
       "execution_tier": "bridge_executable",
-      "runtime_mode": "session-bridged-hybrid",
-      "verification_level": "benchmark_contract",
-      "reproducibility_level": "delivery_bundle_defined",
-      "source_kind": "analysis_flow_registry",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when converting compatible BLAST annotation XML/ASN streams into a compact gene-markup-style table for downstream EDirect interval helpers.",
       "runnable": true,
-      "hero_lane": false,
-      "summary": "Move from raw single-cell reads and chemistry metadata to a filtered matrix, QC metrics, embeddings, and marker-review artifacts.",
-      "stage_count": 5,
-      "delivery_bundle_items": [
-        "filtered matrix",
-        "QC metrics table",
-        "embeddings and cluster assignments",
-        "marker table",
-        "marker review summary"
-      ],
-      "request_tags": [
-        "scrnaseq",
-        "single-cell",
-        "10x",
-        "umi",
-        "cell-barcode"
-      ],
-      "benchmark_ids": [
-        "openproblems-single-cell"
-      ],
-      "bridge_execution_modes": [
-        "external-or-manual",
-        "local-python",
-        "manual-or-agent"
-      ],
-      "required_tools": [
-        "cellranger",
-        "multiqc",
-        "scanpy",
-        "starsolo"
-      ],
-      "reproducibility_support": [
-        "planned"
-      ],
-      "strategy_ids": [
-        "cellranger",
-        "starsolo"
-      ],
+      "category": "bio-databases-and-literature",
       "provenance": {
-        "analysis_flow_registry": "registry/analysis_flows.yaml",
-        "workflow_registry": "registry/workflows.yaml",
-        "execution_bridges": "registry/execution_bridges.yaml",
-        "benchmarks": "registry/benchmarks.yaml"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/blst2gm/SKILL.md",
+        "command": "cat blast_input.asn | blst2gm",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/blst2gm"
       }
     },
     {
-      "id": "candidate-plan-generator",
-      "title": "candidate-plan-generator",
-      "capability_kind": "control_plane_skill",
-      "execution_tier": "first_party_executable",
-      "runtime_mode": "local-agent-control-plane",
-      "verification_level": "registry_backed",
-      "reproducibility_level": "canonical_session_truth",
-      "source_kind": "seed_skill_registry",
+      "id": "bowtie2-align-s",
+      "name": "bowtie2-align-s",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning sequencing reads (FASTQ/FASTA) to a reference genome using Bowtie 2. Supports paired-end, unpaired, interleaved, and BAM inputs with SAM output.",
       "runnable": true,
-      "summary": "Use when generating multiple candidate plans from a normalized request before the user approves execution.",
-      "layer": "orchestrator",
-      "path": ".claude/skills/orchestrator/candidate-plan-generator/SKILL.md",
-      "classification_source": "layered-path",
+      "category": "bio-databases-and-literature",
       "provenance": {
-        "registry": "registry/skills.yaml",
-        "skill_path": ".claude/skills/orchestrator/candidate-plan-generator/SKILL.md",
-        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/bowtie2-align-s/SKILL.md",
+        "command": "bowtie2-align-s -x <bt2-idx> {-1 <m1> -2 <m2> | -U <r>} [-S <sam>]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/bowtie2-align-s"
       }
     },
     {
-      "id": "execution-guard",
-      "title": "execution-guard",
-      "capability_kind": "control_plane_skill",
-      "execution_tier": "first_party_executable",
-      "runtime_mode": "local-agent-control-plane",
-      "verification_level": "registry_backed",
-      "reproducibility_level": "canonical_session_truth",
-      "source_kind": "seed_skill_registry",
+      "id": "disambiguate-nucleotides",
+      "name": "disambiguate-nucleotides",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when expanding IUPAC ambiguous nucleotide strings into all concrete DNA sequences in shell or EDirect pipelines.",
       "runnable": true,
-      "summary": "Use when deciding whether a plan stage should continue automatically, pause for confirmation, or escalate because of risk.",
-      "layer": "orchestrator",
-      "path": ".claude/skills/orchestrator/execution-guard/SKILL.md",
-      "classification_source": "layered-path",
+      "category": "bio-databases-and-literature",
       "provenance": {
-        "registry": "registry/skills.yaml",
-        "skill_path": ".claude/skills/orchestrator/execution-guard/SKILL.md",
-        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/disambiguate-nucleotides/SKILL.md",
+        "command": "echo RCCGGY | disambiguate-nucleotides",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/disambiguate-nucleotides"
       }
     },
     {
-      "id": "plan-comparator",
-      "title": "plan-comparator",
-      "capability_kind": "control_plane_skill",
-      "execution_tier": "first_party_executable",
-      "runtime_mode": "local-agent-control-plane",
-      "verification_level": "registry_backed",
-      "reproducibility_level": "canonical_session_truth",
-      "source_kind": "seed_skill_registry",
+      "id": "efilter",
+      "name": "efilter",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when filtering Entrez search results by date, organism, publication type, sequence features, or other database-specific criteria in bioinformatics pipelines.",
       "runnable": true,
-      "summary": "Use when comparing candidate plans and explaining trade-offs so the user can select or modify a plan.",
-      "layer": "orchestrator",
-      "path": ".claude/skills/orchestrator/plan-comparator/SKILL.md",
-      "classification_source": "layered-path",
+      "category": "bio-databases-and-literature",
       "provenance": {
-        "registry": "registry/skills.yaml",
-        "skill_path": ".claude/skills/orchestrator/plan-comparator/SKILL.md",
-        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/efilter/SKILL.md",
+        "command": "efilter",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/efilter"
       }
     },
     {
-      "id": "plan-editor",
-      "title": "plan-editor",
-      "capability_kind": "control_plane_skill",
-      "execution_tier": "first_party_executable",
-      "runtime_mode": "local-agent-control-plane",
-      "verification_level": "registry_backed",
-      "reproducibility_level": "canonical_session_truth",
-      "source_kind": "seed_skill_registry",
+      "id": "extract-splice-sites-py",
+      "name": "extract-splice-sites-py",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when extracting splice junction sites from GTF annotation files for HISAT2 genome indexing or RNA-seq alignment workflows.",
       "runnable": true,
-      "summary": "Use when incorporating user changes into a selected plan while preserving execution structure and validation semantics.",
-      "layer": "orchestrator",
-      "path": ".claude/skills/orchestrator/plan-editor/SKILL.md",
-      "classification_source": "layered-path",
+      "category": "bio-databases-and-literature",
       "provenance": {
-        "registry": "registry/skills.yaml",
-        "skill_path": ".claude/skills/orchestrator/plan-editor/SKILL.md",
-        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/extract-splice-sites-py/SKILL.md",
+        "command": "extract_splice_sites.py [gtf_file]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/extract_splice_sites.py"
+      }
+    },
+    {
+      "id": "feature-counts",
+      "name": "feature-counts",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to assign aligned sequencing reads to genes or genomic features for expression quantification from SAM/BAM files",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/feature-counts/SKILL.md",
+        "command": "featureCounts",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/featureCounts"
+      }
+    },
+    {
+      "id": "find-in-gene",
+      "name": "find-in-gene",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when filtering EDirect `GENE` XML records by strand and coordinate overlap to emit matching gene names.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/find-in-gene/SKILL.md",
+        "command": "cat genes.xml | PATH=/home/vimalinx/miniforge3/envs/bio/bin:$PATH /home/vimalinx/miniforge3/envs/bio/bin/find-in-gene plus 1200 1800",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/find-in-gene"
+      }
+    },
+    {
+      "id": "gene2range",
+      "name": "gene2range",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when converting Entrez Gene `DocumentSummary` XML for one chromosome into sorted `GENE` interval XML.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/gene2range/SKILL.md",
+        "command": "PATH=/home/vimalinx/miniforge3/envs/bio/bin:$PATH /home/vimalinx/miniforge3/envs/bio/bin/gene2range chr1 < gene_summaries.xml",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/gene2range"
+      }
+    },
+    {
+      "id": "gff2gff",
+      "name": "gff2gff",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when a GFF file needs bcftools/csq-compatible gene and transcript attributes before consequence annotation.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/gff2gff/SKILL.md",
+        "command": "zcat in.gff.gz | /home/vimalinx/miniforge3/envs/bio/bin/gff2gff | gzip -c > out.gff.gz",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/gff2gff"
+      }
+    },
+    {
+      "id": "hisat2",
+      "name": "hisat2",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning RNA-seq reads to a reference genome using graph-based indexing for fast and sensitive spliced alignment.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/hisat2/SKILL.md",
+        "command": "hisat2 [options]* -x <ht2-idx> {-1 <m1> -2 <m2> | -U <r>} [-S <sam>]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/hisat2"
+      }
+    },
+    {
+      "id": "hisat2-align-l",
+      "name": "hisat2-align-l",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning RNA-seq reads to a reference genome using a HISAT2 index, particularly for splice-aware alignment of transcriptomic data.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/hisat2-align-l/SKILL.md",
+        "command": "hisat2-align-l -x <ht2-idx> {-1 <m1> -2 <m2> | -U <r>} [-S <sam>]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/hisat2-align-l"
+      }
+    },
+    {
+      "id": "hisat2-extract-snps-haplotypes-vcf-py",
+      "name": "hisat2-extract-snps-haplotypes-vcf-py",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when extracting SNPs and haplotypes from VCF files to build variant-aware HISAT2 graph genome indexes",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/hisat2-extract-snps-haplotypes-vcf-py/SKILL.md",
+        "command": "hisat2_extract_snps_haplotypes_VCF.py <genome_file> <VCF_fnames> <base_fname>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/hisat2_extract_snps_haplotypes_VCF.py"
+      }
+    },
+    {
+      "id": "hisat2-simulate-reads-py",
+      "name": "hisat2-simulate-reads-py",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when simulating RNA-seq or DNA-seq reads from a reference genome and GTF annotation file, optionally incorporating SNP variants and controlling expression profiles.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/hisat2-simulate-reads-py/SKILL.md",
+        "command": "hisat2_simulate_reads.py [genome_file] [gtf_file] [snp_file] [base_fname]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/hisat2_simulate_reads.py"
+      }
+    },
+    {
+      "id": "imagegen",
+      "name": "imagegen",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-background cutouts. Use when Codex should create a brand-new image, transform an existing image, or derive visual variants from references, and the output should be a bitmap asset rather than repo-native code or vector. Do not use when the task is better handled by editing existing SVG/vector/code-native assets, extending an established icon or logo system, or building the visual directly in HTML/CSS/canvas.",
+      "runnable": false,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "global-codex",
+        "skill_path": "/home/vimalinx/.codex/skills/.system/imagegen/SKILL.md",
+        "command": null,
+        "local_executable": null
+      }
+    },
+    {
+      "id": "iqtree3",
+      "name": "iqtree3",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when inferring maximum-likelihood phylogenetic trees, selecting substitution models, running bootstrap support analyses, or performing partitioned phylogenetic analyses on sequence alignments.",
+      "runnable": false,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/iqtree3/SKILL.md",
+        "command": null,
+        "local_executable": null
+      }
+    },
+    {
+      "id": "nhance-sh",
+      "name": "nhance-sh",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when trying the `nhance.sh` shortcut wrapper around `nquire` for pathway, gene-to-pathway, LitVar, or citation-match lookups against NCBI-related endpoints.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/nhance-sh/SKILL.md",
+        "command": "nhance.sh <shortcut> <query>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/nhance.sh"
+      }
+    },
+    {
+      "id": "nhmmer",
+      "name": "nhmmer",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when searching DNA or RNA queries against nucleotide sequence databases with HMMER's nucleotide homology search engine.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/nhmmer/SKILL.md",
+        "command": "nhmmer",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/nhmmer"
+      }
+    },
+    {
+      "id": "nhmmscan",
+      "name": "nhmmscan",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when scanning DNA or RNA sequences against a nucleotide profile HMM database such as Dfam to identify annotated families or repeated elements.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/nhmmscan/SKILL.md",
+        "command": "nhmmscan [options] <hmmdb> <seqfile>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/nhmmscan"
+      }
+    },
+    {
+      "id": "plot-ampliconstats",
+      "name": "plot-ampliconstats",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when visualizing amplicon sequencing statistics from samtools ampliconstats output, generating heatmaps and graphs for coverage and read analysis.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/plot-ampliconstats/SKILL.md",
+        "command": "plot-ampliconstats prefix [FILE]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/plot-ampliconstats"
+      }
+    },
+    {
+      "id": "random-bed",
+      "name": "random-bed",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when generating random genomic intervals for simulation, background sets, or statistical testing.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/random-bed/SKILL.md",
+        "command": "randomBed -g genome.txt [-l length] [-n count] [-seed int]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/randomBed"
+      }
+    },
+    {
+      "id": "star-avx2",
+      "name": "star-avx2",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning RNA-seq reads to a reference genome or generating genome indices for spliced transcript alignment",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/star-avx2/SKILL.md",
+        "command": "STAR-avx2",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/STAR-avx2"
+      }
+    },
+    {
+      "id": "star-plain",
+      "name": "star-plain",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning RNA-seq reads to a reference genome with splice-aware mapping, generating genome indices, or performing related operations like lift-over and BAM input processing.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/star-plain/SKILL.md",
+        "command": "STAR-plain",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/STAR-plain"
+      }
+    },
+    {
+      "id": "star-sse3",
+      "name": "star-sse3",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning RNA-seq reads to a reference genome with splice-aware mapping, generating genome indexes, or performing splice junction detection.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/star-sse3/SKILL.md",
+        "command": "STAR-sse3 --genomeDir /path/to/index --readFilesIn reads.fq",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/STAR-sse3"
+      }
+    },
+    {
+      "id": "star-sse4-1",
+      "name": "star-sse4-1",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning RNA-seq reads to a reference genome, generating STAR genome indices, or performing splice-aware transcript alignment.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/star-sse4-1/SKILL.md",
+        "command": "STAR-sse4.1",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/STAR-sse4.1"
+      }
+    },
+    {
+      "id": "star-ssse3",
+      "name": "star-ssse3",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning RNA-seq reads to a reference genome or generating splice-aware genome indices for transcript alignment.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/star-ssse3/SKILL.md",
+        "command": "STAR-ssse3",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/STAR-ssse3"
+      }
+    },
+    {
+      "id": "starlong-avx",
+      "name": "starlong-avx",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning long RNA-seq reads to a reference genome with splice-aware mapping, or when generating STAR genome indices for long-read data.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/starlong-avx/SKILL.md",
+        "command": "STARlong-avx",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/STARlong-avx"
+      }
+    },
+    {
+      "id": "starlong-avx2",
+      "name": "starlong-avx2",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning long RNA-seq reads to a reference genome using the AVX2-optimized STARlong aligner for splice-aware mapping.",
+      "runnable": false,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/starlong-avx2/SKILL.md",
+        "command": null,
+        "local_executable": null
+      }
+    },
+    {
+      "id": "starlong-plain",
+      "name": "starlong-plain",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning long RNA-seq reads (PacBio, Nanopore) to a reference genome using splice-aware mapping with STARlong.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/starlong-plain/SKILL.md",
+        "command": "STARlong-plain --genomeDir /path/to/index --readFilesIn reads.fastq",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/STARlong-plain"
+      }
+    },
+    {
+      "id": "starlong-sse3",
+      "name": "starlong-sse3",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning long RNA-seq reads to a reference genome using STARlong with SSE3 optimization, or when generating genome indices for long-read splice-aware alignment.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/starlong-sse3/SKILL.md",
+        "command": "STARlong-sse3",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/STARlong-sse3"
+      }
+    },
+    {
+      "id": "starlong-sse4-1",
+      "name": "starlong-sse4-1",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning long RNA-seq reads to a reference genome or generating genome indexes for spliced transcript alignment",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/starlong-sse4-1/SKILL.md",
+        "command": "STARlong-sse4.1",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/STARlong-sse4.1"
+      }
+    },
+    {
+      "id": "starlong-ssse3",
+      "name": "starlong-ssse3",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning long RNA-seq reads to a reference genome with splice-aware mapping using the SSSE3-optimized STARlong binary.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/starlong-ssse3/SKILL.md",
+        "command": "STARlong-ssse3 --genomeDir /path/to/index --readFilesIn reads.fq",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/STARlong-ssse3"
+      }
+    },
+    {
+      "id": "subjunc",
+      "name": "subjunc",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning RNA-seq reads to a reference genome with junction detection, including exon-exon junctions and gene fusions.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/subjunc/SKILL.md",
+        "command": "subjunc -i <index> -r <reads> -o <output.bam>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/subjunc"
+      }
+    },
+    {
+      "id": "sublong",
+      "name": "sublong",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning long FASTQ reads to a reference genome with Subread's long-read aligner, optionally in RNA-seq mode.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/sublong/SKILL.md",
+        "command": "sublong -i <index_name> -r <input.fastq> -o <output.bam>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/sublong"
+      }
+    },
+    {
+      "id": "subread-fullscan",
+      "name": "subread-fullscan",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when scanning a reference index for all high-similarity genomic locations of one specific read sequence string.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/subread-fullscan/SKILL.md",
+        "command": "subread-fullscan [options] -i <index_name> <read_string>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/subread-fullscan"
+      }
+    },
+    {
+      "id": "vcf-consensus",
+      "name": "vcf-consensus",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when applying VCF variants to a reference FASTA to generate a consensus sequence.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/vcf-consensus/SKILL.md",
+        "command": "cat ref.fa | vcf-consensus [OPTIONS] in.vcf.gz > out.fa",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/vcf-consensus"
+      }
+    },
+    {
+      "id": "vcf-query",
+      "name": "vcf-query",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when extracting and formatting specific fields from compressed VCF files, querying variants by region, or generating custom tabular output with genotype and INFO data.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/vcf-query/SKILL.md",
+        "command": "vcf-query [OPTIONS] file.vcf.gz",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/vcf-query"
+      }
+    },
+    {
+      "id": "vcf-stats",
+      "name": "vcf-stats",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when computing statistics on VCF files, filtering variant data by quality or fields, or generating summary reports from gzipped VCF inputs.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/vcf-stats/SKILL.md",
+        "command": "vcf-stats [OPTIONS] file.vcf.gz",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/vcf-stats"
+      }
+    },
+    {
+      "id": "window-maker",
+      "name": "window-maker",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to create adjacent or sliding windows across a genome or BED file for binning genomic regions into fixed-size or fixed-count intervals.",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/window-maker/SKILL.md",
+        "command": "windowMaker [-g genome.txt | -b intervals.bed] [-w size | -n count] [options]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/windowMaker"
+      }
+    },
+    {
+      "id": "windowmasker",
+      "name": "windowmasker",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when masking repetitive or low-complexity regions in genomic sequences before alignment or database searches",
+      "runnable": true,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/windowmasker/SKILL.md",
+        "command": "windowmasker",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/windowmasker"
+      }
+    },
+    {
+      "id": "yeast_database",
+      "name": "yeast_database",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when working inside the local `yeast_genome_learning` project to download, validate, and analyze Saccharomyces cerevisiae reference data through its teaching scripts.",
+      "runnable": false,
+      "category": "bio-databases-and-literature",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/yeast_database/SKILL.md",
+        "command": null,
+        "local_executable": null
+      }
+    },
+    {
+      "id": "annot-tsv",
+      "name": "annot-tsv",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to annotate regions in a target TSV/BED file with information from overlapping regions in a source file, transfer columns between files based on genomic overlap, or filter/drop overlapping records.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/annot-tsv/SKILL.md",
+        "command": "annot-tsv -s source.txt -t target.txt -c chr,beg,end -f info:INFO > output.txt",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/annot-tsv"
+      }
+    },
+    {
+      "id": "bcftools",
+      "name": "bcftools",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when working with VCF/BCF variant files for indexing, manipulation, analysis, or variant calling.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/bcftools/SKILL.md",
+        "command": "bcftools",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/bcftools"
+      }
+    },
+    {
+      "id": "bgzip",
+      "name": "bgzip",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to compress or decompress files using BGZF (Blocked GNU Zip Format), create BGZF indexes for random access, or prepare bioinformatics files for tabix indexing.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/bgzip/SKILL.md",
+        "command": "bgzip [OPTIONS] [FILE]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/bgzip"
+      }
+    },
+    {
+      "id": "bioinformatics-toolkit",
+      "name": "bioinformatics-toolkit",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need a workspace-level entry point to choose among the installed bioinformatics CLIs and repo-backed AI/bio projects in this environment.",
+      "runnable": false,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/bioinformatics-toolkit/SKILL.md",
+        "command": null,
+        "local_executable": null
+      }
+    },
+    {
+      "id": "blastn",
+      "name": "blastn",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when performing nucleotide-nucleotide similarity searches to identify homologs, annotate sequences, or compare query sequences against nucleotide databases.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/blastn/SKILL.md",
+        "command": "blastn",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/blastn"
+      }
+    },
+    {
+      "id": "bowtie2",
+      "name": "bowtie2",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning short reads to a reference genome or indexed sequence database. Suitable for mapping FASTQ/FASTA reads in paired-end or single-end mode to produce SAM output.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/bowtie2/SKILL.md",
+        "command": "bowtie2 -x <bt2-idx> -1 <m1> -2 <m2> -S <sam>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/bowtie2"
+      }
+    },
+    {
+      "id": "bowtie2-align-l",
+      "name": "bowtie2-align-l",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning sequencing reads to a reference using Bowtie 2's large-index alignment engine.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/bowtie2-align-l/SKILL.md",
+        "command": "bowtie2-align-l",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/bowtie2-align-l"
+      }
+    },
+    {
+      "id": "bwa",
+      "name": "bwa",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning low-divergence DNA sequence reads to a reference genome",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/bwa/SKILL.md",
+        "command": "bwa",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/bwa"
+      }
+    },
+    {
+      "id": "closest-bed",
+      "name": "closest-bed",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to find the closest genomic feature in one file for each feature in another file, including distance calculations and strand-aware lookups.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/closest-bed/SKILL.md",
+        "command": "closestBed -a <A> -b <B> [options]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/closestBed"
+      }
+    },
+    {
+      "id": "cluster-bed",
+      "name": "cluster-bed",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to cluster overlapping or nearby genomic intervals in BED, GFF, or VCF files into groups.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/cluster-bed/SKILL.md",
+        "command": "clusterBed -i intervals.bed [options]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/clusterBed"
+      }
+    },
+    {
+      "id": "complement-bed",
+      "name": "complement-bed",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to find genomic regions NOT covered by features in a BED/GFF/VCF file, such as identifying gaps, intergenic regions, or uncovered intervals.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/complement-bed/SKILL.md",
+        "command": "complementBed -i intervals.bed -g genome.txt [options]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/complementBed"
+      }
+    },
+    {
+      "id": "cutadapt",
+      "name": "cutadapt",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to remove adapter sequences from high-throughput sequencing reads, trim low-quality bases, or filter reads by length. Supports single-end and paired-end FASTQ/FASTA input with error-tolerant adapter matching.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/cutadapt/SKILL.md",
+        "command": "cutadapt -a ADAPTER -o output.fastq input.fastq",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/cutadapt"
+      }
+    },
+    {
+      "id": "download-sequence",
+      "name": "download-sequence",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when downloading NCBI ASN.1 biological sequence archive divisions such as BCT, PLN, or VRL into the current directory.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/download-sequence/SKILL.md",
+        "command": "download-sequence division...",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/download-sequence"
+      }
+    },
+    {
+      "id": "esl-seqstat",
+      "name": "esl-seqstat",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to compute and report statistics on biological sequence files (e.g., count, length distribution, composition) as part of HMMER/Easel workflows.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/esl-seqstat/SKILL.md",
+        "command": "esl-seqstat [options] <seqfile>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/esl-seqstat"
+      }
+    },
+    {
+      "id": "exact-snp",
+      "name": "exact-snp",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when calling SNPs from aligned SAM/BAM reads with Subread's `exactSNP` variant caller.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/exact-snp/SKILL.md",
+        "command": "exactSNP -i <alignment.sam|bam> -g <reference.fa> -o <output.vcf>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/exactSNP"
+      }
+    },
+    {
+      "id": "fasta-from-bed",
+      "name": "fasta-from-bed",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when extracting DNA or RNA sequences from a FASTA file using coordinate ranges from BED, GFF, or VCF files.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/fasta-from-bed/SKILL.md",
+        "command": "fastaFromBed -fi reference.fa -bed intervals.bed [options]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/fastaFromBed"
+      }
+    },
+    {
+      "id": "fasterq-dump",
+      "name": "fasterq-dump",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when extracting FASTQ or FASTA files from NCBI SRA run accessions, especially after staging runs locally with prefetch.",
+      "runnable": false,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/fasterq-dump/SKILL.md",
+        "command": "fasterq-dump",
+        "local_executable": null
+      }
+    },
+    {
+      "id": "fastp",
+      "name": "fastp",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when processing raw FASTQ files for quality control, adapter trimming, length or complexity filtering, polyG tail trimming, or generating QC reports before downstream analysis.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/fastp/SKILL.md",
+        "command": "fastp",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/fastp"
+      }
+    },
+    {
+      "id": "fastqc",
+      "name": "fastqc",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to perform quality control analysis on high-throughput sequencing data (fastq, bam, sam, or fast5 files) to identify potential problems before downstream analysis.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/fastqc/SKILL.md",
+        "command": "fastqc [options] seqfile1 seqfile2 .. seqfileN",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/fastqc"
+      }
+    },
+    {
+      "id": "fill-fs",
+      "name": "fill-fs",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when annotating VCF files with flanking sequence information (INFO/FS tag) or masking regions/variants in flanking sequences.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/fill-fs/SKILL.md",
+        "command": "fill-fs [OPTIONS] file.vcf",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/fill-fs"
+      }
+    },
+    {
+      "id": "filter-columns",
+      "name": "filter-columns",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when filtering or manipulating columns in tabular data files from bioinformatics workflows.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/filter-columns/SKILL.md",
+        "command": "filter-columns 'awk_expression' < input.tsv",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/filter-columns"
+      }
+    },
+    {
+      "id": "gatk-haplotypecaller",
+      "name": "gatk-haplotypecaller",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when running GATK HaplotypeCaller to emit per-sample germline variant calls or gVCFs from analysis-ready BAM/CRAM inputs.",
+      "runnable": false,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/gatk-haplotypecaller/SKILL.md",
+        "command": "gatk HaplotypeCaller",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/gatk"
+      }
+    },
+    {
+      "id": "gm2ranges",
+      "name": "gm2ranges",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when converting BLAST/genomic-map alignment summaries into compact strand-and-range tables for later interval fusion.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/gm2ranges/SKILL.md",
+        "command": "printf 'acc1 score 1|10 5|3 plus|minus\\n' | /home/vimalinx/miniforge3/envs/bio/bin/gm2ranges",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/gm2ranges"
+      }
+    },
+    {
+      "id": "hisat2-align-s",
+      "name": "hisat2-align-s",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning RNA-seq reads to a HISAT2 index using the alignment binary directly. Supports spliced alignment with optional splice site annotation.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/hisat2-align-s/SKILL.md",
+        "command": "hisat2-align-s -x <ht2-idx> {-1 <m1> -2 <m2> | -U <r>} [-S <sam>]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/hisat2-align-s"
+      }
+    },
+    {
+      "id": "hisat2-build-l",
+      "name": "hisat2-build-l",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when building large HISAT2 index files from reference sequences for RNA-seq alignment with splice-aware mapping support.",
+      "runnable": false,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/hisat2-build-l/SKILL.md",
+        "command": null,
+        "local_executable": null
+      }
+    },
+    {
+      "id": "hisat2-build-s",
+      "name": "hisat2-build-s",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when building a HISAT2 graph-based index from reference sequences for splice-aware RNA-seq alignment, optionally incorporating SNPs, haplotypes, splice sites, or exon annotations.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/hisat2-build-s/SKILL.md",
+        "command": "hisat2-build-s <reference_in> <ht2_index_base>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/hisat2-build-s"
+      }
+    },
+    {
+      "id": "hmmscan",
+      "name": "hmmscan",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when searching protein sequences against profile hidden Markov models (HMMs) such as Pfam or other HMM databases.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/hmmscan/SKILL.md",
+        "command": "hmmscan [-options] <hmmdb> <seqfile>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/hmmscan"
+      }
+    },
+    {
+      "id": "hmmsearch",
+      "name": "hmmsearch",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when searching profile hidden Markov models against sequence databases to identify homologous sequences or protein family members",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/hmmsearch/SKILL.md",
+        "command": "hmmsearch [options] <hmmfile> <seqdb>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/hmmsearch"
+      }
+    },
+    {
+      "id": "intersect-bed",
+      "name": "intersect-bed",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to find overlaps between two genomic interval files (BED, GFF, VCF, or BAM), filter features by intersection, or count/report overlapping regions between datasets.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/intersect-bed/SKILL.md",
+        "command": "intersectBed -a <A> -b <B> [options]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/intersectBed"
+      }
+    },
+    {
+      "id": "iqtree",
+      "name": "iqtree",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when inferring maximum-likelihood phylogenies from aligned sequences, performing automated model selection, or assessing branch support with bootstrap or aLRT methods",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/iqtree/SKILL.md",
+        "command": "iqtree -s ALIGNMENT -m MODEL",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/iqtree"
+      }
+    },
+    {
+      "id": "multi-bam-cov",
+      "name": "multi-bam-cov",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to count read coverage from multiple BAM files across specific genomic regions defined in a BED, GFF, or VCF file.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/multi-bam-cov/SKILL.md",
+        "command": "multiBamCov -bams sample1.bam sample2.bam ... -bed regions.bed [options]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/multiBamCov"
+      }
+    },
+    {
+      "id": "multi-intersect-bed",
+      "name": "multi-intersect-bed",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to identify overlapping genomic regions across multiple BED files simultaneously.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/multi-intersect-bed/SKILL.md",
+        "command": "multiIntersectBed -i file1.bed file2.bed [file3.bed ...] [options]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/multiIntersectBed"
+      }
+    },
+    {
+      "id": "multiqc",
+      "name": "multiqc",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to aggregate quality control reports from multiple bioinformatics tools into a single HTML report",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/multiqc/SKILL.md",
+        "command": "multiqc [OPTIONS] [ANALYSIS DIRECTORY]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/multiqc"
+      }
+    },
+    {
+      "id": "nuc-bed",
+      "name": "nuc-bed",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when profiling nucleotide content (AT/GC percentages, base counts) of genomic intervals against a FASTA reference.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/nuc-bed/SKILL.md",
+        "command": "nucBed -fi reference.fa -bed intervals.bed [options]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/nucBed"
+      }
+    },
+    {
+      "id": "pair-to-bed",
+      "name": "pair-to-bed",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to find overlaps between paired-end read intervals (BEDPE or BAM) and genomic features in BED, GFF, or VCF format.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/pair-to-bed/SKILL.md",
+        "command": "pairToBed -a pairs.bedpe -b features.bed [options]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/pairToBed"
+      }
+    },
+    {
+      "id": "plot-vcfstats",
+      "name": "plot-vcfstats",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when converting `bcftools stats` output into variant-QC plots, per-sample PNG panels, and optional PDF summaries.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/plot-vcfstats/SKILL.md",
+        "command": "plot-vcfstats -p <outdir> <file.vchk>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/plot-vcfstats"
+      }
+    },
+    {
+      "id": "reorder-columns",
+      "name": "reorder-columns",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to reorder columns in tabular bioinformatics data files while preserving row content.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/reorder-columns/SKILL.md",
+        "command": "reorder-columns",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/reorder-columns"
+      }
+    },
+    {
+      "id": "rnaseq-pipeline",
+      "name": "rnaseq-pipeline",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when building or reviewing an end-to-end RNA-seq workflow from raw reads through quantification, differential expression, and basic interpretation.",
+      "runnable": false,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/rnaseq-pipeline/SKILL.md",
+        "command": null,
+        "local_executable": null
+      }
+    },
+    {
+      "id": "samtools",
+      "name": "samtools",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when working with SAM, BAM, or CRAM alignment files to sort, index, view, convert, or compute statistics.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/samtools/SKILL.md",
+        "command": "samtools",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/samtools"
+      }
+    },
+    {
+      "id": "seqkit",
+      "name": "seqkit",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when working with FASTA or FASTQ files for statistics, filtering, transformation, format conversion, searching, or set operations.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/seqkit/SKILL.md",
+        "command": "seqkit <subcommand> [options] <input>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/seqkit"
+      }
+    },
+    {
+      "id": "sequence-analysis",
+      "name": "sequence-analysis",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when routing DNA, RNA, or protein sequence tasks to the core sequence-analysis commands that are actually installed in this workspace.",
+      "runnable": false,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/sequence-analysis/SKILL.md",
+        "command": null,
+        "local_executable": null
+      }
+    },
+    {
+      "id": "shift-bed",
+      "name": "shift-bed",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to shift genomic intervals in BED/GFF/VCF files by a specified number of base pairs, either uniformly or strand-specifically.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/shift-bed/SKILL.md",
+        "command": "shiftBed -i <bed/gff/vcf> -g <genome> -s <int>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/shiftBed"
+      }
+    },
+    {
+      "id": "slop-bed",
+      "name": "slop-bed",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to expand genomic intervals by adding flanking base pairs to features in BED, GFF, or VCF files.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/slop-bed/SKILL.md",
+        "command": "slopBed -i <input> -g <genome> -b <int>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/slopBed"
+      }
+    },
+    {
+      "id": "snp2hgvs",
+      "name": "snp2hgvs",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when converting NCBI dbSNP docsum XML into HGVS-oriented XML records for downstream variant normalization or annotation pipelines.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/snp2hgvs/SKILL.md",
+        "command": "efetch -db snp -id <rsid> -format docsum | snp2hgvs",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/snp2hgvs"
+      }
+    },
+    {
+      "id": "spdi2tbl",
+      "name": "spdi2tbl",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when flattening SPDI XML records into sorted, deduplicated tabular rows for downstream variant pipelines.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/spdi2tbl/SKILL.md",
+        "command": "... | spdi2tbl",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/spdi2tbl"
+      }
+    },
+    {
+      "id": "split-at-intron",
+      "name": "split-at-intron",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when processing genomic sequences that require splitting at intron boundaries as part of Entrez Direct workflows.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/split-at-intron/SKILL.md",
+        "command": "cat alignment-tags.tsv | split-at-intron",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/split-at-intron"
+      }
+    },
+    {
+      "id": "star",
+      "name": "star",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning spliced RNA-seq reads to a reference genome, generating genome indices, or performing splice-aware alignment for transcriptome analysis.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/star/SKILL.md",
+        "command": "STAR",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/STAR"
+      }
+    },
+    {
+      "id": "starlong",
+      "name": "starlong",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning long RNA-seq reads with STARlong through the CPU-dispatch wrapper installed in this environment.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/starlong/SKILL.md",
+        "command": "STARlong --genomeDir /path/to/index --readFilesIn reads.fastq",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/STARlong"
+      }
+    },
+    {
+      "id": "subread-align",
+      "name": "subread-align",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning RNA-seq or genomic DNA-seq reads to a reference index. Supports paired-end and single-end reads in FASTQ, FASTA, SAM, or BAM formats.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/subread-align/SKILL.md",
+        "command": "subread-align -i <index_name> -r <input> -t <type> -o <output>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/subread-align"
+      }
+    },
+    {
+      "id": "tabix",
+      "name": "tabix",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to index or query tab-delimited genomic files for fast region-based retrieval.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/tabix/SKILL.md",
+        "command": "tabix [OPTIONS] [FILE] [REGION [...]]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/tabix"
+      }
+    },
+    {
+      "id": "uniq-table",
+      "name": "uniq-table",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when removing invariant columns from a tab-delimited table, especially in EDirect or bioinformatics comparison pipelines.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/uniq-table/SKILL.md",
+        "command": "uniq-table",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/uniq-table"
+      }
+    },
+    {
+      "id": "vcf-compare",
+      "name": "vcf-compare",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when comparing two or more bgzipped and tabix-indexed VCF files to assess concordance of variant calls, positions, or genotypes.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/vcf-compare/SKILL.md",
+        "command": "vcf-compare [OPTIONS] file1.vcf.gz file2.vcf.gz ...",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/vcf-compare"
+      }
+    },
+    {
+      "id": "vcf-contrast",
+      "name": "vcf-contrast",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when comparing variant samples against background samples to identify unique genotypes and novel variants in VCF files.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/vcf-contrast/SKILL.md",
+        "command": "vcf-contrast +<variant_samples> -<background_samples> [OPTIONS] file.vcf.gz",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/vcf-contrast"
+      }
+    },
+    {
+      "id": "vcf-convert",
+      "name": "vcf-convert",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when converting VCF files between format versions (4.0, 4.1, 4.2) for compatibility with downstream bioinformatics tools.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/vcf-convert/SKILL.md",
+        "command": "vcf-convert -v <4.0|4.1|4.2> [options] < in.vcf > out.vcf",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/vcf-convert"
+      }
+    },
+    {
+      "id": "vcf-fix-ploidy",
+      "name": "vcf-fix-ploidy",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when VCF files have incorrect ploidy annotations for sex chromosomes or mitochondrial DNA, particularly when processing samples with known sex but mismatched genotype fields.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/vcf-fix-ploidy/SKILL.md",
+        "command": "cat input.vcf | vcf-fix-ploidy [OPTIONS] > output.vcf",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/vcf-fix-ploidy"
+      }
+    },
+    {
+      "id": "vcf-merge",
+      "name": "vcf-merge",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when merging multiple VCF files by genomic position to create multi-sample VCFs from individual or fewer-sample VCFs.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/vcf-merge/SKILL.md",
+        "command": "vcf-merge [OPTIONS] file1.vcf.gz file2.vcf.gz ... > out.vcf",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/vcf-merge"
+      }
+    },
+    {
+      "id": "vcf-subset",
+      "name": "vcf-subset",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when subsetting VCF files by samples or filtering variant types from bgzipped VCF input.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/vcf-subset/SKILL.md",
+        "command": "vcf-subset [OPTIONS] in.vcf.gz > out.vcf",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/vcf-subset"
+      }
+    },
+    {
+      "id": "vcf-tstv",
+      "name": "vcf-tstv",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to calculate the transition/transversion (Ts/Tv) ratio from VCF files for variant call quality assessment.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/vcf-tstv/SKILL.md",
+        "command": "cat file.vcf | vcf-tstv",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/vcf-tstv"
+      }
+    },
+    {
+      "id": "vcftools",
+      "name": "vcftools",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when working with Variant Call Format (VCF) files and need to filter, summarize, or manipulate variant data.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/vcftools/SKILL.md",
+        "command": "vcftools",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/vcftools"
+      }
+    },
+    {
+      "id": "xtract",
+      "name": "xtract",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when parsing, extracting, or converting XML data from NCBI Entrez or other bioinformatics sources into tab-delimited tables. Use for selecting specific elements, filtering records, and restructuring hierarchical XML into flat formats for downstream analysis.",
+      "runnable": true,
+      "category": "core-bioinformatics",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/xtract/SKILL.md",
+        "command": "xtract",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/xtract"
+      }
+    },
+    {
+      "id": "amino-acid-composition",
+      "name": "amino-acid-composition",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when counting amino-acid letters in raw protein sequence lines inside simple EDirect text pipelines.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/amino-acid-composition/SKILL.md",
+        "command": "printf 'ACDE\\n' | PATH=/home/vimalinx/miniforge3/envs/bio/bin:$PATH /home/vimalinx/miniforge3/envs/bio/bin/amino-acid-composition",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/amino-acid-composition"
+      }
+    },
+    {
+      "id": "blastp",
+      "name": "blastp",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when comparing protein sequences against protein databases for similarity searches, homology detection, or functional annotation.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/blastp/SKILL.md",
+        "command": "blastp",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/blastp"
+      }
+    },
+    {
+      "id": "blastx",
+      "name": "blastx",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when comparing translated nucleotide query sequences against protein databases to identify homologous proteins and potential protein-coding regions.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/blastx/SKILL.md",
+        "command": "blastx",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/blastx"
+      }
+    },
+    {
+      "id": "clustalw",
+      "name": "clustalw",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when performing multiple sequence alignments on protein or nucleotide sequences, generating phylogenetic trees, or producing alignment output in various formats.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/clustalw/SKILL.md",
+        "command": "clustalw -infile=seqs.fa -align",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/clustalw"
+      }
+    },
+    {
+      "id": "deltablast",
+      "name": "deltablast",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when performing domain-enhanced protein sequence similarity searches to detect remote homologs using conserved domain databases.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/deltablast/SKILL.md",
+        "command": "deltablast",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/deltablast"
+      }
+    },
+    {
+      "id": "efetch",
+      "name": "efetch",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to fetch records or data from NCBI Entrez databases (PubMed, nucleotide, protein, gene, SRA, etc.) by ID or accession",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/efetch/SKILL.md",
+        "command": "efetch",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/efetch"
+      }
+    },
+    {
+      "id": "elink",
+      "name": "elink",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when you need to navigate relationships between records in NCBI Entrez databases, find related articles, track citations, or link records across different databases such as PubMed to Protein.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/elink/SKILL.md",
+        "command": "elink",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/elink"
+      }
+    },
+    {
+      "id": "esearch",
+      "name": "esearch",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when searching NCBI Entrez databases (pubmed, gene, protein, nuccore, snp, geoprofiles) with query strings and field qualifiers to retrieve record UIDs for downstream processing.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/esearch/SKILL.md",
+        "command": "esearch -db <database> -query \"<query string>\"",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/esearch"
+      }
+    },
+    {
+      "id": "esl-construct",
+      "name": "esl-construct",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when inspecting, comparing, or rebuilding consensus RNA/DNA secondary-structure annotation in Stockholm alignments.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/esl-construct/SKILL.md",
+        "command": "esl-construct [options] <msafile>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/esl-construct"
+      }
+    },
+    {
+      "id": "esl-shuffle",
+      "name": "esl-shuffle",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when shuffling biological sequences, bootstrapping alignment columns, or generating de novo random RNA, DNA, or protein controls.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/esl-shuffle/SKILL.md",
+        "command": "esl-shuffle [options] <seqfile>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/esl-shuffle"
+      }
+    },
+    {
+      "id": "esl-ssdraw",
+      "name": "esl-ssdraw",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when converting a Stockholm RNA or DNA alignment plus a PostScript structure template into colored secondary-structure diagrams.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/esl-ssdraw/SKILL.md",
+        "command": "esl-ssdraw [options] <msafile> <SS postscript template> <output postscript file name>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/esl-ssdraw"
+      }
+    },
+    {
+      "id": "esl-weight",
+      "name": "esl-weight",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when adding Stockholm sequence-weight annotations to nucleotide or protein MSAs before downstream HMMER-style modeling.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/esl-weight/SKILL.md",
+        "command": "esl-weight [options] <msafile>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/esl-weight"
+      }
+    },
+    {
+      "id": "evo2",
+      "name": "evo2",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when working from the local Evo 2 repository for DNA-sequence scoring, embeddings, generation, or phage-genome design experiments.",
+      "runnable": false,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/evo2/SKILL.md",
+        "command": null,
+        "local_executable": null
+      }
+    },
+    {
+      "id": "hmmpgmd-shard",
+      "name": "hmmpgmd-shard",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when running the sharded `hmmpgmd_shard` daemon so large protein sequence databases are split across HMMER worker nodes.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/hmmpgmd-shard/SKILL.md",
+        "command": "hmmpgmd_shard [options]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/hmmpgmd_shard"
+      }
+    },
+    {
+      "id": "jackhmmer",
+      "name": "jackhmmer",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when running iterative sequence-to-sequence HMMER searches to expand a protein family from one or a few seed sequences against a sequence database.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/jackhmmer/SKILL.md",
+        "command": "jackhmmer",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/jackhmmer"
+      }
+    },
+    {
+      "id": "kinfold",
+      "name": "kinfold",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when simulating stochastic folding kinetics of single-stranded nucleic acids, computing first passage times between structures, or analyzing RNA/DNA folding trajectories.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/kinfold/SKILL.md",
+        "command": "Kinfold [OPTION]... < input.fa",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/Kinfold"
+      }
+    },
+    {
+      "id": "mafft",
+      "name": "mafft",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when performing multiple sequence alignment on nucleotide or protein sequences, such as preparing alignments for phylogenetic analysis or comparative genomics.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/mafft/SKILL.md",
+        "command": "mafft [options] input.fasta > output.fasta",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/mafft"
+      }
+    },
+    {
+      "id": "phage-design",
+      "name": "phage-design",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when working from the local Evo 2 `phage_gen` project to design or analyze bacteriophage genomes, competition assays, or Gibson assembly fragments.",
+      "runnable": false,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/phage-design/SKILL.md",
+        "command": null,
+        "local_executable": null
+      }
+    },
+    {
+      "id": "phmmer",
+      "name": "phmmer",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when searching one or more protein query sequences against a protein sequence database with HMMER's one-pass sequence-vs-sequence searcher.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/phmmer/SKILL.md",
+        "command": "phmmer",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/phmmer"
+      }
+    },
+    {
+      "id": "prodigal",
+      "name": "prodigal",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when predicting protein-coding genes in prokaryotic genomes or metagenomic sequences",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/prodigal/SKILL.md",
+        "command": "prodigal -i input.fna -o output.gff -a proteins.faa",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/prodigal"
+      }
+    },
+    {
+      "id": "protein-structure",
+      "name": "protein-structure",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when planning or staging protein-structure prediction or structure-design work in this workspace, especially when deciding between missing local predictors and the repos that are actually present.",
+      "runnable": false,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/protein-structure/SKILL.md",
+        "command": null,
+        "local_executable": null
+      }
+    },
+    {
+      "id": "psiblast",
+      "name": "psiblast",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when detecting distant protein homologs via iterative profile-based searches, building position-specific scoring matrices (PSSMs), or refining sequence similarity searches beyond standard BLASTP.",
+      "runnable": true,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/psiblast/SKILL.md",
+        "command": "psiblast",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/psiblast"
       }
     },
     {
       "id": "request-normalizer",
-      "title": "request-normalizer",
-      "capability_kind": "control_plane_skill",
-      "execution_tier": "first_party_executable",
-      "runtime_mode": "local-agent-control-plane",
-      "verification_level": "registry_backed",
-      "reproducibility_level": "canonical_session_truth",
-      "source_kind": "seed_skill_registry",
-      "runnable": true,
+      "name": "request-normalizer",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
       "summary": "Use when turning a natural-language biology request into a structured request object before planning.",
-      "layer": "orchestrator",
-      "path": ".claude/skills/orchestrator/request-normalizer/SKILL.md",
-      "classification_source": "layered-path",
+      "runnable": false,
+      "category": "proteins-and-structure",
       "provenance": {
-        "registry": "registry/skills.yaml",
-        "skill_path": ".claude/skills/orchestrator/request-normalizer/SKILL.md",
-        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/orchestrator/request-normalizer/SKILL.md",
+        "command": null,
+        "local_executable": null
       }
     },
     {
-      "id": "run-resumer",
-      "title": "run-resumer",
-      "capability_kind": "control_plane_skill",
-      "execution_tier": "first_party_executable",
-      "runtime_mode": "local-agent-control-plane",
-      "verification_level": "registry_backed",
-      "reproducibility_level": "canonical_session_truth",
-      "source_kind": "seed_skill_registry",
+      "id": "rfdiffusion",
+      "name": "rfdiffusion",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "prompt-bridge",
+      "verification_level": "declared_only",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when working from the local RFdiffusion repository to generate protein backbones or binder designs through its Docker Compose workflows.",
+      "runnable": false,
+      "category": "proteins-and-structure",
+      "provenance": {
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/rfdiffusion/SKILL.md",
+        "command": null,
+        "local_executable": null
+      }
+    },
+    {
+      "id": "rnafold",
+      "name": "rnafold",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when predicting RNA secondary structures, calculating minimum free energy (MFE) folds, or computing partition functions and base pairing probabilities for RNA sequences.",
       "runnable": true,
-      "summary": "Use when resuming a paused or interrupted run from saved run state instead of regenerating the plan from scratch.",
-      "layer": "orchestrator",
-      "path": ".claude/skills/orchestrator/run-resumer/SKILL.md",
-      "classification_source": "layered-path",
+      "category": "proteins-and-structure",
       "provenance": {
-        "registry": "registry/skills.yaml",
-        "skill_path": ".claude/skills/orchestrator/run-resumer/SKILL.md",
-        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/rnafold/SKILL.md",
+        "command": "RNAfold [OPTIONS] [<input.fa>]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/RNAfold"
       }
     },
     {
-      "id": "skill-router",
-      "title": "skill-router",
-      "capability_kind": "control_plane_skill",
-      "execution_tier": "first_party_executable",
-      "runtime_mode": "local-agent-control-plane",
-      "verification_level": "registry_backed",
-      "reproducibility_level": "canonical_session_truth",
-      "source_kind": "seed_skill_registry",
+      "id": "rpsblast",
+      "name": "rpsblast",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when searching protein sequences against conserved domain databases like CDD using reverse position-specific BLAST",
       "runnable": true,
-      "summary": "Use when expanding an approved plan into stage-by-stage candidate skills drawn from the local skill registry.",
-      "layer": "orchestrator",
-      "path": ".claude/skills/orchestrator/skill-router/SKILL.md",
-      "classification_source": "layered-path",
+      "category": "proteins-and-structure",
       "provenance": {
-        "registry": "registry/skills.yaml",
-        "skill_path": ".claude/skills/orchestrator/skill-router/SKILL.md",
-        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/rpsblast/SKILL.md",
+        "command": "rpsblast -query <input> -db <rpsdb> -out <output> -outfmt 6",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/rpsblast"
       }
     },
     {
-      "id": "stage-reviewer",
-      "title": "stage-reviewer",
-      "capability_kind": "control_plane_skill",
-      "execution_tier": "first_party_executable",
-      "runtime_mode": "local-agent-control-plane",
-      "verification_level": "registry_backed",
-      "reproducibility_level": "canonical_session_truth",
-      "source_kind": "seed_skill_registry",
+      "id": "rpstblastn",
+      "name": "rpstblastn",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when searching nucleotide sequences against protein domain profile databases (PSSMs) to detect conserved domains via position-specific scoring.",
       "runnable": true,
-      "summary": "Use when checking whether a completed stage produced the artifacts and validation evidence required by the approved plan.",
-      "layer": "orchestrator",
-      "path": ".claude/skills/orchestrator/stage-reviewer/SKILL.md",
-      "classification_source": "layered-path",
+      "category": "proteins-and-structure",
       "provenance": {
-        "registry": "registry/skills.yaml",
-        "skill_path": ".claude/skills/orchestrator/stage-reviewer/SKILL.md",
-        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/rpstblastn/SKILL.md",
+        "command": "rpstblastn -query <nucleotide.fasta> -db <pssm_db> -out <results.out>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/rpstblastn"
       }
     },
     {
-      "id": "reference:atacseq-differential-accessibility:nf-core/atacseq",
-      "title": "nf-core/atacseq",
-      "capability_kind": "official_reference",
-      "execution_tier": "reference_only",
-      "runtime_mode": "external-reference",
-      "verification_level": "cited_reference",
-      "reproducibility_level": "external_project_contract",
-      "source_kind": "official_reference",
-      "runnable": false,
-      "summary": "Official grounding source for atacseq-differential-accessibility.",
-      "relates_to": [
-        "atacseq-differential-accessibility"
-      ],
-      "url": "https://nf-co.re/atacseq",
+      "id": "segmasker",
+      "name": "segmasker",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when identifying and masking low-complexity regions in protein sequences with the SEG algorithm before BLAST or other downstream analyses.",
+      "runnable": true,
+      "category": "proteins-and-structure",
       "provenance": {
-        "workflow_registry": "registry/workflows.yaml"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/segmasker/SKILL.md",
+        "command": "segmasker",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/segmasker"
       }
     },
     {
-      "id": "reference:germline-short-variant-discovery:gatk-germline-short-variant-discovery",
-      "title": "GATK Germline short variant discovery",
-      "capability_kind": "official_reference",
-      "execution_tier": "reference_only",
-      "runtime_mode": "external-reference",
-      "verification_level": "cited_reference",
-      "reproducibility_level": "external_project_contract",
-      "source_kind": "official_reference",
-      "runnable": false,
-      "summary": "Official grounding source for germline-short-variant-discovery.",
-      "relates_to": [
-        "germline-short-variant-discovery"
-      ],
-      "url": "https://gatk.broadinstitute.org/hc/en-us/articles/360035535932-Germline-short-variant-discovery-SNPs-Indels",
+      "id": "tbl2prod",
+      "name": "tbl2prod",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when converting `spdi2tbl`-style variant rows into reference and altered product sequences for coding or protein variants.",
+      "runnable": true,
+      "category": "proteins-and-structure",
       "provenance": {
-        "workflow_registry": "registry/workflows.yaml"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/tbl2prod/SKILL.md",
+        "command": "... | tbl2prod",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/tbl2prod"
       }
     },
     {
-      "id": "reference:germline-short-variant-discovery:gatk-hard-filtering-germline-short-variants",
-      "title": "GATK Hard-filtering germline short variants",
-      "capability_kind": "official_reference",
-      "execution_tier": "reference_only",
-      "runtime_mode": "external-reference",
-      "verification_level": "cited_reference",
-      "reproducibility_level": "external_project_contract",
-      "source_kind": "official_reference",
-      "runnable": false,
-      "summary": "Official grounding source for germline-short-variant-discovery.",
-      "relates_to": [
-        "germline-short-variant-discovery"
-      ],
-      "url": "https://gatk.broadinstitute.org/hc/en-us/articles/360035890471-Hard-filtering-germline-short-variants",
+      "id": "tblastn",
+      "name": "tblastn",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when searching protein query sequences against a translated nucleotide database to identify protein-coding regions or homologs in genomic data.",
+      "runnable": true,
+      "category": "proteins-and-structure",
       "provenance": {
-        "workflow_registry": "registry/workflows.yaml"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/tblastn/SKILL.md",
+        "command": "tblastn -query <protein.fa> -db <nucl_db> -out <results.txt>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/tblastn"
       }
     },
     {
-      "id": "reference:germline-short-variant-discovery:nf-core/sarek",
-      "title": "nf-core/sarek",
-      "capability_kind": "official_reference",
-      "execution_tier": "reference_only",
-      "runtime_mode": "external-reference",
-      "verification_level": "cited_reference",
-      "reproducibility_level": "external_project_contract",
-      "source_kind": "official_reference",
-      "runnable": false,
-      "summary": "Official grounding source for germline-short-variant-discovery.",
-      "relates_to": [
-        "germline-short-variant-discovery"
-      ],
-      "url": "https://nf-co.re/sarek",
+      "id": "tblastn-vdb",
+      "name": "tblastn-vdb",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when searching protein queries against translated SRA or WGS-backed VDB databases with BLAST.",
+      "runnable": true,
+      "category": "proteins-and-structure",
       "provenance": {
-        "workflow_registry": "registry/workflows.yaml"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/tblastn-vdb/SKILL.md",
+        "command": "tblastn_vdb -query proteins.fa -db <SRA_or_WGS_name> [options]",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/tblastn_vdb"
       }
     },
     {
-      "id": "reference:rnaseq-differential-expression:galaxy-training:-rna-seq-analysis-and-visualization",
-      "title": "Galaxy Training: RNA-seq analysis and visualization",
-      "capability_kind": "official_reference",
-      "execution_tier": "reference_only",
-      "runtime_mode": "external-reference",
-      "verification_level": "cited_reference",
-      "reproducibility_level": "external_project_contract",
-      "source_kind": "official_reference",
-      "runnable": false,
-      "summary": "Official grounding source for rnaseq-differential-expression.",
-      "relates_to": [
-        "rnaseq-differential-expression"
-      ],
-      "url": "https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-analysis-clustering-viz/tutorial.html",
+      "id": "tblastx",
+      "name": "tblastx",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when searching nucleotide sequences against a nucleotide database using translated protein comparison. Useful for detecting distant evolutionary relationships between nucleotide sequences.",
+      "runnable": true,
+      "category": "proteins-and-structure",
       "provenance": {
-        "workflow_registry": "registry/workflows.yaml"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/tblastx/SKILL.md",
+        "command": "tblastx -query <nucleotide_file> -db <nucleotide_db> -out <results>",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/tblastx"
       }
     },
     {
-      "id": "reference:rnaseq-differential-expression:nf-core/rnaseq",
-      "title": "nf-core/rnaseq",
-      "capability_kind": "official_reference",
-      "execution_tier": "reference_only",
-      "runtime_mode": "external-reference",
-      "verification_level": "cited_reference",
-      "reproducibility_level": "external_project_contract",
-      "source_kind": "official_reference",
-      "runnable": false,
-      "summary": "Official grounding source for rnaseq-differential-expression.",
-      "relates_to": [
-        "rnaseq-differential-expression"
-      ],
-      "url": "https://nf-co.re/rnaseq",
+      "id": "star-avx",
+      "name": "star-avx",
+      "capability_group": "bridge_executable",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "local-cli",
+      "verification_level": "machine_detected",
+      "reproducibility_level": "manual_bridge",
+      "source_kind": "skill-doc",
+      "summary": "Use when aligning RNA-seq reads to a reference genome with splice-aware mapping, generating genome indices, or processing single-cell RNA-seq data with STARsolo.",
+      "runnable": true,
+      "category": "single-cell-omics",
       "provenance": {
-        "workflow_registry": "registry/workflows.yaml"
+        "scope": "project-local",
+        "skill_path": "/home/vimalinx/Projects/bio-agent/.omx/team/execute-omx-plans-prd-2026-04/worktrees/worker-1/.claude/skills/star-avx/SKILL.md",
+        "command": "STAR-avx [options] --genomeDir /path/to/genome/index/ --readFilesIn R1.fq R2.fq",
+        "local_executable": "/home/vimalinx/miniforge3/envs/bio/bin/STAR-avx"
       }
     },
     {
-      "id": "reference:scrnaseq-preprocessing:galaxy-training:-scrna-seq-preprocessing",
-      "title": "Galaxy Training: scRNA-seq preprocessing",
-      "capability_kind": "official_reference",
-      "execution_tier": "reference_only",
-      "runtime_mode": "external-reference",
-      "verification_level": "cited_reference",
-      "reproducibility_level": "external_project_contract",
-      "source_kind": "official_reference",
-      "runnable": false,
-      "summary": "Official grounding source for scrnaseq-preprocessing.",
-      "relates_to": [
-        "scrnaseq-preprocessing"
-      ],
-      "url": "https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-preprocessing/tutorial.html",
+      "id": "rnaseq-differential-expression",
+      "name": "Bulk RNA-seq differential expression",
+      "capability_group": "first_party_executable",
+      "execution_tier": "first_party_executable",
+      "runtime_mode": "session-hero-runner",
+      "verification_level": "benchmark_contract",
+      "reproducibility_level": "automatic_session_bundle",
+      "source_kind": "registry-grounded-workflow",
+      "summary": "Move from raw paired-end FASTQ reads to a counts matrix and differential expression result bundle with explicit QC and review boundaries.",
+      "runnable": true,
       "provenance": {
-        "workflow_registry": "registry/workflows.yaml"
+        "catalog_config": "registry/capability_catalog.yaml",
+        "analysis_flow": "registry/analysis_flows.yaml",
+        "benchmark_registry": "registry/benchmarks.yaml",
+        "benchmark_ids": [
+          "seqc2-bulk-rnaseq"
+        ]
       }
     },
     {
-      "id": "reference:scrnaseq-preprocessing:galaxy-training:-scrna-seq-with-scanpy/seurat-style-downstream",
-      "title": "Galaxy Training: scRNA-seq with Scanpy/Seurat-style downstream",
-      "capability_kind": "official_reference",
-      "execution_tier": "reference_only",
-      "runtime_mode": "external-reference",
-      "verification_level": "cited_reference",
-      "reproducibility_level": "external_project_contract",
-      "source_kind": "official_reference",
-      "runnable": false,
-      "summary": "Official grounding source for scrnaseq-preprocessing.",
-      "relates_to": [
-        "scrnaseq-preprocessing"
-      ],
-      "url": "https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-seurat-pbmc3k/tutorial.html",
+      "id": "germline-short-variant-discovery",
+      "name": "Germline short variant discovery",
+      "capability_group": "first_party_executable",
+      "execution_tier": "first_party_executable",
+      "runtime_mode": "session-hero-runner",
+      "verification_level": "benchmark_contract",
+      "reproducibility_level": "automatic_session_bundle",
+      "source_kind": "registry-grounded-workflow",
+      "summary": "Move from raw WES/WGS reads to analysis-ready BAMs, gVCFs, a joint cohort VCF, filtered variants, and final cohort review artifacts.",
+      "runnable": true,
       "provenance": {
-        "workflow_registry": "registry/workflows.yaml"
+        "catalog_config": "registry/capability_catalog.yaml",
+        "analysis_flow": "registry/analysis_flows.yaml",
+        "benchmark_registry": "registry/benchmarks.yaml",
+        "benchmark_ids": [
+          "giab-precisionfda-small-variant"
+        ]
       }
     },
     {
-      "id": "reference:scrnaseq-preprocessing:nf-core/scrnaseq",
-      "title": "nf-core/scrnaseq",
-      "capability_kind": "official_reference",
+      "id": "atacseq-differential-accessibility",
+      "name": "ATAC-seq peak calling and differential accessibility",
+      "capability_group": "reference_only",
       "execution_tier": "reference_only",
-      "runtime_mode": "external-reference",
-      "verification_level": "cited_reference",
-      "reproducibility_level": "external_project_contract",
-      "source_kind": "official_reference",
+      "runtime_mode": "planning-reference",
+      "verification_level": "registry_modeled",
+      "reproducibility_level": "not_packaged",
+      "source_kind": "analysis-flow-registry",
+      "summary": "Move from raw ATAC-seq reads to filtered alignments, peak sets, consensus accessibility matrices, and differential accessibility results.",
       "runnable": false,
-      "summary": "Official grounding source for scrnaseq-preprocessing.",
-      "relates_to": [
-        "scrnaseq-preprocessing"
-      ],
-      "url": "https://nf-co.re/scrnaseq",
       "provenance": {
-        "workflow_registry": "registry/workflows.yaml"
+        "analysis_flow": "registry/analysis_flows.yaml",
+        "benchmark_registry": "registry/benchmarks.yaml",
+        "benchmark_ids": [
+          "encode-atac-conformance"
+        ]
+      }
+    },
+    {
+      "id": "scrnaseq-preprocessing",
+      "name": "Single-cell RNA-seq preprocessing and clustering-ready matrix generation",
+      "capability_group": "reference_only",
+      "execution_tier": "reference_only",
+      "runtime_mode": "planning-reference",
+      "verification_level": "registry_modeled",
+      "reproducibility_level": "not_packaged",
+      "source_kind": "analysis-flow-registry",
+      "summary": "Move from raw single-cell reads and chemistry metadata to a filtered matrix, QC metrics, embeddings, and marker-review artifacts.",
+      "runnable": false,
+      "provenance": {
+        "analysis_flow": "registry/analysis_flows.yaml",
+        "benchmark_registry": "registry/benchmarks.yaml",
+        "benchmark_ids": [
+          "openproblems-single-cell"
+        ]
       }
     }
   ]

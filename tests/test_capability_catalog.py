@@ -7,57 +7,45 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPORT_SCRIPT = ROOT / "scripts" / "skills" / "export_capability_catalog.py"
-DOCS_JSON = ROOT / "docs" / "system" / "data" / "capability-catalog.json"
+SCRIPT = ROOT / "scripts" / "skills" / "collect_local_bio_skills.py"
 
 
-def run_export() -> dict:
+def test_capability_catalog_is_derived_from_registry_and_runtime_metadata() -> None:
     completed = subprocess.run(
-        [sys.executable, str(EXPORT_SCRIPT)],
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--format",
+            "capability-json",
+        ],
         check=True,
         capture_output=True,
         text=True,
     )
-    return json.loads(completed.stdout)
+    payload = json.loads(completed.stdout)
 
+    by_group = payload["summary"]["group_counts"]
+    assert by_group["first_party_executable"] >= 2
+    assert by_group["bridge_executable"] >= 1
+    assert by_group["reference_only"] >= 1
 
-def test_capability_catalog_export_matches_committed_docs_payload() -> None:
-    generated = run_export()
-    committed = json.loads(DOCS_JSON.read_text(encoding="utf-8"))
+    capability_ids = {item["id"] for item in payload["capabilities"]}
+    assert "rnaseq-differential-expression" in capability_ids
+    assert "germline-short-variant-discovery" in capability_ids
 
-    assert generated == committed
+    hero_entry = next(item for item in payload["capabilities"] if item["id"] == "rnaseq-differential-expression")
+    assert hero_entry["execution_tier"] == "first_party_executable"
+    assert hero_entry["runtime_mode"] == "session-hero-runner"
+    assert hero_entry["verification_level"] == "benchmark_contract"
+    assert hero_entry["reproducibility_level"] == "automatic_session_bundle"
+    assert hero_entry["source_kind"] == "registry-grounded-workflow"
+    assert hero_entry["provenance"]["analysis_flow"] == "registry/analysis_flows.yaml"
 
-
-def test_capability_catalog_contains_required_execution_tiers_and_examples() -> None:
-    payload = run_export()
-    capabilities = payload["capabilities"]
-    by_id = {item["id"]: item for item in capabilities}
-    tiers = {item["execution_tier"] for item in capabilities}
-
-    assert {"first_party_executable", "bridge_executable", "reference_only"} <= tiers
-    assert by_id["request-normalizer"]["execution_tier"] == "first_party_executable"
-    assert by_id["request-normalizer"]["runtime_mode"] == "local-agent-control-plane"
-    assert by_id["rnaseq-differential-expression"]["execution_tier"] == "bridge_executable"
-    assert by_id["rnaseq-differential-expression"]["verification_level"] == "benchmark_contract"
-    assert by_id["rnaseq-differential-expression"]["hero_lane"] is True
-    reference_entry = by_id["reference:rnaseq-differential-expression:nf-core/rnaseq"]
-    assert reference_entry["execution_tier"] == "reference_only"
+    reference_entry = next(item for item in payload["capabilities"] if item["capability_group"] == "reference_only")
     assert reference_entry["runnable"] is False
+    assert reference_entry["runtime_mode"] == "planning-reference"
 
-
-def test_capability_catalog_workflow_entries_expose_required_metadata_fields() -> None:
-    payload = run_export()
-    workflow_entries = [
-        item
-        for item in payload["capabilities"]
-        if item["capability_kind"] == "workflow_family"
-    ]
-
-    assert workflow_entries
-    for entry in workflow_entries:
-        assert entry["execution_tier"]
-        assert entry["runtime_mode"]
-        assert entry["verification_level"]
-        assert entry["reproducibility_level"]
-        assert entry["source_kind"]
-        assert entry["delivery_bundle_items"]
+    bridge_entry = next(item for item in payload["capabilities"] if item["capability_group"] == "bridge_executable")
+    assert bridge_entry["execution_tier"] == "bridge_executable"
+    assert bridge_entry["source_kind"] == "skill-doc"
+    assert bridge_entry["provenance"]["skill_path"].endswith("SKILL.md")

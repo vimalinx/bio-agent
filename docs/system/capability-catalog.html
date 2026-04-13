@@ -1,141 +1,139 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Capability Catalog</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
       :root {
-        --bg: #faf8f5;
-        --surface: #ffffff;
-        --surface-alt: #f4eee8;
-        --line: #dfd4c8;
-        --text: #451a03;
-        --muted: #7c5a46;
-        --primary: #b45309;
-        --accent: #0f766e;
-        --radius: 10px;
-        --shadow: 0 2px 8px rgba(69, 26, 3, 0.08);
+        --bg: #f7f4ef;
+        --surface: #fffdfa;
+        --line: #d8ccbd;
+        --text: #2d241d;
+        --muted: #705847;
+        --accent: #92400e;
       }
-      * { box-sizing: border-box; }
-      body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", sans-serif; line-height: 1.55; }
-      a { color: var(--primary); text-decoration: none; }
-      a:hover { text-decoration: underline; }
-      .shell { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 252px minmax(0, 1fr); gap: 24px; padding: 24px; }
-      .sidebar, .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
-      .sidebar { position: sticky; top: 16px; align-self: start; padding: 20px 18px; }
-      .nav { display: grid; gap: 8px; }
-      .nav a { display: block; padding: 8px 10px; border-radius: 8px; color: var(--text); }
-      .nav a:hover { background: var(--surface-alt); text-decoration: none; }
-      .meta { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); font-size: .92rem; color: var(--muted); }
-      .content { display: grid; gap: 20px; }
-      .panel { padding: 24px 26px; }
-      h1,h2 { margin: 0 0 12px; line-height: 1.2; }
-      h1 { font-size: 2rem; }
-      h2 { font-size: 1.32rem; }
-      p { margin: 0 0 12px; }
-      .callout { border-left: 4px solid var(--accent); padding-left: 12px; }
-      .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
-      .chip { border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; background: #fffdf9; font-family: "IBM Plex Mono", monospace; font-size: .9rem; }
-      table { width: 100%; border-collapse: collapse; font-size: .96rem; }
-      th, td { border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; padding: 10px 12px; }
-      th { font-weight: 600; }
-      code, pre { font-family: "IBM Plex Mono", monospace; }
-      @media (max-width: 1040px) { .shell { grid-template-columns: 1fr; } .sidebar { position: static; } }
+
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 20px 56px;
+      }
+
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 18px;
+      }
+
+      h1, h2, h3 {
+        margin-top: 0;
+      }
+
+      p, li {
+        line-height: 1.6;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .chip {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px 12px;
+        background: #fff7ed;
+        color: var(--accent);
+        font-size: 0.92rem;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 14px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px;
+        background: #fffaf5;
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      code {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
     </style>
   </head>
   <body>
-    <div class="shell">
-      <aside class="sidebar">
-        <h2>Capability Catalog</h2>
-        <nav class="nav">
-          <a href="#summary">概览</a>
-          <a href="#tiers">成熟度层</a>
-          <a href="#hero-lanes">Hero Lanes</a>
-          <a href="#catalog">Catalog</a>
-          <a href="bio-skill-system.html">系统架构页</a>
-          <a href="architecture-comparison-roadmap.html">路线图页</a>
-        </nav>
-        <div class="meta">
-          <div>Policy: <code>registry/capability_catalog.yaml</code></div>
-          <div>Data: <code>docs/system/data/capability-catalog.json</code></div>
-          <div>Export: <code>scripts/skills/export_capability_catalog.py</code></div>
+    <main>
+      <section class="panel">
+        <h1>Capability Catalog</h1>
+        <p>
+          This page documents how <code>bio-agent</code> now separates productized hero lanes,
+          bridge-executable tool surfaces, and reference-only planning/catalog coverage.
+        </p>
+        <p>
+          The catalog is derived from evidence-bearing metadata instead of raw skill counts:
+          workflow registries, benchmark registries, and discovered skill/runtime metadata.
+        </p>
+        <div class="chips">
+          <span class="chip">first_party_executable</span>
+          <span class="chip">bridge_executable</span>
+          <span class="chip">reference_only</span>
+          <span class="chip">execution_tier</span>
+          <span class="chip">runtime_mode</span>
+          <span class="chip">verification_level</span>
+          <span class="chip">reproducibility_level</span>
+          <span class="chip">source_kind</span>
         </div>
-      </aside>
-      <main class="content">
-        <section class="panel" id="summary">
-          <h1>Capability Catalog</h1>
-          <p>这页把 `bio-agent` 的能力面拆成三层：<code>first_party_executable</code>、<code>bridge_executable</code>、<code>reference_only</code>。这样浏览 breadth 时不会把外部参考、桥接工作流、以及 repo 自己的控制面能力混成一个“都能本地跑”的 marketing 数字。</p>
-          <p class="callout">当前产品叙事是 control-plane-first hybrid：repo 自己负责 canonical session/run truth；hero lanes 通过 bridge surface 暴露更产品化的工作流入口；外部官方栈只作为 grounding/reference，不冒充一方可执行能力。</p>
-        </section>
+      </section>
 
-        <section class="panel" id="tiers">
-          <h2>成熟度层</h2>
-          <div class="chip-row">
-            <span class="chip">first_party_executable</span>
-            <span class="chip">bridge_executable</span>
-            <span class="chip">reference_only</span>
-            <span class="chip">local-agent-control-plane</span>
-            <span class="chip">session-bridged-hybrid</span>
-            <span class="chip">external-reference</span>
+      <section class="panel">
+        <h2>Vocabulary</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>first_party_executable</h3>
+            <p class="meta">Productized hero workflows surfaced via the canonical session/run control plane.</p>
           </div>
-          <p style="margin-top:16px;">`execution_tier`、`runtime_mode`、`verification_level`、`reproducibility_level`、`source_kind` 都直接来自 registry/export evidence，而不是手写 marketing counts。</p>
-        </section>
+          <div class="card">
+            <h3>bridge_executable</h3>
+            <p class="meta">Runnable tool/skill bridges discovered locally, but not yet packaged as first-party product lanes.</p>
+          </div>
+          <div class="card">
+            <h3>reference_only</h3>
+            <p class="meta">Grounded workflow families preserved for planning/reference honesty without a direct first-party execution promise.</p>
+          </div>
+        </div>
+      </section>
 
-        <section class="panel" id="hero-lanes">
-          <h2>Hero Lanes</h2>
-          <table>
-            <thead>
-              <tr><th>Workflow</th><th>Tier</th><th>Verification</th><th>Reproducibility</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>rnaseq-differential-expression</td><td>bridge_executable</td><td>benchmark_contract</td><td>delivery_bundle_defined</td></tr>
-              <tr><td>germline-short-variant-discovery</td><td>bridge_executable</td><td>benchmark_contract</td><td>delivery_bundle_defined</td></tr>
-            </tbody>
-          </table>
-        </section>
-
-        <section class="panel" id="catalog">
-          <h2>Catalog</h2>
-          <p>JSON catalog 会在浏览器里加载并渲染首批条目：</p>
-          <pre>docs/system/data/capability-catalog.json</pre>
-          <table>
-            <thead>
-              <tr><th>ID</th><th>Tier</th><th>Runtime</th><th>Source</th></tr>
-            </thead>
-            <tbody id="catalog-body">
-              <tr><td colspan="4">Loading capability catalog…</td></tr>
-            </tbody>
-          </table>
-        </section>
-      </main>
-    </div>
-    <script>
-      const CATALOG_URL = "data/capability-catalog.json";
-
-      async function renderCatalog() {
-        const body = document.getElementById("catalog-body");
-        try {
-          const response = await fetch(CATALOG_URL);
-          const payload = await response.json();
-          const rows = payload.capabilities.slice(0, 8).map((item) => `
-            <tr>
-              <td><code>${item.id}</code></td>
-              <td>${item.execution_tier}</td>
-              <td>${item.runtime_mode}</td>
-              <td>${item.source_kind}</td>
-            </tr>
-          `).join("");
-          body.innerHTML = rows || '<tr><td colspan="4">No catalog entries.</td></tr>';
-        } catch (error) {
-          body.innerHTML = `<tr><td colspan="4">Failed to load catalog: ${error}</td></tr>`;
-        }
-      }
-
-      renderCatalog();
-    </script>
+      <section class="panel">
+        <h2>Data Source</h2>
+        <p>
+          Checked-in catalog JSON:
+          <a href="./data/capability-catalog.json"><code>docs/system/data/capability-catalog.json</code></a>
+        </p>
+        <p>
+          Generator:
+          <code>python3 scripts/skills/collect_local_bio_skills.py --format capability-json --output docs/system/data/capability-catalog.json</code>
+        </p>
+      </section>
+    </main>
   </body>
 </html>
