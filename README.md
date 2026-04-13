@@ -12,7 +12,29 @@
 - `registry/benchmarks.yaml`：真实 benchmark 注册表
 - `schemas/`：request / plan / run 的结构约束
 - `docs/system/`：系统页面与审计页面
-- `reference/COMPARATIVE_ANALYSIS_REPORT.md`：仓库对比原始报告
+- `docs/plans/2026-04-13-bio-agent-productization-comparison.md`：当前产品化对比与路线结论文档
+- `reference/COMPARATIVE_ANALYSIS_REPORT.md`：历史对比原始报告（保留作背景，不再作为当前路线契约）
+
+## Productization Roadmap After Reference Comparison
+
+当前产品化方向已经明确为 **control-plane-first hybrid**：
+
+- 保留现有 `session` / `run` / `benchmark` 控制面作为唯一真相来源
+- 不做第二套 orchestrator，也不把 hero runner 变成绕开 `run.json` / `run-status.json` / `run-review.json` 的并行执行器
+- 不走 wet-lab / XR / robotics pivot
+- 先把 2 条 hero workflow family 做成可演示、可复现、可验真的产品面：
+  - `rnaseq-differential-expression`
+  - `germline-short-variant-discovery`
+- 为 hero runs 默认输出 reproducibility bundle（`commands.sh`、environment snapshot、`checksums.sha256`、`provenance.json`、`delivery-bundle.json`）
+- 用 evidence-bearing metadata 生成 capability catalog，明确区分 `first_party_executable` / `bridge_executable` / `reference_only`
+- 把 session-to-skill crystallization 保持为 **phase-2 gate**，先证明 hero lane + repro + smoke/CI 稳定
+
+配套文档：
+
+- `docs/plans/2026-04-13-bio-agent-productization-comparison.md`
+- `docs/system/architecture-comparison-roadmap.html`
+- `.omx/plans/prd-2026-04-13-bio-agent-productization-roadmap.md`
+- `.omx/plans/test-spec-2026-04-13-bio-agent-productization-roadmap.md`
 
 ## Grounded Workflow Families
 
