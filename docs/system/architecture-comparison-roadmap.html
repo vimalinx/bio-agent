@@ -52,6 +52,8 @@
       pre, code { font-family: "IBM Plex Mono", monospace; }
       .roadmap-step { border: 1px solid var(--line); border-radius: 8px; padding: 14px; background: #fffdf9; }
       .roadmap-step strong { display: block; margin-bottom: 8px; }
+      ul { margin: 0; padding-left: 20px; }
+      li { margin-bottom: 8px; }
       @media (max-width: 1100px) { .split, .triple { grid-template-columns: 1fr; } .shell { grid-template-columns: 1fr; } .sidebar { position: static; } }
     </style>
   </head>
@@ -61,25 +63,28 @@
         <h2>Architecture Roadmap</h2>
         <nav class="nav">
           <a href="#summary">结论</a>
+          <a href="../plans/2026-04-13-bio-agent-productization-comparison.md">产品化决策稿</a>
           <a href="bio-skill-system.html">系统架构页</a>
           <a href="real-bioinformatics-workflow-map.html">真实流程地图</a>
           <a href="real-analysis-information-flows.html">真实分析信息流</a>
           <a href="real-bioinformatics-benchmarks.html">真实 Benchmark</a>
           <a href="#comparison">三者对比</a>
-          <a href="#strengths">当前优劣</a>
           <a href="#target">目标架构</a>
-          <a href="#phases">演进阶段</a>
+          <a href="#hero-lanes">Hero Lanes</a>
+          <a href="#guardrails">硬约束</a>
+          <a href="#phases">阶段路线</a>
         </nav>
         <div class="meta">
           <div>对象: bio-agent vs ClawBio vs LabClaw</div>
-          <div>目的: 回答“哪种更好”以及“你这套该怎么演进”</div>
+          <div>目的: 把“谁更强”转成可执行的产品化路线，而不是继续停留在泛比较层。</div>
         </div>
       </aside>
       <main class="content">
         <section class="panel" id="summary">
           <h1>Architecture Comparison and Roadmap</h1>
-          <p>这一页不只是比较三套系统谁强谁弱，而是把它们拆成不同层：控制平面、执行平面、能力库存、实验室桥接、评测平面。这样才能回答“哪种更好”。</p>
-          <p class="callout">最准确的结论是：`bio-agent` 的上层架构更先进，`ClawBio` 的本地执行平面更成熟，`LabClaw` 的技能覆盖和实验室生态更广。最优路线不是变成其中任何一个，而是把三者的强项拼起来。</p>
+          <p>这里的结论不是“抄谁”，而是明确 `bio-agent` 当前应该收敛成什么产品：<strong>control-plane-first hybrid</strong>。</p>
+          <p class="callout">最准确的判断是：`bio-agent` 强在 plan/session/benchmark 真相层，ClawBio 强在 packaged reproducible delivery，LabClaw 强在 breadth / catalog coverage。正确路线是保留你自己的控制平面，再补 hero runner、repro bundle、capability catalog 与稳定验证面。</p>
+          <p>因此当前不应该做 wet-lab / XR / robotics pivot，也不应该做第二套 orchestrator。</p>
         </section>
 
         <section class="panel" id="comparison">
@@ -89,58 +94,12 @@
               <tr><th>维度</th><th>bio-agent</th><th>ClawBio</th><th>LabClaw</th></tr>
             </thead>
             <tbody>
-              <tr><td>核心中心</td><td>plan / session / analysis_flow / benchmark</td><td>skills + local execution + repro bundle</td><td>massive skill catalog + lab ecosystem</td></tr>
-              <tr><td>控制平面</td><td>最强</td><td>中</td><td>弱</td></tr>
-              <tr><td>执行平面</td><td>中</td><td>最强</td><td>弱</td></tr>
-              <tr><td>实验室与平台桥接</td><td>弱</td><td>中</td><td>最强</td></tr>
-              <tr><td>benchmark / score layer</td><td>最强</td><td>弱</td><td>弱</td></tr>
-              <tr><td>能力覆盖</td><td>高</td><td>中</td><td>最高</td></tr>
+              <tr><td>当前最强项</td><td>plan-first orchestration + session truth + benchmark fit</td><td>local-first packaged execution + reproducibility bundle</td><td>breadth / capability browsing + lab ecosystem</td></tr>
+              <tr><td>当前应该借鉴</td><td>继续把 truth model 做成系统主线</td><td>自动导出 `commands.sh` / environment / checksum / provenance</td><td>把 breadth 变成 honest capability catalog，而不是 marketing count</td></tr>
+              <tr><td>当前不该复制</td><td>—</td><td>把整个 repo 缩成只剩单条 local runner</td><td>wet-lab / XR / robotics pivot，或把所有 capability 都包装成可本机执行</td></tr>
+              <tr><td>近线产品形态</td><td colspan="3">保留控制平面，先打磨 2 条可演示 hero workflows，而不是继续追求 skill 数量膨胀</td></tr>
             </tbody>
           </table>
-        </section>
-
-        <section class="panel" id="strengths">
-          <h2>当前优劣</h2>
-          <div class="triple">
-            <div class="tile">
-              <strong>bio-agent 强项</strong>
-              <div class="chip-row">
-                <span class="chip">plan-first lifecycle</span>
-                <span class="chip">session state</span>
-                <span class="chip">analysis flow layer</span>
-                <span class="chip">runtime gating</span>
-                <span class="chip">benchmark / scorecard</span>
-              </div>
-            </div>
-            <div class="tile">
-              <strong>ClawBio 强项</strong>
-              <div class="chip-row">
-                <span class="chip">local-first execution</span>
-                <span class="chip">repro bundle</span>
-                <span class="chip">standalone skills</span>
-                <span class="chip">production-style workflow discipline</span>
-              </div>
-            </div>
-            <div class="tile">
-              <strong>LabClaw 强项</strong>
-              <div class="chip-row">
-                <span class="chip">skill coverage</span>
-                <span class="chip">ToolUniverse ecosystem</span>
-                <span class="chip">wet-lab / labos bridge</span>
-                <span class="chip">domain breadth</span>
-              </div>
-            </div>
-          </div>
-          <div class="split" style="margin-top:16px;">
-            <div class="tile">
-              <strong>bio-agent 当前短板</strong>
-              真正的 execution bridge 还不够强，本地 reproducibility discipline 也还不如 ClawBio。
-            </div>
-            <div class="tile">
-              <strong>真正的问题不在架构思想</strong>
-              你这套不是输在“不会设计”，而是输在“执行平面成熟度还没跟上控制平面”。
-            </div>
-          </div>
         </section>
 
         <section class="panel" id="target">
@@ -148,49 +107,107 @@
           <pre>bio-agent target architecture
 
 user request
-  -> control plane
+  -> control plane (canonical truth)
      -> request normalization
      -> candidate plans
      -> approval + session state
+     -> run.json / run-status.json / run-review.json
      -> analysis flow contract
      -> benchmark fit / scorecard
-  -> execution plane
-     -> local tool bridge
-     -> reproducibility bundle
-     -> artifact validator
-     -> comparator bridge (hap.py / future evaluators)
+  -> hero runner surface (thin adapter only)
+     -> normalized product-facing inputs
+     -> stable output directory shortcuts
+     -> automatic reproducibility bundle
   -> capability plane
-     -> bio skill inventory
-     -> workflow templates
-     -> lab / cloud / LIMS adapters
+     -> evidence-derived capability catalog
+     -> execution tier / runtime mode / verification level
+     -> first_party_executable / bridge_executable / reference_only
 </pre>
-          <p>这不是抄 ClawBio 或 LabClaw，而是把三者的强项放进不同层：你的控制平面，ClawBio 的执行纪律，LabClaw 的能力面和 lab bridge。</p>
+          <p>重点不是“再造一个更简单的执行器”，而是让 hero runner 明确依附在现有 session/run 真相层之上。</p>
+          <div class="split">
+            <div class="tile">
+              <strong>必须保留</strong>
+              `run.json`、`run-status.json`、`run-review.json` 作为执行真相；product-facing 命令只能是薄适配层。
+            </div>
+            <div class="tile">
+              <strong>必须新增</strong>
+              automatic reproducibility bundle、capability maturity labeling、stable CI / smoke proof。
+            </div>
+          </div>
         </section>
 
-        <section class="panel" id="phases">
-          <h2>演进阶段</h2>
-          <div class="triple">
+        <section class="panel" id="hero-lanes">
+          <h2>Hero Lanes</h2>
+          <div class="split">
+            <div class="tile">
+              <strong>Lane 1 — RNA-seq differential expression</strong>
+              从已有 grounded family 直接产品化，目标是把 session path 包装成更短的 runner，同时继续落回 canonical session/run artifacts。
+            </div>
+            <div class="tile">
+              <strong>Lane 2 — Germline short variant discovery</strong>
+              沿用 benchmarked family，补 demoability、repro bundle、smoke coverage，并保持 truthful blocked state 输出。
+            </div>
+          </div>
+          <div class="triple" style="margin-top:16px;">
             <div class="roadmap-step">
-              <strong>Phase 1: 补执行平面</strong>
-              学 ClawBio：加 reproducibility bundle、commands export、environment snapshot、artifact validator。目标是让 `bio-agent` 真正能“跑出来并可复现”。
+              <strong>Lane A — Hero runner surface</strong>
+              输入更产品化，但底层仍复用现有 session lifecycle；绝不变成 second orchestrator。
             </div>
             <div class="roadmap-step">
-              <strong>Phase 2: 补 comparator bridge</strong>
-              从现在的 benchmark score skeleton 进入 artifact-backed score computation。GIAB 先做穿，随后扩 RNA / scRNA / ATAC。
+              <strong>Lane B — Reproducibility bundle</strong>
+              hero runs 默认输出 `commands.sh`、environment snapshot、`checksums.sha256`、`provenance.json`、`delivery-bundle.json`。
             </div>
             <div class="roadmap-step">
-              <strong>Phase 3: 扩能力面和 lab bridge</strong>
-              学 LabClaw：把你已有 control plane 接到更大的 domain surface、LIMS/ELN/robotics/cloud connectors 上，但仍保持你的 session/benchmark 主线。
+              <strong>Lane C — Capability catalog</strong>
+              从 evidence-bearing metadata 生成 catalog，显式标记 `first_party_executable` / `bridge_executable` / `reference_only`。
             </div>
+          </div>
+        </section>
+
+        <section class="panel" id="guardrails">
+          <h2>硬约束</h2>
+          <div class="chip-row">
+            <span class="chip">no second orchestrator</span>
+            <span class="chip">canonical run truth only</span>
+            <span class="chip">no wet-lab / XR pivot</span>
+            <span class="chip">hero workflows over raw skill count</span>
+            <span class="chip">phase-2 crystallization gate</span>
           </div>
           <div class="split" style="margin-top:16px;">
             <div class="tile">
-              <strong>短期最该做</strong>
-              不再扩 registry 名词层，优先补执行桥、repro bundle、comparator bridge。
+              <strong>Capability honesty</strong>
+              catalog 必须区分 `first_party_executable`、`bridge_executable`、`reference_only`；不能再让定义数量自动等价于可执行承诺。
             </div>
             <div class="tile">
-              <strong>长期最该避免</strong>
-              不要把自己做成第二个 LabClaw 式“技能堆场”，也不要退化成只会本地跑工具的 ClawBio-lite。你真正的优势是可治理、可评测、可恢复的控制平面。
+              <strong>Crystallization gating</strong>
+              session-to-skill crystallization 不是 phase 1 的前置条件；要等 hero lanes、repro bundle、stable review/status artifacts、smoke/CI 证明成立后再进入 phase 2。
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="phases">
+          <h2>阶段路线</h2>
+          <div class="triple">
+            <div class="roadmap-step">
+              <strong>Phase 1: Product surface proof</strong>
+              做薄 hero runner、自动 reproducibility bundle、comparison/docs packaging，让两条 hero lane 先能稳定演示。
+            </div>
+            <div class="roadmap-step">
+              <strong>Phase 2: Capability + crystallization gate</strong>
+              在 phase 1 证据成立后，再引入 evidence-derived capability catalog 与受控的 session-to-skill crystallization loop。
+            </div>
+            <div class="roadmap-step">
+              <strong>Phase 3: Broader connectors</strong>
+              只有在 truth model、packaging、CI 稳定后，才考虑扩更多 bridge / connector surfaces；不是先追 skill count，更不是先转向 wet-lab / XR。</n            </div>
+          </div>
+          <div class="split" style="margin-top:16px;">
+            <div class="tile">
+              <strong>默认验证面</strong>
+              stable control-plane regression lane + hero-runner smoke lane + optional heavy integration lane。
+            </div>
+            <div class="tile">
+              <strong>路线句子</strong>
+              `bio-agent` 不是要变成 ClawBio 或 LabClaw，而是要把 control plane 变成可信产品骨架，再把 delivery / catalog / docs 补齐。
             </div>
           </div>
         </section>

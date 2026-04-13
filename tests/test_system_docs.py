@@ -164,8 +164,35 @@ def test_architecture_comparison_roadmap_page_exists() -> None:
     assert "bio-agent" in html
     assert "ClawBio" in html
     assert "LabClaw" in html
+    assert "control-plane-first hybrid" in html
     assert "目标架构" in html
-    assert "Phase 1" in html
+    assert "Hero Lanes" in html
+    assert "no second orchestrator" in html
+    assert "phase-2 crystallization gate" in html
+    assert "Phase 1: Product surface proof" in html
+
+
+def test_productization_comparison_doc_and_index_story_exist() -> None:
+    comparison_doc = ROOT / "docs" / "plans" / "2026-04-13-bio-agent-productization-comparison.md"
+    index_page = ROOT / "docs" / "index.html"
+    readme_path = ROOT / "README.md"
+    reference_report = ROOT / "reference" / "COMPARATIVE_ANALYSIS_REPORT.md"
+
+    comparison_text = comparison_doc.read_text(encoding="utf-8")
+    index_html = index_page.read_text(encoding="utf-8")
+    readme_text = readme_path.read_text(encoding="utf-8")
+    reference_text = reference_report.read_text(encoding="utf-8")
+
+    assert "control-plane-first hybrid" in comparison_text
+    assert "rnaseq-differential-expression" in comparison_text
+    assert "germline-short-variant-discovery" in comparison_text
+    assert "No second orchestrator." in comparison_text
+    assert "phase 2" in comparison_text.lower()
+    assert "2026-04-13-bio-agent-productization-comparison.md" in index_html
+    assert "control-plane-first hybrid" in index_html
+    assert "Productization Roadmap After Reference Comparison" in readme_text
+    assert "reference/COMPARATIVE_ANALYSIS_REPORT.md" in readme_text
+    assert "状态说明：本文件保留为 2026-03-30 的原始对比快照" in reference_text
 
 
 def test_architecture_and_index_link_to_real_workflow_map_and_analysis_flows() -> None:
