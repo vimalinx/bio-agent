@@ -1,48 +1,32 @@
 version: 1
-description: Capability catalog vocabulary and hero-lane defaults for bio-agent productization.
+description: Capability-maturity vocabulary for productized bio-agent surfaces.
 
-execution_tiers:
-  - id: first_party_executable
-    description: Repo-owned control-plane capability that runs through the local bio-agent surface.
-  - id: bridge_executable
-    description: Workflow or surface that routes through canonical session/run truth but depends on bridged runtime/tool availability.
-  - id: reference_only
-    description: Cited external reference used for grounding or comparison, not surfaced as a first-party runnable promise.
+vocabulary:
+  execution_tier:
+    first_party_executable: Productized hero workflow surfaced through the canonical bio-agent session/run control plane.
+    bridge_executable: Runnable capability exposed through discovered tool/skill bridges, but not yet packaged as a first-party hero lane.
+    reference_only: Grounded workflow or knowledge surface kept for planning/reference honesty rather than direct first-party execution claims.
+  runtime_mode:
+    session-hero-runner: Thin adapter over canonical session/run truth.
+    local-cli: Depends on a locally available tool bridge.
+    prompt-bridge: Skill/prompt surface without a verified local executable contract.
+    planning-reference: Registry/documentation-only capability used for planning and comparison.
+  verification_level:
+    benchmark_contract: Backed by benchmark contract checks and smoke coverage.
+    machine_detected: Local executable or command bridge detected on this machine.
+    declared_only: Declared by metadata but not currently verified as locally available.
+    registry_modeled: Grounded in workflow/benchmark registries only.
+  reproducibility_level:
+    automatic_session_bundle: Hero runner emits a reproducibility bundle automatically.
+    manual_bridge: Reproducibility depends on operator-managed bridge/tool usage.
+    not_packaged: No first-party reproducibility bundle is promised yet.
 
-runtime_modes:
-  - id: local-agent-control-plane
-    description: Local repo-owned orchestration or control-plane execution.
-  - id: session-bridged-hybrid
-    description: Canonical session/run orchestration with one or more local/external bridge stages.
-  - id: session-bridged-local
-    description: Canonical session/run orchestration where stage bridges are local-only.
-  - id: external-reference
-    description: External source material or reference stack.
-
-verification_levels:
-  - id: registry_backed
-    description: Backed by repo registries and checked for path/provenance presence.
-  - id: benchmark_contract
-    description: Backed by registry metadata plus benchmark/task contract coverage.
-  - id: cited_reference
-    description: Backed by cited official-source references only.
-
-reproducibility_levels:
-  - id: canonical_session_truth
-    description: Capability grounds into canonical request/plan/run/run-status/run-review artifacts.
-  - id: delivery_bundle_defined
-    description: Capability declares delivery-bundle outputs and reproducibility-facing metadata but may still depend on bridged tools.
-  - id: external_project_contract
-    description: Reproducibility promise belongs to an external project, not bio-agent itself.
-
-source_kinds:
-  - id: seed_skill_registry
-    description: Seeded repo skill registry entry.
-  - id: analysis_flow_registry
-    description: Repo analysis-flow registry entry combined with workflow, bridge, and benchmark metadata.
-  - id: official_reference
-    description: Official external source cited by workflow or benchmark registries.
-
-hero_workflow_ids:
-  - rnaseq-differential-expression
-  - germline-short-variant-discovery
+hero_workflows:
+  - workflow_id: rnaseq-differential-expression
+    title: Bulk RNA-seq differential expression
+    verification_level: benchmark_contract
+    reproducibility_level: automatic_session_bundle
+  - workflow_id: germline-short-variant-discovery
+    title: Germline short variant discovery
+    verification_level: benchmark_contract
+    reproducibility_level: automatic_session_bundle
