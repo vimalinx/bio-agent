@@ -108,6 +108,18 @@ def test_hero_run_keeps_skill_crystallization_gated_until_completed(tmp_path: Pa
     assert "session run is not completed" in candidate["reasons"]
 
 
+def test_smoke_wrapper_and_pytest_marker_stay_aligned() -> None:
+    smoke_script = ROOT / "scripts" / "ci" / "run_smoke_tests.sh"
+    pytest_ini = ROOT / "pytest.ini"
+
+    smoke_text = smoke_script.read_text(encoding="utf-8")
+    pytest_text = pytest_ini.read_text(encoding="utf-8")
+
+    assert "pytest -q -m smoke" in smoke_text
+    assert "tests/test_productization_roadmap.py" in smoke_text
+    assert "smoke: lightweight product-surface smoke checks" in pytest_text
+
+
 def test_ci_workflow_separates_stable_and_smoke_lanes() -> None:
     workflow_path = ROOT / ".github" / "workflows" / "ci.yml"
     workflow_text = workflow_path.read_text(encoding="utf-8")
