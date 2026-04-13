@@ -10,6 +10,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
+from lib.bio_product_runner import export_session_repro_bundle, hero_run
 from lib.bio_skill_system import (
     advance_run_stage,
     advance_session_run,
