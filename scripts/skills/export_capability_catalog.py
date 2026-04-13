@@ -5,16 +5,19 @@ import argparse
 import json
 from collections import Counter, defaultdict
 from pathlib import Path
+import sys
 from typing import Any
 
 import yaml
 
-from scripts.skills.export_skill_registry import build_registry as build_skill_registry
-
-
 ROOT = Path(__file__).resolve().parents[2]
 REGISTRY_DIR = ROOT / "registry"
 PROJECT_SKILL_ROOT = ROOT / ".claude" / "skills"
+
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.skills.export_skill_registry import build_registry as build_skill_registry
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:

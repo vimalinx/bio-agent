@@ -1,0 +1,666 @@
+{
+  "catalog_policy": {
+    "version": 1,
+    "description": "Capability catalog vocabulary and hero-lane defaults for bio-agent productization.",
+    "execution_tiers": [
+      {
+        "id": "first_party_executable",
+        "description": "Repo-owned control-plane capability that runs through the local bio-agent surface."
+      },
+      {
+        "id": "bridge_executable",
+        "description": "Workflow or surface that routes through canonical session/run truth but depends on bridged runtime/tool availability."
+      },
+      {
+        "id": "reference_only",
+        "description": "Cited external reference used for grounding or comparison, not surfaced as a first-party runnable promise."
+      }
+    ],
+    "runtime_modes": [
+      {
+        "id": "local-agent-control-plane",
+        "description": "Local repo-owned orchestration or control-plane execution."
+      },
+      {
+        "id": "session-bridged-hybrid",
+        "description": "Canonical session/run orchestration with one or more local/external bridge stages."
+      },
+      {
+        "id": "session-bridged-local",
+        "description": "Canonical session/run orchestration where stage bridges are local-only."
+      },
+      {
+        "id": "external-reference",
+        "description": "External source material or reference stack."
+      }
+    ],
+    "verification_levels": [
+      {
+        "id": "registry_backed",
+        "description": "Backed by repo registries and checked for path/provenance presence."
+      },
+      {
+        "id": "benchmark_contract",
+        "description": "Backed by registry metadata plus benchmark/task contract coverage."
+      },
+      {
+        "id": "cited_reference",
+        "description": "Backed by cited official-source references only."
+      }
+    ],
+    "reproducibility_levels": [
+      {
+        "id": "canonical_session_truth",
+        "description": "Capability grounds into canonical request/plan/run/run-status/run-review artifacts."
+      },
+      {
+        "id": "delivery_bundle_defined",
+        "description": "Capability declares delivery-bundle outputs and reproducibility-facing metadata but may still depend on bridged tools."
+      },
+      {
+        "id": "external_project_contract",
+        "description": "Reproducibility promise belongs to an external project, not bio-agent itself."
+      }
+    ],
+    "source_kinds": [
+      {
+        "id": "seed_skill_registry",
+        "description": "Seeded repo skill registry entry."
+      },
+      {
+        "id": "analysis_flow_registry",
+        "description": "Repo analysis-flow registry entry combined with workflow, bridge, and benchmark metadata."
+      },
+      {
+        "id": "official_reference",
+        "description": "Official external source cited by workflow or benchmark registries."
+      }
+    ],
+    "hero_workflow_ids": [
+      "rnaseq-differential-expression",
+      "germline-short-variant-discovery"
+    ]
+  },
+  "summary": {
+    "total_capabilities": 21,
+    "execution_tier_counts": {
+      "bridge_executable": 4,
+      "first_party_executable": 8,
+      "reference_only": 9
+    },
+    "capability_kind_counts": {
+      "control_plane_skill": 8,
+      "official_reference": 9,
+      "workflow_family": 4
+    },
+    "hero_workflow_ids": [
+      "germline-short-variant-discovery",
+      "rnaseq-differential-expression"
+    ],
+    "project_skill_count": 417
+  },
+  "capabilities": [
+    {
+      "id": "atacseq-differential-accessibility",
+      "title": "ATAC-seq peak calling and differential accessibility",
+      "capability_kind": "workflow_family",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "session-bridged-local",
+      "verification_level": "benchmark_contract",
+      "reproducibility_level": "delivery_bundle_defined",
+      "source_kind": "analysis_flow_registry",
+      "runnable": true,
+      "hero_lane": false,
+      "summary": "Move from raw ATAC-seq reads to filtered alignments, peak sets, consensus accessibility matrices, and differential accessibility results.",
+      "stage_count": 5,
+      "delivery_bundle_items": [
+        "filtered BAM inventory",
+        "accessibility QC summary",
+        "bigWig track inventory",
+        "consensus peak matrix",
+        "differential accessibility result table",
+        "analysis summary"
+      ],
+      "request_tags": [
+        "atacseq",
+        "atac-seq",
+        "chromatin-accessibility",
+        "peaks",
+        "differential-accessibility"
+      ],
+      "benchmark_ids": [
+        "encode-atac-conformance"
+      ],
+      "bridge_execution_modes": [
+        "local-cli",
+        "local-or-external",
+        "local-python"
+      ],
+      "required_tools": [
+        "bowtie2",
+        "bwa",
+        "fastqc",
+        "macs3",
+        "multiqc"
+      ],
+      "reproducibility_support": [
+        "planned"
+      ],
+      "strategy_ids": [
+        "bowtie2-macs3",
+        "bwa-macs3"
+      ],
+      "provenance": {
+        "analysis_flow_registry": "registry/analysis_flows.yaml",
+        "workflow_registry": "registry/workflows.yaml",
+        "execution_bridges": "registry/execution_bridges.yaml",
+        "benchmarks": "registry/benchmarks.yaml"
+      }
+    },
+    {
+      "id": "germline-short-variant-discovery",
+      "title": "Germline SNP/Indel discovery for WGS/WES",
+      "capability_kind": "workflow_family",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "session-bridged-local",
+      "verification_level": "benchmark_contract",
+      "reproducibility_level": "delivery_bundle_defined",
+      "source_kind": "analysis_flow_registry",
+      "runnable": true,
+      "hero_lane": true,
+      "summary": "Move from raw WES/WGS reads to analysis-ready BAMs, gVCFs, a joint cohort VCF, filtered variants, and final cohort review artifacts.",
+      "stage_count": 5,
+      "delivery_bundle_items": [
+        "analysis-ready BAM inventory",
+        "recalibration metrics",
+        "gVCF manifest",
+        "joint VCF manifest",
+        "filtered VCF manifest",
+        "cohort QC summary"
+      ],
+      "request_tags": [
+        "germline-variant",
+        "variant-calling",
+        "wes",
+        "wgs",
+        "gvcf",
+        "snp-indel"
+      ],
+      "benchmark_ids": [
+        "giab-precisionfda-small-variant"
+      ],
+      "bridge_execution_modes": [
+        "local-cli",
+        "local-or-external",
+        "local-python"
+      ],
+      "required_tools": [
+        "bcftools",
+        "bwa",
+        "gatk-genotypegvcfs",
+        "gatk-haplotypecaller",
+        "samtools",
+        "variantrecalibrator"
+      ],
+      "reproducibility_support": [
+        "planned"
+      ],
+      "strategy_ids": [
+        "bwa-gatk-hardfilter",
+        "bwa-gatk-vqsr"
+      ],
+      "provenance": {
+        "analysis_flow_registry": "registry/analysis_flows.yaml",
+        "workflow_registry": "registry/workflows.yaml",
+        "execution_bridges": "registry/execution_bridges.yaml",
+        "benchmarks": "registry/benchmarks.yaml"
+      }
+    },
+    {
+      "id": "rnaseq-differential-expression",
+      "title": "Bulk RNA-seq differential expression",
+      "capability_kind": "workflow_family",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "session-bridged-hybrid",
+      "verification_level": "benchmark_contract",
+      "reproducibility_level": "delivery_bundle_defined",
+      "source_kind": "analysis_flow_registry",
+      "runnable": true,
+      "hero_lane": true,
+      "summary": "Move from raw paired-end FASTQ reads to a counts matrix and differential expression result bundle with explicit QC and review boundaries.",
+      "stage_count": 5,
+      "delivery_bundle_items": [
+        "aligned BAM inventory",
+        "MultiQC report",
+        "gene count matrix",
+        "differential expression result table",
+        "analysis summary"
+      ],
+      "request_tags": [
+        "rnaseq",
+        "differential-expression",
+        "bulk-transcriptomics",
+        "fastq",
+        "counts-matrix"
+      ],
+      "benchmark_ids": [
+        "seqc2-bulk-rnaseq"
+      ],
+      "bridge_execution_modes": [
+        "external-or-manual",
+        "local-cli",
+        "local-or-external",
+        "local-python",
+        "manual-or-agent"
+      ],
+      "required_tools": [
+        "fastqc",
+        "feature-counts",
+        "multiqc",
+        "pydeseq2",
+        "salmon",
+        "star",
+        "tximport"
+      ],
+      "reproducibility_support": [
+        "planned"
+      ],
+      "strategy_ids": [
+        "salmon-tximport",
+        "star-featurecounts"
+      ],
+      "provenance": {
+        "analysis_flow_registry": "registry/analysis_flows.yaml",
+        "workflow_registry": "registry/workflows.yaml",
+        "execution_bridges": "registry/execution_bridges.yaml",
+        "benchmarks": "registry/benchmarks.yaml"
+      }
+    },
+    {
+      "id": "scrnaseq-preprocessing",
+      "title": "Single-cell RNA-seq preprocessing and clustering-ready matrix generation",
+      "capability_kind": "workflow_family",
+      "execution_tier": "bridge_executable",
+      "runtime_mode": "session-bridged-hybrid",
+      "verification_level": "benchmark_contract",
+      "reproducibility_level": "delivery_bundle_defined",
+      "source_kind": "analysis_flow_registry",
+      "runnable": true,
+      "hero_lane": false,
+      "summary": "Move from raw single-cell reads and chemistry metadata to a filtered matrix, QC metrics, embeddings, and marker-review artifacts.",
+      "stage_count": 5,
+      "delivery_bundle_items": [
+        "filtered matrix",
+        "QC metrics table",
+        "embeddings and cluster assignments",
+        "marker table",
+        "marker review summary"
+      ],
+      "request_tags": [
+        "scrnaseq",
+        "single-cell",
+        "10x",
+        "umi",
+        "cell-barcode"
+      ],
+      "benchmark_ids": [
+        "openproblems-single-cell"
+      ],
+      "bridge_execution_modes": [
+        "external-or-manual",
+        "local-python",
+        "manual-or-agent"
+      ],
+      "required_tools": [
+        "cellranger",
+        "multiqc",
+        "scanpy",
+        "starsolo"
+      ],
+      "reproducibility_support": [
+        "planned"
+      ],
+      "strategy_ids": [
+        "cellranger",
+        "starsolo"
+      ],
+      "provenance": {
+        "analysis_flow_registry": "registry/analysis_flows.yaml",
+        "workflow_registry": "registry/workflows.yaml",
+        "execution_bridges": "registry/execution_bridges.yaml",
+        "benchmarks": "registry/benchmarks.yaml"
+      }
+    },
+    {
+      "id": "candidate-plan-generator",
+      "title": "candidate-plan-generator",
+      "capability_kind": "control_plane_skill",
+      "execution_tier": "first_party_executable",
+      "runtime_mode": "local-agent-control-plane",
+      "verification_level": "registry_backed",
+      "reproducibility_level": "canonical_session_truth",
+      "source_kind": "seed_skill_registry",
+      "runnable": true,
+      "summary": "Use when generating multiple candidate plans from a normalized request before the user approves execution.",
+      "layer": "orchestrator",
+      "path": ".claude/skills/orchestrator/candidate-plan-generator/SKILL.md",
+      "classification_source": "layered-path",
+      "provenance": {
+        "registry": "registry/skills.yaml",
+        "skill_path": ".claude/skills/orchestrator/candidate-plan-generator/SKILL.md",
+        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+      }
+    },
+    {
+      "id": "execution-guard",
+      "title": "execution-guard",
+      "capability_kind": "control_plane_skill",
+      "execution_tier": "first_party_executable",
+      "runtime_mode": "local-agent-control-plane",
+      "verification_level": "registry_backed",
+      "reproducibility_level": "canonical_session_truth",
+      "source_kind": "seed_skill_registry",
+      "runnable": true,
+      "summary": "Use when deciding whether a plan stage should continue automatically, pause for confirmation, or escalate because of risk.",
+      "layer": "orchestrator",
+      "path": ".claude/skills/orchestrator/execution-guard/SKILL.md",
+      "classification_source": "layered-path",
+      "provenance": {
+        "registry": "registry/skills.yaml",
+        "skill_path": ".claude/skills/orchestrator/execution-guard/SKILL.md",
+        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+      }
+    },
+    {
+      "id": "plan-comparator",
+      "title": "plan-comparator",
+      "capability_kind": "control_plane_skill",
+      "execution_tier": "first_party_executable",
+      "runtime_mode": "local-agent-control-plane",
+      "verification_level": "registry_backed",
+      "reproducibility_level": "canonical_session_truth",
+      "source_kind": "seed_skill_registry",
+      "runnable": true,
+      "summary": "Use when comparing candidate plans and explaining trade-offs so the user can select or modify a plan.",
+      "layer": "orchestrator",
+      "path": ".claude/skills/orchestrator/plan-comparator/SKILL.md",
+      "classification_source": "layered-path",
+      "provenance": {
+        "registry": "registry/skills.yaml",
+        "skill_path": ".claude/skills/orchestrator/plan-comparator/SKILL.md",
+        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+      }
+    },
+    {
+      "id": "plan-editor",
+      "title": "plan-editor",
+      "capability_kind": "control_plane_skill",
+      "execution_tier": "first_party_executable",
+      "runtime_mode": "local-agent-control-plane",
+      "verification_level": "registry_backed",
+      "reproducibility_level": "canonical_session_truth",
+      "source_kind": "seed_skill_registry",
+      "runnable": true,
+      "summary": "Use when incorporating user changes into a selected plan while preserving execution structure and validation semantics.",
+      "layer": "orchestrator",
+      "path": ".claude/skills/orchestrator/plan-editor/SKILL.md",
+      "classification_source": "layered-path",
+      "provenance": {
+        "registry": "registry/skills.yaml",
+        "skill_path": ".claude/skills/orchestrator/plan-editor/SKILL.md",
+        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+      }
+    },
+    {
+      "id": "request-normalizer",
+      "title": "request-normalizer",
+      "capability_kind": "control_plane_skill",
+      "execution_tier": "first_party_executable",
+      "runtime_mode": "local-agent-control-plane",
+      "verification_level": "registry_backed",
+      "reproducibility_level": "canonical_session_truth",
+      "source_kind": "seed_skill_registry",
+      "runnable": true,
+      "summary": "Use when turning a natural-language biology request into a structured request object before planning.",
+      "layer": "orchestrator",
+      "path": ".claude/skills/orchestrator/request-normalizer/SKILL.md",
+      "classification_source": "layered-path",
+      "provenance": {
+        "registry": "registry/skills.yaml",
+        "skill_path": ".claude/skills/orchestrator/request-normalizer/SKILL.md",
+        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+      }
+    },
+    {
+      "id": "run-resumer",
+      "title": "run-resumer",
+      "capability_kind": "control_plane_skill",
+      "execution_tier": "first_party_executable",
+      "runtime_mode": "local-agent-control-plane",
+      "verification_level": "registry_backed",
+      "reproducibility_level": "canonical_session_truth",
+      "source_kind": "seed_skill_registry",
+      "runnable": true,
+      "summary": "Use when resuming a paused or interrupted run from saved run state instead of regenerating the plan from scratch.",
+      "layer": "orchestrator",
+      "path": ".claude/skills/orchestrator/run-resumer/SKILL.md",
+      "classification_source": "layered-path",
+      "provenance": {
+        "registry": "registry/skills.yaml",
+        "skill_path": ".claude/skills/orchestrator/run-resumer/SKILL.md",
+        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+      }
+    },
+    {
+      "id": "skill-router",
+      "title": "skill-router",
+      "capability_kind": "control_plane_skill",
+      "execution_tier": "first_party_executable",
+      "runtime_mode": "local-agent-control-plane",
+      "verification_level": "registry_backed",
+      "reproducibility_level": "canonical_session_truth",
+      "source_kind": "seed_skill_registry",
+      "runnable": true,
+      "summary": "Use when expanding an approved plan into stage-by-stage candidate skills drawn from the local skill registry.",
+      "layer": "orchestrator",
+      "path": ".claude/skills/orchestrator/skill-router/SKILL.md",
+      "classification_source": "layered-path",
+      "provenance": {
+        "registry": "registry/skills.yaml",
+        "skill_path": ".claude/skills/orchestrator/skill-router/SKILL.md",
+        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+      }
+    },
+    {
+      "id": "stage-reviewer",
+      "title": "stage-reviewer",
+      "capability_kind": "control_plane_skill",
+      "execution_tier": "first_party_executable",
+      "runtime_mode": "local-agent-control-plane",
+      "verification_level": "registry_backed",
+      "reproducibility_level": "canonical_session_truth",
+      "source_kind": "seed_skill_registry",
+      "runnable": true,
+      "summary": "Use when checking whether a completed stage produced the artifacts and validation evidence required by the approved plan.",
+      "layer": "orchestrator",
+      "path": ".claude/skills/orchestrator/stage-reviewer/SKILL.md",
+      "classification_source": "layered-path",
+      "provenance": {
+        "registry": "registry/skills.yaml",
+        "skill_path": ".claude/skills/orchestrator/stage-reviewer/SKILL.md",
+        "dynamic_registry": "scripts/skills/export_skill_registry.py"
+      }
+    },
+    {
+      "id": "reference:atacseq-differential-accessibility:nf-core/atacseq",
+      "title": "nf-core/atacseq",
+      "capability_kind": "official_reference",
+      "execution_tier": "reference_only",
+      "runtime_mode": "external-reference",
+      "verification_level": "cited_reference",
+      "reproducibility_level": "external_project_contract",
+      "source_kind": "official_reference",
+      "runnable": false,
+      "summary": "Official grounding source for atacseq-differential-accessibility.",
+      "relates_to": [
+        "atacseq-differential-accessibility"
+      ],
+      "url": "https://nf-co.re/atacseq",
+      "provenance": {
+        "workflow_registry": "registry/workflows.yaml"
+      }
+    },
+    {
+      "id": "reference:germline-short-variant-discovery:gatk-germline-short-variant-discovery",
+      "title": "GATK Germline short variant discovery",
+      "capability_kind": "official_reference",
+      "execution_tier": "reference_only",
+      "runtime_mode": "external-reference",
+      "verification_level": "cited_reference",
+      "reproducibility_level": "external_project_contract",
+      "source_kind": "official_reference",
+      "runnable": false,
+      "summary": "Official grounding source for germline-short-variant-discovery.",
+      "relates_to": [
+        "germline-short-variant-discovery"
+      ],
+      "url": "https://gatk.broadinstitute.org/hc/en-us/articles/360035535932-Germline-short-variant-discovery-SNPs-Indels",
+      "provenance": {
+        "workflow_registry": "registry/workflows.yaml"
+      }
+    },
+    {
+      "id": "reference:germline-short-variant-discovery:gatk-hard-filtering-germline-short-variants",
+      "title": "GATK Hard-filtering germline short variants",
+      "capability_kind": "official_reference",
+      "execution_tier": "reference_only",
+      "runtime_mode": "external-reference",
+      "verification_level": "cited_reference",
+      "reproducibility_level": "external_project_contract",
+      "source_kind": "official_reference",
+      "runnable": false,
+      "summary": "Official grounding source for germline-short-variant-discovery.",
+      "relates_to": [
+        "germline-short-variant-discovery"
+      ],
+      "url": "https://gatk.broadinstitute.org/hc/en-us/articles/360035890471-Hard-filtering-germline-short-variants",
+      "provenance": {
+        "workflow_registry": "registry/workflows.yaml"
+      }
+    },
+    {
+      "id": "reference:germline-short-variant-discovery:nf-core/sarek",
+      "title": "nf-core/sarek",
+      "capability_kind": "official_reference",
+      "execution_tier": "reference_only",
+      "runtime_mode": "external-reference",
+      "verification_level": "cited_reference",
+      "reproducibility_level": "external_project_contract",
+      "source_kind": "official_reference",
+      "runnable": false,
+      "summary": "Official grounding source for germline-short-variant-discovery.",
+      "relates_to": [
+        "germline-short-variant-discovery"
+      ],
+      "url": "https://nf-co.re/sarek",
+      "provenance": {
+        "workflow_registry": "registry/workflows.yaml"
+      }
+    },
+    {
+      "id": "reference:rnaseq-differential-expression:galaxy-training:-rna-seq-analysis-and-visualization",
+      "title": "Galaxy Training: RNA-seq analysis and visualization",
+      "capability_kind": "official_reference",
+      "execution_tier": "reference_only",
+      "runtime_mode": "external-reference",
+      "verification_level": "cited_reference",
+      "reproducibility_level": "external_project_contract",
+      "source_kind": "official_reference",
+      "runnable": false,
+      "summary": "Official grounding source for rnaseq-differential-expression.",
+      "relates_to": [
+        "rnaseq-differential-expression"
+      ],
+      "url": "https://training.galaxyproject.org/training-material/topics/transcriptomics/tutorials/rna-seq-analysis-clustering-viz/tutorial.html",
+      "provenance": {
+        "workflow_registry": "registry/workflows.yaml"
+      }
+    },
+    {
+      "id": "reference:rnaseq-differential-expression:nf-core/rnaseq",
+      "title": "nf-core/rnaseq",
+      "capability_kind": "official_reference",
+      "execution_tier": "reference_only",
+      "runtime_mode": "external-reference",
+      "verification_level": "cited_reference",
+      "reproducibility_level": "external_project_contract",
+      "source_kind": "official_reference",
+      "runnable": false,
+      "summary": "Official grounding source for rnaseq-differential-expression.",
+      "relates_to": [
+        "rnaseq-differential-expression"
+      ],
+      "url": "https://nf-co.re/rnaseq",
+      "provenance": {
+        "workflow_registry": "registry/workflows.yaml"
+      }
+    },
+    {
+      "id": "reference:scrnaseq-preprocessing:galaxy-training:-scrna-seq-preprocessing",
+      "title": "Galaxy Training: scRNA-seq preprocessing",
+      "capability_kind": "official_reference",
+      "execution_tier": "reference_only",
+      "runtime_mode": "external-reference",
+      "verification_level": "cited_reference",
+      "reproducibility_level": "external_project_contract",
+      "source_kind": "official_reference",
+      "runnable": false,
+      "summary": "Official grounding source for scrnaseq-preprocessing.",
+      "relates_to": [
+        "scrnaseq-preprocessing"
+      ],
+      "url": "https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-preprocessing/tutorial.html",
+      "provenance": {
+        "workflow_registry": "registry/workflows.yaml"
+      }
+    },
+    {
+      "id": "reference:scrnaseq-preprocessing:galaxy-training:-scrna-seq-with-scanpy/seurat-style-downstream",
+      "title": "Galaxy Training: scRNA-seq with Scanpy/Seurat-style downstream",
+      "capability_kind": "official_reference",
+      "execution_tier": "reference_only",
+      "runtime_mode": "external-reference",
+      "verification_level": "cited_reference",
+      "reproducibility_level": "external_project_contract",
+      "source_kind": "official_reference",
+      "runnable": false,
+      "summary": "Official grounding source for scrnaseq-preprocessing.",
+      "relates_to": [
+        "scrnaseq-preprocessing"
+      ],
+      "url": "https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-seurat-pbmc3k/tutorial.html",
+      "provenance": {
+        "workflow_registry": "registry/workflows.yaml"
+      }
+    },
+    {
+      "id": "reference:scrnaseq-preprocessing:nf-core/scrnaseq",
+      "title": "nf-core/scrnaseq",
+      "capability_kind": "official_reference",
+      "execution_tier": "reference_only",
+      "runtime_mode": "external-reference",
+      "verification_level": "cited_reference",
+      "reproducibility_level": "external_project_contract",
+      "source_kind": "official_reference",
+      "runnable": false,
+      "summary": "Official grounding source for scrnaseq-preprocessing.",
+      "relates_to": [
+        "scrnaseq-preprocessing"
+      ],
+      "url": "https://nf-co.re/scrnaseq",
+      "provenance": {
+        "workflow_registry": "registry/workflows.yaml"
+      }
+    }
+  ]
+}
