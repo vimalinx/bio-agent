@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import csv
+import hashlib
 import json
 import os
 import platform
@@ -21,6 +22,10 @@ from scripts.skills.export_skill_registry import build_registry as build_dynamic
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_DIR = ROOT / "registry"
 EXAMPLES_DIR = ROOT / "examples"
+HERO_WORKFLOW_IDS = {
+    "rnaseq-differential-expression",
+    "germline-short-variant-discovery",
+}
 SESSION_FILES = {
     "request": "request.json",
     "plans": "plans.json",
@@ -1129,6 +1134,259 @@ def export_benchmark_repro_bundle(
             'artifacts': str(artifacts_path),
             'scorecard': str(scorecard_path),
         },
+    }
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(65536), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _delivery_bundle_manifest(bundle: dict[str, Any], workflow_id: str) -> dict[str, Any]:
+    analysis_flow = analysis_flow_for_workflow(workflow_id)
+    run_state = dict(bundle.get("run", {}))
+    artifacts = [
+        {
+            "path": str(item.get("path")),
+            "format": item.get("format"),
+            "description": item.get("description"),
+        }
+        for item in run_state.get("artifacts", [])
+        if isinstance(item, dict) and item.get("path")
+    ]
+    return {
+        "generated_at": _now_iso(),
+        "workflow_id": workflow_id,
+        "expected_items": list(analysis_flow.get("delivery_bundle", [])) if analysis_flow else [],
+        "recorded_artifacts": artifacts,
+        "recorded_artifact_count": len(artifacts),
+    }
+
+
+def export_session_repro_bundle(
+    session_dir: Path,
+    output_dir: Path | None = None,
+    *,
+    invoked_command: str | None = None,
+) -> dict[str, Any]:
+    session_dir = _ensure_session_directory(session_dir, must_exist=True)
+    bundle = _sync_session_bundle(session_dir, _load_session_bundle(session_dir))
+    output_dir = (output_dir or (session_dir / "repro")).expanduser().resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    session = dict(bundle.get("session", {}))
+    review = dict(bundle.get("review", {}))
+    approved_plan = dict(bundle.get("approved_plan", {}))
+    run_status = dict(bundle.get("run_status", {}))
+    run_review = dict(bundle.get("run_review", {}))
+    workflow_id = str(
+        approved_plan.get("source_workflow_id")
+        or session.get("workflow_family")
+        or "unknown-workflow"
+    )
+    strategy_profile = str(
+        approved_plan.get("selected_strategy_profile")
+        or approved_plan.get("strategy_type")
+        or session.get("strategy_profile")
+        or ""
+    )
+
+    commands_path = output_dir / "commands.sh"
+    environment_path = output_dir / "environment.json"
+    provenance_path = output_dir / "provenance.json"
+    delivery_bundle_path = output_dir / "delivery-bundle.json"
+    checksums_path = output_dir / "checksums.sha256"
+
+    command_lines = [
+        "#!/usr/bin/env bash",
+        "set -euo pipefail",
+        "",
+        f"# session_id: {session.get('session_id', session_dir.name)}",
+        f"# workflow_id: {workflow_id}",
+        f"# strategy_profile: {strategy_profile or '-'}",
+    ]
+    if invoked_command:
+        command_lines.extend(["", "# invoking command", invoked_command])
+    command_lines.extend(
+        [
+            "",
+            "# canonical control-plane commands",
+            " ".join(
+                [
+                    shlex.quote(sys.executable),
+                    shlex.quote(str(ROOT / "scripts" / "bio_skill_system.py")),
+                    "session-start",
+                    "--session-dir",
+                    shlex.quote(str(session_dir)),
+                    "--workflow-family",
+                    shlex.quote(workflow_id),
+                ]
+                + (
+                    ["--strategy-profile", shlex.quote(strategy_profile)]
+                    if strategy_profile
+                    else []
+                )
+            ),
+            " ".join(
+                [
+                    shlex.quote(sys.executable),
+                    shlex.quote(str(ROOT / "scripts" / "bio_skill_system.py")),
+                    "session-approve",
+                    "--session-dir",
+                    shlex.quote(str(session_dir)),
+                    "--plan-id",
+                    shlex.quote(
+                        str(
+                            session.get("approved_plan_id")
+                            or review.get("recommended_plan_id")
+                            or approved_plan.get("plan_id")
+                            or ""
+                        )
+                    ),
+                ]
+            ).rstrip(),
+        ]
+    )
+    commands_path.write_text("\n".join(command_lines) + "\n", encoding="utf-8")
+    try:
+        os.chmod(commands_path, 0o755)
+    except OSError:
+        pass
+
+    save_json(_environment_snapshot(session_dir), environment_path)
+
+    provenance_payload = {
+        "generated_at": _now_iso(),
+        "session_id": session.get("session_id", session_dir.name),
+        "session_dir": str(session_dir),
+        "workflow_id": workflow_id,
+        "selected_strategy_profile": strategy_profile or None,
+        "approved_plan_id": session.get("approved_plan_id") or approved_plan.get("plan_id"),
+        "recommended_plan_id": review.get("recommended_plan_id"),
+        "run_status": run_status.get("status"),
+        "run_verdict": run_review.get("verdict"),
+        "canonical_records": {
+            artifact_key: str(_session_file(session_dir, artifact_key))
+            for artifact_key in ("run", "run_status", "run_review")
+        },
+        "history_event_count": session.get("history_event_count"),
+    }
+    save_json(provenance_payload, provenance_path)
+
+    delivery_manifest = _delivery_bundle_manifest(bundle, workflow_id)
+    save_json(delivery_manifest, delivery_bundle_path)
+
+    checksum_targets = [
+        commands_path,
+        environment_path,
+        provenance_path,
+        delivery_bundle_path,
+    ]
+    for artifact in delivery_manifest.get("recorded_artifacts", []):
+        artifact_path = _resolve_repo_path(artifact.get("path"))
+        if artifact_path and artifact_path.exists() and artifact_path.is_file():
+            checksum_targets.append(artifact_path)
+    seen_targets: set[Path] = set()
+    checksum_lines: list[str] = []
+    for target in checksum_targets:
+        if target in seen_targets:
+            continue
+        seen_targets.add(target)
+        checksum_lines.append(f"{_sha256_file(target)}  {target}")
+    checksums_path.write_text("\n".join(checksum_lines) + ("\n" if checksum_lines else ""), encoding="utf-8")
+
+    return {
+        "path": str(output_dir),
+        "files": {
+            "commands": str(commands_path),
+            "environment": str(environment_path),
+            "provenance": str(provenance_path),
+            "delivery_bundle": str(delivery_bundle_path),
+            "checksums": str(checksums_path),
+        },
+        "workflow_id": workflow_id,
+        "selected_strategy_profile": strategy_profile or None,
+    }
+
+
+def run_hero_workflow(
+    *,
+    session_dir: Path,
+    workflow_family: str,
+    strategy_profile: str | None = None,
+    request_text: str | None = None,
+    goal: str | None = None,
+    extra_tags: list[str] | None = None,
+    approval_reason: str | None = None,
+    advance: bool = False,
+    confirm: bool = False,
+    validation_updates: list[str] | None = None,
+    artifacts: list[str] | None = None,
+    allow_missing_tools: bool = False,
+    repro_dir: Path | None = None,
+    invoked_command: str | None = None,
+) -> dict[str, Any]:
+    family_template, workflow = _resolve_workflow_family_template(workflow_family)
+    workflow_id = str(workflow.get("id") or "")
+    if workflow_id not in HERO_WORKFLOW_IDS:
+        raise ValueError(
+            "Hero runner currently supports only the productized lanes: "
+            + ", ".join(sorted(HERO_WORKFLOW_IDS))
+        )
+
+    start_session(
+        session_dir=session_dir,
+        request_text=request_text,
+        goal=goal,
+        extra_tags=extra_tags,
+        workflow_family=str(family_template.get("family_id") or workflow_id),
+        strategy_profile=strategy_profile,
+    )
+    review = _load_json(_session_file(session_dir, "review"))
+    selected_plan_id = str(review.get("recommended_plan_id") or "")
+    if not selected_plan_id:
+        raise ValueError("Hero runner could not resolve a recommended plan id.")
+
+    approve_session_plan(
+        session_dir=session_dir,
+        plan_id=selected_plan_id,
+        reason=approval_reason or "Auto-approved by hero runner.",
+    )
+
+    if advance:
+        advance_session_run(
+            session_dir=session_dir,
+            confirm=confirm,
+            validation_updates=validation_updates,
+            artifacts=artifacts,
+            allow_missing_tools=allow_missing_tools,
+        )
+
+    repro_bundle = export_session_repro_bundle(
+        session_dir,
+        output_dir=repro_dir,
+        invoked_command=invoked_command,
+    )
+    bundle = _sync_session_bundle(session_dir, _load_session_bundle(session_dir))
+    return {
+        "hero_lane": workflow_id,
+        "session": dict(bundle.get("session", {})),
+        "review": dict(bundle.get("review", {})),
+        "approved_plan": {
+            "plan_id": dict(bundle.get("approved_plan", {})).get("plan_id"),
+            "source_workflow_id": dict(bundle.get("approved_plan", {})).get("source_workflow_id"),
+            "selected_strategy_profile": dict(bundle.get("approved_plan", {})).get("selected_strategy_profile"),
+        },
+        "run_status": dict(bundle.get("run_status", {})),
+        "run_review": dict(bundle.get("run_review", {})),
+        "canonical_records": {
+            artifact_key: str(_session_file(session_dir, artifact_key))
+            for artifact_key in ("run", "run_status", "run_review")
+        },
+        "repro_bundle": repro_bundle,
     }
 
 
