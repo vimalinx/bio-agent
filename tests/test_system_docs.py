@@ -195,6 +195,23 @@ def test_productization_comparison_doc_and_index_story_exist() -> None:
     assert "状态说明：本文件保留为 2026-03-30 的原始对比快照" in reference_text
 
 
+def test_capability_catalog_page_and_data_exist() -> None:
+    catalog_page = ROOT / "docs" / "system" / "capability-catalog.html"
+    catalog_json = ROOT / "docs" / "system" / "data" / "capability-catalog.json"
+
+    html = catalog_page.read_text(encoding="utf-8")
+    payload = json.loads(catalog_json.read_text(encoding="utf-8"))
+
+    assert "Capability Catalog" in html
+    assert 'const CATALOG_URL = "data/capability-catalog.json"' in html
+    assert "first_party_executable" in html
+    assert "bridge_executable" in html
+    assert "reference_only" in html
+    assert payload["summary"]["execution_tier_counts"]["first_party_executable"] >= 1
+    assert payload["summary"]["execution_tier_counts"]["bridge_executable"] >= 1
+    assert payload["summary"]["execution_tier_counts"]["reference_only"] >= 1
+
+
 def test_architecture_and_index_link_to_real_workflow_map_and_analysis_flows() -> None:
     architecture_page = ROOT / "docs" / "system" / "bio-skill-system.html"
     index_page = ROOT / "docs" / "index.html"
@@ -211,6 +228,7 @@ def test_architecture_and_index_link_to_real_workflow_map_and_analysis_flows() -
     assert "real-analysis-information-flows.html" in workflow_map_html
     assert "real-bioinformatics-benchmarks.html" in architecture_html
     assert "real-bioinformatics-benchmarks.html" in index_html
+    assert "capability-catalog.html" in index_html
     assert "architecture-comparison-roadmap.html" in architecture_html
     assert "architecture-comparison-roadmap.html" in index_html
 
