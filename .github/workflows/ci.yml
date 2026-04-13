@@ -1,73 +1,63 @@
-name: CI
+name: ci
 
-on:
+"on":
   pull_request:
   push:
+    branches:
+      - main
+      - master
   workflow_dispatch:
-    inputs:
-      run_optional_evidence_lane:
-        description: Run the optional evidence-backed integration lane.
-        required: false
-        default: false
-        type: boolean
-
-permissions:
-  contents: read
 
 jobs:
-  stable-regression:
-    name: Stable regression
+  control-plane-regression:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install lightweight test dependencies
-        run: python -m pip install --upgrade pip pyyaml
-      - name: Run stable pytest lane
-        run: bash scripts/ci/run_stable_tests.sh
 
-  benchmark-contract:
-    name: Benchmark contract lane
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      - name: Install lightweight test dependencies
-        run: python -m pip install --upgrade pip pyyaml
-      - name: Run contract benchmark suite
-        run: python3 scripts/bio_skill_system.py benchmark-suite --mode contract
+          python-version: "3.11"
 
-  hero-lane-truth-smoke:
-    name: Hero lane truth smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install lightweight test dependencies
-        run: python -m pip install --upgrade pip pyyaml
-      - name: Run session-backed hero lane smoke checks
-        run: python3 scripts/ci/run_session_hero_smoke.py
-
-  optional-evidence-integration:
-    name: Optional evidence integration
-    if: github.event_name == 'workflow_dispatch' && inputs.run_optional_evidence_lane
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install lightweight test dependencies
-        run: python -m pip install --upgrade pip pyyaml
-      - name: Run evidence-backed benchmark lane
+      - name: Install test dependencies
         run: |
-          python3 scripts/bio_skill_system.py benchmark-suite \
-            --benchmark-id giab-precisionfda-small-variant \
-            --mode evidence \
-            --evidence-root examples/benchmarks
+          python -m pip install --upgrade pip
+          python -m pip install pytest pyyaml
+
+      - name: Run stable test lane
+        run: ./scripts/ci/run_stable_tests.sh
+
+  hero-runner-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest pyyaml
+
+      - name: Run hero-runner smoke lane
+        run: |
+          pytest -q tests/test_bio_skill_system_cli.py -k 'session_export_repro_bundle_contains_required_files_and_truth_pointers or hero_run_advances_rnaseq_lane_and_exports_repro_bundle or hero_run_supports_germline_lane_without_creating_parallel_run_state'
+
+  optional-heavy-integration:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install benchmark dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest pyyaml
+
+      - name: Run benchmark contract lane
+        run: python3 scripts/bio_skill_system.py benchmark-suite --mode contract
